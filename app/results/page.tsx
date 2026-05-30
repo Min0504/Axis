@@ -1,4 +1,5 @@
 import ResultsView from "@/components/results-view";
+import SessionResults from "@/components/session-results";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import type { ComparisonResult } from "@/lib/types";
 
@@ -6,18 +7,6 @@ type Payload = {
   query: string;
   result: ComparisonResult;
 };
-
-function parsePayload(payload?: string): Payload | null {
-  if (!payload) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(decodeURIComponent(payload)) as Payload;
-  } catch {
-    return null;
-  }
-}
 
 async function loadFromHistory(historyId: string): Promise<Payload | null> {
   const supabase = await createSupabaseServerClient();
@@ -53,21 +42,26 @@ async function loadFromHistory(historyId: string): Promise<Payload | null> {
 export default async function ResultsPage({
   searchParams
 }: {
-  searchParams: Promise<{ payload?: string; historyId?: string }>;
+  searchParams: Promise<{ historyId?: string }>;
 }) {
   const params = await searchParams;
 
-  const parsed = params.historyId
-    ? await loadFromHistory(params.historyId)
-    : parsePayload(params.payload);
+  // Logged-in path: load the saved comparison by id (server-side, RLS-guarded).
+  if (params.historyId) {
+    const parsed = await loadFromHistory(params.historyId);
 
-  if (!parsed) {
-    return (
-      <main className="container narrow">
-        <p className="hint error">결과를 찾을 수 없습니다. 다시 비교해 주세요.</p>
-      </main>
-    );
+    if (!parsed) {
+      return (
+        <main className="container narrow">
+          <p className="hint error">결과를 찾을 수 없습니다. 다시 비교해 주세요.</p>
+        </main>
+      );
+    }
+
+    return <ResultsView query={parsed.query} result={parsed.result} />;
   }
 
-  return <ResultsView query={parsed.query} result={parsed.result} />;
+  // Guest path: the result was stashed in sessionStorage by the compare form,
+  // so render it client-side instead of carrying it in the URL.
+  return <SessionResults />;
 }

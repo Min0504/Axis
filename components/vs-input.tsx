@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { SESSION_RESULT_KEY } from "@/components/session-results";
 import type { ComparisonResult } from "@/lib/types";
 
 type CompareResponse = {
@@ -50,9 +51,14 @@ export default function VsInput() {
       return;
     }
 
-    const encoded = encodeURIComponent(JSON.stringify({ query, result: body.result }));
-    router.push(`/results?payload=${encoded}`);
-    router.refresh();
+    // Guest (not logged in): stash the result in sessionStorage instead of the
+    // URL so large payloads don't hit URL-length limits or leak into logs.
+    try {
+      sessionStorage.setItem(SESSION_RESULT_KEY, JSON.stringify({ query, result: body.result }));
+    } catch {
+      // sessionStorage unavailable (e.g. private mode) — fall through to /results
+    }
+    router.push("/results");
   }
 
   return (
