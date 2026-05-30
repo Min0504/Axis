@@ -1,18 +1,14 @@
 {
   "name": "axis",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Axis — 비교가 아니라 결정을 내리는 AI",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
