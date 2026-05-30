@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import type { ComparisonResult } from "@/lib/types";
 
-export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseRouteClient(req);
 
   if (!supabase) {
     return NextResponse.json({ error: "Supabase not configured" }, { status: 503 });

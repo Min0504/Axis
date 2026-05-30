@@ -1,16 +1,49 @@
 import { NextResponse } from "next/server";
 import { buildDecision, buildQuery } from "@/lib/decision-engine";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
+
+const MAX_OPTION_LENGTH = 100;
+const RATE_LIMIT = 20; // requests
+const RATE_WINDOW_MS = 60_000; // per minute
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as { query?: string; optionA?: string; optionB?: string };
-  const query =
-    body.query?.trim() ||
-    (body.optionA?.trim() && body.optionB?.trim() ? buildQuery(body.optionA, body.optionB) : "");
+  // Best-effort abuse guard: AI calls cost money, so cap requests per client.
+  const ip = getClientIp(req);
+  const limit = rateLimit(`compare:${ip}`, RATE_LIMIT, RATE_WINDOW_MS);
+  if (!limit.allowed) {
+    const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
+  let body: { query?: string; optionA?: string; optionB?: string };
+  try {
+    body = (await req.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: "잘못된 요청 형식입니다." }, { status: 400 });
+  }
+
+  const optionA = body.optionA?.trim() ?? "";
+  const optionB = body.optionB?.trim() ?? "";
+  const query = body.query?.trim() || (optionA && optionB ? buildQuery(optionA, optionB) : "");
 
   if (!query) {
     return NextResponse.json({ error: "두 선택지를 모두 입력해주세요." }, { status: 400 });
+  }
+
+  if (
+    optionA.length > MAX_OPTION_LENGTH ||
+    optionB.length > MAX_OPTION_LENGTH ||
+    query.length > MAX_OPTION_LENGTH * 3
+  ) {
+    return NextResponse.json(
+      { error: `선택지는 각각 ${MAX_OPTION_LENGTH}자 이하로 입력해주세요.` },
+      { status: 400 }
+    );
   }
 
   let result;
@@ -18,9 +51,13 @@ export async function POST(req: Request) {
     result = await buildDecision(query);
   } catch (err) {
     console.error("[buildDecision]", err);
-    return NextResponse.json({ error: "분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." }, { status: 500 });
+    return NextResponse.json(
+      { error: "분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
+      { status: 500 }
+    );
   }
-  const supabase = await createSupabaseServerClient();
+
+  const supabase = await createSupabaseRouteClient(req);
 
   let comparisonId: string | undefined;
 
