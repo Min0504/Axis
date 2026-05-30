@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SESSION_RESULT_KEY } from "@/components/session-results";
 import type { ComparisonResult } from "@/lib/types";
@@ -15,6 +16,7 @@ export default function VsInput() {
   const [optionB, setOptionB] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [limitReached, setLimitReached] = useState(false);
   const router = useRouter();
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -28,6 +30,7 @@ export default function VsInput() {
     }
 
     setError("");
+    setLimitReached(false);
     setIsLoading(true);
 
     const res = await fetch("/api/compare", {
@@ -37,8 +40,9 @@ export default function VsInput() {
     });
 
     if (!res.ok) {
-      const body = (await res.json()) as { error?: string };
+      const body = (await res.json()) as { error?: string; limitReached?: boolean };
       setError(body.error ?? "분석 중 오류가 발생했습니다.");
+      setLimitReached(Boolean(body.limitReached));
       setIsLoading(false);
       return;
     }
@@ -103,6 +107,11 @@ export default function VsInput() {
         {isLoading ? "Axis가 결정 중..." : "Axis에게 물어보기 →"}
       </button>
       {error && <p className="hint error">{error}</p>}
+      {limitReached && (
+        <Link className="btn-outline upgrade-cta" href="/membership">
+          Pro로 업그레이드하고 무제한으로 →
+        </Link>
+      )}
     </form>
   );
 }

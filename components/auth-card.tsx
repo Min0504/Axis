@@ -4,13 +4,22 @@ import { FormEvent, useState } from "react";
 import { createSupabaseBrowserClient, hasSupabaseEnv } from "@/lib/supabase";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
 
+type Mode = "signIn" | "signUp";
+
 export default function AuthCard() {
+  const [mode, setMode] = useState<Mode>("signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleAuth(mode: "signIn" | "signUp") {
+  function switchMode(next: Mode) {
+    setMode(next);
+    setMessage("");
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
     const supabase = createSupabaseBrowserClient();
 
     if (!supabase) {
@@ -23,17 +32,14 @@ export default function AuthCard() {
 
     if (mode === "signIn") {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
       if (error) {
         setMessage(error.message);
         setIsSubmitting(false);
         return;
       }
-
       if (data.user) {
         await ensureUserProfile(supabase, data.user);
       }
-
       window.location.href = "/";
       return;
     }
@@ -41,9 +47,7 @@ export default function AuthCard() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`
-      }
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
     });
 
     setIsSubmitting(false);
@@ -67,13 +71,28 @@ export default function AuthCard() {
 
   return (
     <div className="auth-card">
-      <form
-        className="auth-form"
-        onSubmit={(e: FormEvent) => {
-          e.preventDefault();
-          void handleAuth("signIn");
-        }}
-      >
+      <div className="auth-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "signIn"}
+          className={mode === "signIn" ? "active" : ""}
+          onClick={() => switchMode("signIn")}
+        >
+          로그인
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "signUp"}
+          className={mode === "signUp" ? "active" : ""}
+          onClick={() => switchMode("signUp")}
+        >
+          회원가입
+        </button>
+      </div>
+
+      <form className="auth-form" onSubmit={(e) => void handleSubmit(e)}>
         <label>
           이메일
           <input
@@ -83,6 +102,7 @@ export default function AuthCard() {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={isSubmitting}
+            autoComplete="email"
           />
         </label>
         <label>
@@ -95,15 +115,17 @@ export default function AuthCard() {
             required
             minLength={6}
             disabled={isSubmitting}
+            autoComplete={mode === "signIn" ? "current-password" : "new-password"}
           />
         </label>
         <button type="submit" className="btn-primary" disabled={isSubmitting}>
-          {isSubmitting ? "처리 중..." : "로그인"}
+          {isSubmitting ? "처리 중..." : mode === "signIn" ? "로그인" : "회원가입"}
         </button>
       </form>
-      <button type="button" className="btn-outline" disabled={isSubmitting} onClick={() => void handleAuth("signUp")}>
-        회원가입
-      </button>
+
+      {mode === "signUp" && (
+        <p className="auth-foot">가입하면 하루 {3}회 무료로 결정을 받아볼 수 있어요.</p>
+      )}
       {!hasSupabaseEnv() && <p className="hint">Supabase 환경변수가 필요합니다.</p>}
       {message && <p className="hint">{message}</p>}
     </div>
