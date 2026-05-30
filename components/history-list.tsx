@@ -15,6 +15,21 @@ export default function HistoryList() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(id: string) {
+    if (!window.confirm("이 기록을 삭제할까요? 되돌릴 수 없습니다.")) {
+      return;
+    }
+
+    setDeletingId(id);
+    const res = await fetch(`/api/history/${id}`, { method: "DELETE" });
+    setDeletingId(null);
+
+    if (res.ok) {
+      setHistory((prev) => prev.filter((item) => item.id !== id));
+    }
+  }
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -69,7 +84,17 @@ export default function HistoryList() {
             </div>
             <div className="history-actions">
               <strong>{item.selected_option}</strong>
-              <Link href={`/results?historyId=${item.id}`}>다시 보기</Link>
+              <div className="history-buttons">
+                <Link href={`/results?historyId=${item.id}`}>다시 보기</Link>
+                <button
+                  type="button"
+                  className="history-delete"
+                  onClick={() => void handleDelete(item.id)}
+                  disabled={deletingId === item.id}
+                >
+                  {deletingId === item.id ? "삭제 중..." : "삭제"}
+                </button>
+              </div>
             </div>
           </li>
         ))}

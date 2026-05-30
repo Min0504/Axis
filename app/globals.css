@@ -348,6 +348,30 @@ a {
   font-size: 0.9rem;
 }
 
+.history-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.history-delete {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.history-delete:hover {
+  color: #dc2626;
+}
+
+.history-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .history-empty {
   text-align: center;
   color: var(--muted);
