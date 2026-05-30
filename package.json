@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Axis — 비교가 아니라 결정을 내리는 AI",
+  "engines": {
+    "node": ">=20 <23"
+  },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbo": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
