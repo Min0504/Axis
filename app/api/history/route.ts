@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseRouteClient } from "@/lib/supabase-route";
 
-export async function GET() {
-  const supabase = await createSupabaseServerClient();
+export async function GET(req: Request) {
+  const supabase = await createSupabaseRouteClient(req);
 
   if (!supabase) {
     return NextResponse.json({ history: [] });
