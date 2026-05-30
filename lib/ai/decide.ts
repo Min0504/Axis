@@ -3,6 +3,25 @@ import type { AiDecisionInput, AiDecisionPayload } from "@/lib/ai/types";
 
 type Provider = "openai" | "gemini" | "anthropic";
 
+const AI_TIMEOUT_MS = 20_000;
+
+/** True if at least one provider API key is configured (regardless of call success). */
+export function isAiConfigured() {
+  return Boolean(
+    process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY
+  );
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function resolveProvider(): Provider | null {
   const preferred = process.env.AI_PROVIDER?.toLowerCase();
 
@@ -56,7 +75,7 @@ function normalizeSelectedOption(selected: string, optionA: string, optionB: str
 }
 
 async function callOpenAi(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -88,7 +107,7 @@ async function callGemini(input: AiDecisionInput): Promise<AiDecisionPayload | n
   const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -117,7 +136,7 @@ async function callGemini(input: AiDecisionInput): Promise<AiDecisionPayload | n
 }
 
 async function callAnthropic(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const response = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "x-api-key": process.env.ANTHROPIC_API_KEY ?? "",
@@ -151,12 +170,18 @@ export async function runAiDecision(input: AiDecisionInput): Promise<AiDecisionP
     return null;
   }
 
-  const raw =
-    provider === "openai"
-      ? await callOpenAi(input)
-      : provider === "gemini"
-        ? await callGemini(input)
-        : await callAnthropic(input);
+  let raw: AiDecisionPayload | null = null;
+  try {
+    raw =
+      provider === "openai"
+        ? await callOpenAi(input)
+        : provider === "gemini"
+          ? await callGemini(input)
+          : await callAnthropic(input);
+  } catch (err) {
+    console.error(`[runAiDecision:${provider}]`, err);
+    return null;
+  }
 
   if (!raw) {
     return null;
