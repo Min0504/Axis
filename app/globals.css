@@ -272,6 +272,11 @@ a {
   cursor: pointer;
 }
 
+.btn-primary.block {
+  display: block;
+  text-align: center;
+}
+
 .auth-card,
 .history-card,
 .result-card,

@@ -1,5 +1,5 @@
 import { categoryTemplateMap, detectCategory } from "@/lib/category";
-import { runAiDecision } from "@/lib/ai/decide";
+import { runAiDecision, isAiConfigured } from "@/lib/ai/decide";
 import { buildFallbackDecision } from "@/lib/decision-engine-fallback";
 import { collectOfficialSpecs } from "@/lib/specs/collect";
 import { buildOfficialComparisonTable } from "@/lib/specs/compare-table";
@@ -35,7 +35,9 @@ export async function buildDecision(query: string): Promise<ComparisonResult> {
   });
 
   if (!aiPayload) {
-    return buildFallbackDecision(optionA, optionB, category);
+    // Distinguish "no key configured" from "AI was configured but the call failed"
+    // so the user-facing note is accurate.
+    return buildFallbackDecision(optionA, optionB, category, isAiConfigured() ? "ai-failed" : "no-key");
   }
 
   let comparison = aiPayload.comparison;
