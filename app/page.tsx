@@ -7,7 +7,7 @@ export default function Home() {
     <main className="container">
       <header className="topbar">
         <div className="brand">
-          Axis<span className="brand-beta">beta</span>
+          axis<span className="brand-beta">beta</span>
         </div>
         <UserNav />
       </header>

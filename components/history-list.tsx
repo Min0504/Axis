@@ -73,7 +73,7 @@ export default function HistoryList() {
   }
 
   return (
-    <section className="history-card">
+    <section className="history-card" id="history">
       <h3>최근 결정 기록</h3>
       <ul>
         {history.map((item) => (

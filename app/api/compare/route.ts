@@ -3,11 +3,14 @@ import { buildDecision, buildQuery } from "@/lib/decision-engine";
 import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { FREE_DAILY_LIMIT, normalizePlan, type Plan } from "@/lib/plan";
 import type { ComparisonResult } from "@/lib/types";
 
 const MAX_OPTION_LENGTH = 100;
 const RATE_LIMIT = 20; // requests
 const RATE_WINDOW_MS = 60_000; // per minute
+
+type Usage = { plan: Plan; dailyUsage: number; limit: number | null };
 
 export async function POST(req: Request) {
   // Best-effort abuse guard: AI calls cost money, so cap requests per client.
@@ -47,6 +50,43 @@ export async function POST(req: Request) {
     );
   }
 
+  const supabase = await createSupabaseRouteClient(req);
+
+  const {
+    data: { user }
+  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+
+  let usage: Usage | undefined;
+
+  // Quota gate (logged-in users): enforce the free daily limit BEFORE the AI
+  // call so blocked requests don't incur cost. Guests are governed by the IP
+  // rate limit above and don't have a stored quota.
+  if (supabase && user) {
+    await ensureUserProfile(supabase, user);
+
+    const { data: quota, error: quotaError } = await supabase.rpc("consume_daily_quota", {
+      p_free_limit: FREE_DAILY_LIMIT
+    });
+
+    const row = Array.isArray(quota) ? quota[0] : quota;
+
+    if (!quotaError && row) {
+      const plan = normalizePlan(row.plan);
+      usage = { plan, dailyUsage: row.daily_usage, limit: plan === "pro" ? null : FREE_DAILY_LIMIT };
+
+      if (!row.allowed) {
+        return NextResponse.json(
+          {
+            error: "오늘 무료 결정 횟수를 모두 사용했어요. Pro로 업그레이드하면 무제한이에요.",
+            limitReached: true,
+            usage
+          },
+          { status: 402 }
+        );
+      }
+    }
+  }
+
   let result: ComparisonResult;
   try {
     result = await buildDecision(query);
@@ -58,37 +98,27 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = await createSupabaseRouteClient(req);
-
   let comparisonId: string | undefined;
 
-  if (supabase) {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+  if (supabase && user) {
+    const { data, error } = await supabase
+      .from("comparisons")
+      .insert({
+        user_id: user.id,
+        query,
+        category: result.category,
+        selected_option: result.selectedOption,
+        analysis_result: result
+      })
+      .select("id")
+      .single();
 
-    if (user) {
-      await ensureUserProfile(supabase, user);
-
-      const { data, error } = await supabase
-        .from("comparisons")
-        .insert({
-          user_id: user.id,
-          query,
-          category: result.category,
-          selected_option: result.selectedOption,
-          analysis_result: result
-        })
-        .select("id")
-        .single();
-
-      if (error) {
-        console.error("[comparisons.insert]", error.message);
-      } else {
-        comparisonId = data.id;
-      }
+    if (error) {
+      console.error("[comparisons.insert]", error.message);
+    } else {
+      comparisonId = data.id;
     }
   }
 
-  return NextResponse.json({ result, comparisonId });
+  return NextResponse.json({ result, comparisonId, usage });
 }
