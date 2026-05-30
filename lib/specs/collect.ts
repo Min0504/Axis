@@ -9,17 +9,27 @@ const FETCH_HEADERS = {
   Accept: "text/html,application/xhtml+xml"
 };
 
+const FETCH_TIMEOUT_MS = 8_000;
+
 async function fetchHtml(url: string) {
-  const response = await fetch(url, {
-    headers: FETCH_HEADERS,
-    next: { revalidate: 60 * 60 * 12 }
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-  if (!response.ok) {
-    throw new Error(`공식 페이지를 가져오지 못했습니다 (${response.status}): ${url}`);
+  try {
+    const response = await fetch(url, {
+      headers: FETCH_HEADERS,
+      next: { revalidate: 60 * 60 * 12 },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`공식 페이지를 가져오지 못했습니다 (${response.status}): ${url}`);
+    }
+
+    return response.text();
+  } finally {
+    clearTimeout(timer);
   }
-
-  return response.text();
 }
 
 export async function collectOfficialSpecs(productName: string): Promise<OfficialProductSpecs | null> {

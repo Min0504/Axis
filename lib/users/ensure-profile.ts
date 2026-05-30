@@ -1,19 +1,24 @@
-import type { User } from "@supabase/supabase-js";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 
+/**
+ * Ensure a public.users row exists for the authenticated user.
+ *
+ * A DB trigger (handle_new_user) normally creates this on signup; this is a
+ * best-effort safety net for accounts created before the trigger existed.
+ * Uses an idempotent upsert (ignoreDuplicates) so concurrent requests can't
+ * race into a unique-violation, and never throws — a profile hiccup must not
+ * fail the surrounding request.
+ */
 export async function ensureUserProfile(supabase: SupabaseClient, user: User) {
   if (!user.email) {
     return;
   }
 
-  const { data: existing } = await supabase.from("users").select("id").eq("id", user.id).maybeSingle();
+  const { error } = await supabase
+    .from("users")
+    .upsert({ id: user.id, email: user.email }, { onConflict: "id", ignoreDuplicates: true });
 
-  if (existing) {
-    return;
+  if (error) {
+    console.error("[ensureUserProfile]", error.message);
   }
-
-  await supabase.from("users").insert({
-    id: user.id,
-    email: user.email
-  });
 }

@@ -34,3 +34,33 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
     result: data.analysis_result as ComparisonResult
   });
 }
+
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  const supabase = await createSupabaseRouteClient(req);
+
+  if (!supabase) {
+    return NextResponse.json({ error: "Supabase not configured" }, { status: 503 });
+  }
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+  }
+
+  // RLS also enforces ownership; the user_id filter is defense-in-depth.
+  const { error } = await supabase
+    .from("comparisons")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return NextResponse.json({ error: "삭제하지 못했습니다." }, { status: 400 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

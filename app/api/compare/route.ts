@@ -3,6 +3,7 @@ import { buildDecision, buildQuery } from "@/lib/decision-engine";
 import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import type { ComparisonResult } from "@/lib/types";
 
 const MAX_OPTION_LENGTH = 100;
 const RATE_LIMIT = 20; // requests
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let result;
+  let result: ComparisonResult;
   try {
     result = await buildDecision(query);
   } catch (err) {

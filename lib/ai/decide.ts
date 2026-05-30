@@ -48,10 +48,22 @@ function resolveProvider(): Provider | null {
   return null;
 }
 
-function parseAiJson(text: string): AiDecisionPayload | null {
+/** Extract the outermost {...} object from a string that may have surrounding prose. */
+function extractJsonObject(text: string): string | null {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) {
+    return null;
+  }
+  return text.slice(start, end + 1);
+}
+
+export function parseAiJson(text: string): AiDecisionPayload | null {
+  const cleaned = text.replace(/```json|```/g, "").trim();
+  const candidate = extractJsonObject(cleaned) ?? cleaned;
+
   try {
-    const cleaned = text.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(cleaned) as AiDecisionPayload;
+    const parsed = JSON.parse(candidate) as AiDecisionPayload;
 
     if (!parsed.selectedOption || !parsed.reasons?.length || !parsed.comparison?.length) {
       return null;
@@ -63,14 +75,27 @@ function parseAiJson(text: string): AiDecisionPayload | null {
   }
 }
 
-function normalizeSelectedOption(selected: string, optionA: string, optionB: string) {
-  const normalized = selected.trim().toLowerCase();
-  if (normalized === optionA.toLowerCase() || normalized.includes(optionA.toLowerCase())) {
-    return optionA;
-  }
-  if (normalized === optionB.toLowerCase() || normalized.includes(optionB.toLowerCase())) {
-    return optionB;
-  }
+export function normalizeSelectedOption(selected: string, optionA: string, optionB: string) {
+  const s = selected.trim().toLowerCase();
+  const a = optionA.toLowerCase();
+  const b = optionB.toLowerCase();
+
+  if (s === a) return optionA;
+  if (s === b) return optionB;
+
+  const inA = s.includes(a);
+  const inB = s.includes(b);
+
+  // Disambiguate nested names (e.g. "iPhone" vs "iPhone Pro"): if the AI's
+  // answer contains both, prefer the longer (more specific) option name.
+  if (inA && inB) return a.length >= b.length ? optionA : optionB;
+  if (inA) return optionA;
+  if (inB) return optionB;
+
+  // Or the answer may be a substring of one option name.
+  if (a.includes(s)) return optionA;
+  if (b.includes(s)) return optionB;
+
   return selected;
 }
 
