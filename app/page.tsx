@@ -2,11 +2,12 @@ import HistoryList from "@/components/history-list";
 import UserNav from "@/components/user-nav";
 import VsInput from "@/components/vs-input";
 import { getCurrentProfile } from "@/lib/users/get-profile";
-import { GUEST_MAX_OPTIONS, maxOptions } from "@/lib/plan";
+import { GUEST_MAX_OPTIONS, devPlanOverride, maxOptions } from "@/lib/plan";
 
 export default async function Home() {
   const profile = await getCurrentProfile();
-  const maxOpts = profile ? maxOptions(profile.plan) : GUEST_MAX_OPTIONS;
+  const dev = devPlanOverride();
+  const maxOpts = dev ? maxOptions(dev) : profile ? maxOptions(profile.plan) : GUEST_MAX_OPTIONS;
 
   return (
     <main className="container">

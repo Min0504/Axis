@@ -54,6 +54,17 @@ export function maxOptions(plan: Plan): number {
   return PLAN_MAX_OPTIONS[plan];
 }
 
+/**
+ * Dev-only plan override for local "체감" testing without a real account.
+ * Set AXIS_DEV_PLAN=pro in .env.local to experience Pro locally. Ignored in
+ * production builds.
+ */
+export function devPlanOverride(): Plan | null {
+  if (process.env.NODE_ENV === "production") return null;
+  const p = process.env.AXIS_DEV_PLAN;
+  return isPlan(p) ? p : null;
+}
+
 export type PlanFeature = {
   label: string;
   free: string | boolean;

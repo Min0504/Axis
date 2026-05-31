@@ -7,6 +7,7 @@ import {
   GUEST_MAX_OPTIONS,
   PLAN_DAILY_LIMIT,
   dailyLimit,
+  devPlanOverride,
   maxOptions,
   normalizePlan,
   type Plan
@@ -104,6 +105,12 @@ export async function POST(req: Request) {
         );
       }
     }
+  }
+
+  // Dev-only override so Pro multi-way can be tried locally without an account.
+  const dev = devPlanOverride();
+  if (dev) {
+    allowedOptions = maxOptions(dev);
   }
 
   const options = allOptions.slice(0, allowedOptions);
