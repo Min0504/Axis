@@ -1,10 +1,13 @@
 import { Fragment } from "react";
 import type { ComparisonResult, ComparisonRow } from "@/lib/types";
 import Link from "next/link";
+import ShareActions from "@/components/share-actions";
 
 type Props = {
   query: string;
   result: ComparisonResult;
+  comparisonId?: string;
+  shareToken?: string;
 };
 
 type NormalizedRow = { key: string; values: string[] };
@@ -36,7 +39,7 @@ function normalize(result: ComparisonResult, query: string) {
   return { options, rows, sources, analyses };
 }
 
-export default function ResultsView({ query, result }: Props) {
+export default function ResultsView({ query, result, comparisonId, shareToken }: Props) {
   const { options, rows, sources, analyses } = normalize(result, query);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
   const cols = options.length;
@@ -74,6 +77,13 @@ export default function ResultsView({ query, result }: Props) {
         <h1>{result.selectedOption}</h1>
         <p>{result.oneLineConclusion ?? "이번에는 이걸 선택하는 것이 더 적합합니다."}</p>
       </section>
+
+      <ShareActions
+        selectedOption={result.selectedOption}
+        category={result.category}
+        comparisonId={comparisonId}
+        shareToken={shareToken}
+      />
 
       <section className="detail-card">
         <h2>왜 이렇게 선택했을까?</h2>
