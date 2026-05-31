@@ -3,6 +3,7 @@ import { runAiDecision, isAiConfigured } from "@/lib/ai/decide";
 import { buildFallbackDecision } from "@/lib/decision-engine-fallback";
 import { collectOfficialSpecs } from "@/lib/specs/collect";
 import { buildOfficialComparisonTable } from "@/lib/specs/compare-table";
+import { safeHttpUrl } from "@/lib/safe-url";
 import type { ComparisonResult, ComparisonRow } from "@/lib/types";
 
 const SPLIT_RE = /\s+vs\s+|\s+VS\s+|\svs\s|\s대\s/i;
@@ -54,7 +55,11 @@ export async function buildDecision(query: string, maxOptionsAllowed = 2): Promi
     values: padValues(row.values, options.length)
   }));
 
-  let officialSources: ComparisonResult["officialSources"];
+  // Default: official product-page links the AI supplied (validated), aligned
+  // to options. The verified scraper can override these below.
+  let officialSources: ComparisonResult["officialSources"] = options.map((_, i) =>
+    safeHttpUrl(aiPayload.officialUrls?.[i])
+  );
   let specCollectionNote: string | undefined;
 
   if (isOfficialSpecsEnabled()) {
@@ -64,9 +69,10 @@ export async function buildDecision(query: string, maxOptionsAllowed = 2): Promi
 
     if (products.some((p) => p?.specs.length)) {
       comparison = buildOfficialComparisonTable(products);
-      officialSources = products.map((p) => p?.officialUrl);
+      officialSources = products.map((p, i) => p?.officialUrl ?? officialSources?.[i]);
+      specCollectionNote = "공식 스펙 기준";
     } else {
-      specCollectionNote = "공식 스펙 수집 실패 · AI 비교표 사용";
+      specCollectionNote = "공식 페이지 링크 제공 · 값은 AI 정리";
     }
   }
 

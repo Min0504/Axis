@@ -47,12 +47,25 @@ export default function ResultsView({ query, result }: Props) {
       </p>
 
       <div className="result-chips">
-        {options.map((opt, i) => (
-          <Fragment key={i}>
-            {i > 0 && <span className="result-vs">vs</span>}
-            <span className={`result-chip${i === selectedIndex ? " win" : ""}`}>{opt}</span>
-          </Fragment>
-        ))}
+        {options.map((opt, i) => {
+          const url = sources?.[i];
+          const cls = `result-chip${i === selectedIndex ? " win" : ""}${url ? " link" : ""}`;
+          return (
+            <Fragment key={i}>
+              {i > 0 && <span className="result-vs">vs</span>}
+              {url ? (
+                <a className={cls} href={url} target="_blank" rel="noreferrer" title={`${opt} 공식 페이지`}>
+                  {opt}
+                  <span className="chip-ext" aria-hidden>
+                    ↗
+                  </span>
+                </a>
+              ) : (
+                <span className={cls}>{opt}</span>
+              )}
+            </Fragment>
+          );
+        })}
       </div>
 
       <section className="result-card">
