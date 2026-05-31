@@ -1,6 +1,7 @@
 import ResultsView from "@/components/results-view";
 import SessionResults from "@/components/session-results";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getCurrentProfile } from "@/lib/users/get-profile";
 import type { ComparisonResult } from "@/lib/types";
 
 type Payload = {
@@ -45,6 +46,8 @@ export default async function ResultsPage({
   searchParams: Promise<{ historyId?: string }>;
 }) {
   const params = await searchParams;
+  const profile = await getCurrentProfile();
+  const plan = profile?.plan ?? "free";
 
   // Logged-in path: load the saved comparison by id (server-side, RLS-guarded).
   if (params.historyId) {
@@ -62,6 +65,7 @@ export default async function ResultsPage({
       <ResultsView
         query={parsed.query}
         result={parsed.result}
+        plan={plan}
         comparisonId={params.historyId}
       />
     );
@@ -69,5 +73,5 @@ export default async function ResultsPage({
 
   // Guest path: the result was stashed in sessionStorage by the compare form,
   // so render it client-side instead of carrying it in the URL.
-  return <SessionResults />;
+  return <SessionResults plan={plan} />;
 }
