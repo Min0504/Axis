@@ -454,29 +454,30 @@ a {
 .result-card {
   position: relative;
   overflow: hidden;
-  border: none;
-  background: linear-gradient(135deg, #1b2350 0%, #2f43a0 55%, #5b51d6 100%);
-  color: white;
-  box-shadow: 0 20px 48px rgba(43, 57, 140, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(115% 130% at 100% -10%, rgba(124, 92, 255, 0.2), transparent 55%),
+    linear-gradient(162deg, #0d1022 0%, #141833 55%, #1a2046 100%);
+  color: #f4f6fb;
+  box-shadow:
+    0 30px 70px rgba(8, 11, 30, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 1.6rem 1.5rem;
 }
 
 .result-card::after {
   content: "";
   position: absolute;
-  right: -60px;
-  top: -60px;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 70%);
+  inset: 0;
+  background: radial-gradient(68% 60% at 86% -8%, rgba(99, 102, 241, 0.16), transparent 62%);
   pointer-events: none;
 }
 
 .result-card .label {
-  color: rgba(255, 255, 255, 0.78);
+  color: #aab2ff;
   font-weight: 600;
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -1047,29 +1048,64 @@ a {
 .opt-3 .opt-watermark { color: #f59e0b; }
 .opt-4 .opt-watermark { color: #ec4899; }
 
-.opt-add {
+.opt-add-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  min-height: 150px;
-  border: 2px dashed var(--border);
-  border-radius: 22px;
-  background: transparent;
+  gap: 0.5rem;
+  width: fit-content;
+  margin: 1rem auto 0;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: white;
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
+  padding: 0.5rem 1.05rem;
   cursor: pointer;
   transition: border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
 }
 
-.opt-add span { font-size: 1.6rem; line-height: 1; }
-
-.opt-add:hover {
+.opt-add-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(52, 84, 232, 0.03);
+  background: rgba(52, 84, 232, 0.04);
+}
+
+.opt-add-count {
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+/* ---- result option chips ---- */
+.result-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 0.2rem 0 1rem;
+}
+
+.result-chip {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.3rem 0.8rem;
+}
+
+.result-chip.win {
+  color: var(--accent);
+  border-color: rgba(52, 84, 232, 0.4);
+  background: rgba(52, 84, 232, 0.07);
+}
+
+.result-vs {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c4c9d4;
 }
 
 .vs-upsell {
