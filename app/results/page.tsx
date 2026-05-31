@@ -58,7 +58,13 @@ export default async function ResultsPage({
       );
     }
 
-    return <ResultsView query={parsed.query} result={parsed.result} />;
+    return (
+      <ResultsView
+        query={parsed.query}
+        result={parsed.result}
+        comparisonId={params.historyId}
+      />
+    );
   }
 
   // Guest path: the result was stashed in sessionStorage by the compare form,
