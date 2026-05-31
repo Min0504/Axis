@@ -37,7 +37,7 @@ export default async function MembershipPage() {
 
       <section className="hero compact">
         <p className="badge">● 멤버십</p>
-        <h1>결정에 한계를 두지 마세요</h1>
+        <h1>선택에 한계를 두지 마세요</h1>
         <p className="sub">필요한 만큼만, 부담 없는 가격으로.</p>
       </section>
 

@@ -66,7 +66,7 @@ export default function HistoryList() {
   if (!isLoggedIn) {
     return (
       <section className="history-card history-empty" id="history">
-        <p>로그인하면 결정 기록이 저장돼요.</p>
+        <p>로그인하면 최근 기록이 저장돼요.</p>
         <Link className="history-empty-cta" href="/login">
           로그인하기 →
         </Link>
@@ -77,7 +77,7 @@ export default function HistoryList() {
   if (!history.length) {
     return (
       <section className="history-card history-empty" id="history">
-        <p>아직 저장된 결정이 없어요. 첫 결정을 내려보세요.</p>
+        <p>아직 기록이 없어요. 첫 선택을 시작해보세요.</p>
       </section>
     );
   }
@@ -85,7 +85,7 @@ export default function HistoryList() {
   return (
     <section className="history-card" id="history">
       <div className="history-head">
-        <h3>최근 결정 기록</h3>
+        <h3>최근 기록</h3>
         <span className="history-count">{history.length}</span>
       </div>
       <ul className="history-items">

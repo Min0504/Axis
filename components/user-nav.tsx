@@ -112,7 +112,7 @@ export default function UserNav() {
               멤버십
             </Link>
             <Link href="/#history" role="menuitem" onClick={() => setOpen(false)}>
-              결정 기록
+              최근 기록
             </Link>
           </div>
           <button type="button" className="user-dropdown-signout" onClick={() => void handleSignOut()}>

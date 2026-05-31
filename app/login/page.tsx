@@ -7,7 +7,7 @@ export default function LoginPage() {
       <section className="hero compact">
         <div className="logo">a.</div>
         <h1>Axis에 오신 걸 환영해요</h1>
-        <p className="sub">결정에 어려움을 겪는 당신의 조용한 동반자</p>
+        <p className="sub">선택에 어려움을 겪는 당신의 조용한 동반자</p>
       </section>
       <AuthCard />
       <Link className="btn-outline guest" href="/">
