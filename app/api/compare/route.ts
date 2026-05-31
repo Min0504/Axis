@@ -1,16 +1,38 @@
 import { NextResponse } from "next/server";
-import { buildDecision, buildQuery } from "@/lib/decision-engine";
+import { buildDecision, buildQuery, parseOptions } from "@/lib/decision-engine";
 import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
-import { PLAN_DAILY_LIMIT, dailyLimit, normalizePlan, type Plan } from "@/lib/plan";
+import {
+  GUEST_MAX_OPTIONS,
+  PLAN_DAILY_LIMIT,
+  dailyLimit,
+  maxOptions,
+  normalizePlan,
+  type Plan
+} from "@/lib/plan";
 import type { ComparisonResult } from "@/lib/types";
 
 const MAX_OPTION_LENGTH = 100;
+const HARD_MAX_OPTIONS = 5;
 const RATE_LIMIT = 20; // requests
 const RATE_WINDOW_MS = 60_000; // per minute
 
 type Usage = { plan: Plan; dailyUsage: number; limit: number | null };
+
+type Body = { query?: string; optionA?: string; optionB?: string; options?: unknown };
+
+function collectOptions(body: Body): string[] {
+  if (Array.isArray(body.options)) {
+    return body.options.map((o) => String(o ?? "").trim()).filter(Boolean);
+  }
+  const a = body.optionA?.trim() ?? "";
+  const b = body.optionB?.trim() ?? "";
+  if (a || b) {
+    return [a, b].filter(Boolean);
+  }
+  return body.query ? parseOptions(body.query) : [];
+}
 
 export async function POST(req: Request) {
   // Best-effort abuse guard: AI calls cost money, so cap requests per client.
@@ -24,26 +46,20 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { query?: string; optionA?: string; optionB?: string };
+  let body: Body;
   try {
-    body = (await req.json()) as typeof body;
+    body = (await req.json()) as Body;
   } catch {
     return NextResponse.json({ error: "잘못된 요청 형식입니다." }, { status: 400 });
   }
 
-  const optionA = body.optionA?.trim() ?? "";
-  const optionB = body.optionB?.trim() ?? "";
-  const query = body.query?.trim() || (optionA && optionB ? buildQuery(optionA, optionB) : "");
+  const allOptions = collectOptions(body).slice(0, HARD_MAX_OPTIONS);
 
-  if (!query) {
-    return NextResponse.json({ error: "두 선택지를 모두 입력해주세요." }, { status: 400 });
+  if (allOptions.length < 2) {
+    return NextResponse.json({ error: "두 개 이상의 선택지를 입력해주세요." }, { status: 400 });
   }
 
-  if (
-    optionA.length > MAX_OPTION_LENGTH ||
-    optionB.length > MAX_OPTION_LENGTH ||
-    query.length > MAX_OPTION_LENGTH * 3
-  ) {
+  if (allOptions.some((opt) => opt.length > MAX_OPTION_LENGTH)) {
     return NextResponse.json(
       { error: `선택지는 각각 ${MAX_OPTION_LENGTH}자 이하로 입력해주세요.` },
       { status: 400 }
@@ -57,10 +73,11 @@ export async function POST(req: Request) {
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
 
   let usage: Usage | undefined;
+  let allowedOptions = GUEST_MAX_OPTIONS;
 
   // Quota gate (logged-in users): enforce the free daily limit BEFORE the AI
   // call so blocked requests don't incur cost. Guests are governed by the IP
-  // rate limit above and don't have a stored quota.
+  // rate limit above and compare two options.
   if (supabase && user) {
     await ensureUserProfile(supabase, user);
 
@@ -73,12 +90,13 @@ export async function POST(req: Request) {
 
     if (!quotaError && row) {
       const plan = normalizePlan(row.plan);
+      allowedOptions = maxOptions(plan);
       usage = { plan, dailyUsage: row.daily_usage, limit: dailyLimit(plan) };
 
       if (!row.allowed) {
         return NextResponse.json(
           {
-            error: "오늘 무료 결정 횟수를 모두 사용했어요. Pro로 업그레이드하면 무제한이에요.",
+            error: "오늘 결정 횟수를 모두 사용했어요. 상위 플랜으로 더 많이 결정할 수 있어요.",
             limitReached: true,
             usage
           },
@@ -88,9 +106,12 @@ export async function POST(req: Request) {
     }
   }
 
+  const options = allOptions.slice(0, allowedOptions);
+  const query = buildQuery(options);
+
   let result: ComparisonResult;
   try {
-    result = await buildDecision(query);
+    result = await buildDecision(query, allowedOptions);
   } catch (err) {
     console.error("[buildDecision]", err);
     return NextResponse.json(

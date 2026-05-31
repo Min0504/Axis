@@ -5,7 +5,7 @@ export function buildAxisSystemPrompt() {
 목표는 정보를 나열하는 것이 아니라 사용자가 결정을 내리게 하는 것이다.
 
 규칙:
-1. 반드시 하나를 선택한다.
+1. 반드시 선택지 중 하나를 선택한다.
 2. 동점을 허용하지 않는다.
 3. 결론을 가장 먼저 제시한다.
 4. "상황에 따라 다릅니다"를 최소화한다.
@@ -25,22 +25,26 @@ export function buildAxisSystemPrompt() {
 }
 
 export function buildAxisUserPrompt(input: AiDecisionInput) {
-  return `두 선택지를 비교하고 결론을 내려라.
+  const optionLines = input.options.map((opt, i) => `선택지 ${i + 1}: ${opt}`).join("\n");
+  const optionListJson = JSON.stringify(input.options);
 
-선택지 A: ${input.optionA}
-선택지 B: ${input.optionB}
+  return `다음 선택지들을 비교하고 하나를 선택해 결론을 내려라.
+
+${optionLines}
 카테고리: ${input.category}
 비교 항목(템플릿): ${input.templateKeys.join(", ")}
 
 JSON 스키마:
 {
-  "selectedOption": "A 또는 B 중 정확한 제품명 문자열",
+  "selectedOption": "선택한 항목의 정확한 이름 문자열",
   "oneLineConclusion": "한 줄 결론",
   "reasons": ["이유1", "이유2", "이유3"],
-  "comparison": [{ "key": "항목명", "a": "A의 값", "b": "B의 값" }],
+  "comparison": [{ "key": "항목명", "values": ["선택지1 값", "선택지2 값", ...] }],
   "detail": "상세 설명 (짧고 명확하게)"
 }
 
-comparison 배열은 templateKeys를 모두 포함해야 한다.
-selectedOption은 반드시 "${input.optionA}" 또는 "${input.optionB}" 중 하나와 동일해야 한다.`;
+규칙:
+- comparison 배열은 templateKeys를 모두 포함해야 한다.
+- 각 comparison 항목의 "values"는 위 선택지 순서와 동일하게 ${input.options.length}개를 채운다.
+- selectedOption은 반드시 다음 중 하나와 동일해야 한다: ${optionListJson}`;
 }

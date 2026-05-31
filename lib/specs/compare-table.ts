@@ -1,31 +1,32 @@
-import type { OfficialProductSpecs } from "@/lib/specs/types";
+import type { OfficialProductSpecs, SpecEntry } from "@/lib/specs/types";
 import type { ComparisonRow } from "@/lib/types";
 
-export function buildOfficialComparisonTable(
-  productA: OfficialProductSpecs | null,
-  productB: OfficialProductSpecs | null
-): ComparisonRow[] {
-  const mapA = new Map((productA?.specs ?? []).map((s) => [normalizeKey(s.spec_name), s]));
-  const mapB = new Map((productB?.specs ?? []).map((s) => [normalizeKey(s.spec_name), s]));
+function normalizeKey(name: string) {
+  return name.trim().toLowerCase();
+}
 
-  const keys = new Set([...mapA.keys(), ...mapB.keys()]);
+export function buildOfficialComparisonTable(
+  products: (OfficialProductSpecs | null)[]
+): ComparisonRow[] {
+  const maps = products.map(
+    (p) => new Map((p?.specs ?? []).map((s) => [normalizeKey(s.spec_name), s]))
+  );
+
+  const keys = new Set<string>();
+  for (const map of maps) {
+    for (const key of map.keys()) keys.add(key);
+  }
 
   return [...keys]
     .sort((a, b) => a.localeCompare(b))
     .map((key) => {
-      const specA = mapA.get(key);
-      const specB = mapB.get(key);
+      const entries: (SpecEntry | undefined)[] = maps.map((m) => m.get(key));
+      const labelEntry = entries.find((e) => e?.spec_name);
 
       return {
-        key: specA?.spec_name ?? specB?.spec_name ?? key,
-        a: specA?.spec_value ?? "—",
-        b: specB?.spec_value ?? "—",
-        sourceA: specA?.source_url,
-        sourceB: specB?.source_url
+        key: labelEntry?.spec_name ?? key,
+        values: entries.map((e) => e?.spec_value ?? "—"),
+        sources: entries.map((e) => e?.source_url)
       };
     });
-}
-
-function normalizeKey(name: string) {
-  return name.trim().toLowerCase();
 }

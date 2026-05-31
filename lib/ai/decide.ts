@@ -75,26 +75,25 @@ export function parseAiJson(text: string): AiDecisionPayload | null {
   }
 }
 
-export function normalizeSelectedOption(selected: string, optionA: string, optionB: string) {
+export function normalizeSelectedOption(selected: string, options: string[]) {
   const s = selected.trim().toLowerCase();
-  const a = optionA.toLowerCase();
-  const b = optionB.toLowerCase();
+  const lower = options.map((o) => o.toLowerCase());
 
-  if (s === a) return optionA;
-  if (s === b) return optionB;
+  // Exact match.
+  const exact = lower.indexOf(s);
+  if (exact !== -1) return options[exact];
 
-  const inA = s.includes(a);
-  const inB = s.includes(b);
-
-  // Disambiguate nested names (e.g. "iPhone" vs "iPhone Pro"): if the AI's
-  // answer contains both, prefer the longer (more specific) option name.
-  if (inA && inB) return a.length >= b.length ? optionA : optionB;
-  if (inA) return optionA;
-  if (inB) return optionB;
+  // Options whose name is contained in the AI's answer; prefer the most
+  // specific (longest) one to disambiguate nested names ("iPhone" vs "iPhone Pro").
+  const contained = lower
+    .map((o, i) => ({ o, i }))
+    .filter(({ o }) => o.length > 0 && s.includes(o))
+    .sort((x, y) => y.o.length - x.o.length);
+  if (contained.length) return options[contained[0].i];
 
   // Or the answer may be a substring of one option name.
-  if (a.includes(s)) return optionA;
-  if (b.includes(s)) return optionB;
+  const within = lower.findIndex((o) => o.includes(s));
+  if (within !== -1) return options[within];
 
   return selected;
 }
@@ -214,6 +213,6 @@ export async function runAiDecision(input: AiDecisionInput): Promise<AiDecisionP
 
   return {
     ...raw,
-    selectedOption: normalizeSelectedOption(raw.selectedOption, input.optionA, input.optionB)
+    selectedOption: normalizeSelectedOption(raw.selectedOption, input.options)
   };
 }

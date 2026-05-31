@@ -11,25 +11,21 @@ type HistoryItem = {
   created_at: string;
 };
 
+function relativeDate(iso: string) {
+  const then = new Date(iso).getTime();
+  const diff = Date.now() - then;
+  const day = 24 * 60 * 60 * 1000;
+  if (diff < day) return "오늘";
+  if (diff < 2 * day) return "어제";
+  if (diff < 7 * day) return `${Math.floor(diff / day)}일 전`;
+  return new Date(iso).toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
+}
+
 export default function HistoryList() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  async function handleDelete(id: string) {
-    if (!window.confirm("이 기록을 삭제할까요? 되돌릴 수 없습니다.")) {
-      return;
-    }
-
-    setDeletingId(id);
-    const res = await fetch(`/api/history/${id}`, { method: "DELETE" });
-    setDeletingId(null);
-
-    if (res.ok) {
-      setHistory((prev) => prev.filter((item) => item.id !== id));
-    }
-  }
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -51,50 +47,68 @@ export default function HistoryList() {
     })();
   }, []);
 
+  async function handleDelete(id: string) {
+    if (!window.confirm("이 기록을 삭제할까요? 되돌릴 수 없습니다.")) {
+      return;
+    }
+    setDeletingId(id);
+    const res = await fetch(`/api/history/${id}`, { method: "DELETE" });
+    setDeletingId(null);
+    if (res.ok) {
+      setHistory((prev) => prev.filter((item) => item.id !== id));
+    }
+  }
+
   if (!loaded) {
     return null;
   }
 
   if (!isLoggedIn) {
     return (
-      <section className="history-card history-empty">
-        <p>로그인하면 비교 기록이 저장됩니다.</p>
-        <Link href="/login">로그인하기</Link>
+      <section className="history-card history-empty" id="history">
+        <p>로그인하면 결정 기록이 저장돼요.</p>
+        <Link className="history-empty-cta" href="/login">
+          로그인하기 →
+        </Link>
       </section>
     );
   }
 
   if (!history.length) {
     return (
-      <section className="history-card history-empty">
-        <p>아직 저장된 결정 기록이 없습니다.</p>
+      <section className="history-card history-empty" id="history">
+        <p>아직 저장된 결정이 없어요. 첫 결정을 내려보세요.</p>
       </section>
     );
   }
 
   return (
     <section className="history-card" id="history">
-      <h3>최근 결정 기록</h3>
-      <ul>
+      <div className="history-head">
+        <h3>최근 결정 기록</h3>
+        <span className="history-count">{history.length}</span>
+      </div>
+      <ul className="history-items">
         {history.map((item) => (
-          <li key={item.id}>
-            <div className="history-meta">
-              <span>{item.query}</span>
-              <time>{new Date(item.created_at).toLocaleDateString("ko-KR")}</time>
-            </div>
-            <div className="history-actions">
-              <strong>{item.selected_option}</strong>
-              <div className="history-buttons">
-                <Link href={`/results?historyId=${item.id}`}>다시 보기</Link>
-                <button
-                  type="button"
-                  className="history-delete"
-                  onClick={() => void handleDelete(item.id)}
-                  disabled={deletingId === item.id}
-                >
-                  {deletingId === item.id ? "삭제 중..." : "삭제"}
-                </button>
-              </div>
+          <li className="history-item" key={item.id}>
+            <Link className="history-item-main" href={`/results?historyId=${item.id}`}>
+              <span className="history-item-q">{item.query}</span>
+              <span className="history-item-pick">
+                <span className="pick-dot" aria-hidden />
+                {item.selected_option}
+              </span>
+            </Link>
+            <div className="history-item-side">
+              <time dateTime={item.created_at}>{relativeDate(item.created_at)}</time>
+              <button
+                type="button"
+                className="history-delete"
+                onClick={() => void handleDelete(item.id)}
+                disabled={deletingId === item.id}
+                aria-label="기록 삭제"
+              >
+                {deletingId === item.id ? "삭제 중" : "삭제"}
+              </button>
             </div>
           </li>
         ))}

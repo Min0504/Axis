@@ -1,15 +1,14 @@
 import { categoryTemplateMap } from "@/lib/category";
-import type { Category } from "@/lib/types";
-import type { ComparisonResult } from "@/lib/types";
+import type { Category, ComparisonResult } from "@/lib/types";
 
 export function buildFallbackDecision(
-  optionA: string,
-  optionB: string,
+  options: string[],
   category: Category,
   reason: "no-key" | "ai-failed" = "no-key"
 ): ComparisonResult {
-  const selectedOption = optionA.length >= optionB.length ? optionA : optionB;
-  const otherOption = selectedOption === optionA ? optionB : optionA;
+  // Deterministic placeholder pick (longest name) — used only when AI is
+  // unavailable; never presented as a real analysis.
+  const selectedOption = options.reduce((a, b) => (a.length >= b.length ? a : b), options[0] ?? "");
 
   const reasonLine =
     reason === "ai-failed"
@@ -24,16 +23,16 @@ export function buildFallbackDecision(
   return {
     selectedOption,
     category,
+    options,
     oneLineConclusion: `이번에는 ${selectedOption}을(를) 선택하는 것이 더 적합합니다.`,
     reasons: [
       `${selectedOption}이(가) ${category} 용도에서 더 실용적인 선택입니다.`,
-      `${otherOption} 대비 결정 피로가 더 낮습니다.`,
+      `다른 선택지 대비 결정 피로가 더 낮습니다.`,
       reasonLine
     ],
     comparison: categoryTemplateMap[category].map((key) => ({
       key,
-      a: `${optionA} 관점`,
-      b: `${optionB} 관점`
+      values: options.map((opt) => `${opt} 관점`)
     })),
     detail,
     specCollectionNote: reason === "ai-failed" ? "AI 응답 실패 · 임시 결론" : "AI 미연결 · 임시 결론"

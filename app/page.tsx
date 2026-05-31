@@ -1,8 +1,13 @@
 import HistoryList from "@/components/history-list";
 import UserNav from "@/components/user-nav";
 import VsInput from "@/components/vs-input";
+import { getCurrentProfile } from "@/lib/users/get-profile";
+import { GUEST_MAX_OPTIONS, maxOptions } from "@/lib/plan";
 
-export default function Home() {
+export default async function Home() {
+  const profile = await getCurrentProfile();
+  const maxOpts = profile ? maxOptions(profile.plan) : GUEST_MAX_OPTIONS;
+
   return (
     <main className="container">
       <header className="topbar">
@@ -19,10 +24,10 @@ export default function Home() {
           <br />
           <span>고민을 단정하게.</span>
         </h1>
-        <p className="sub">비교할 두 가지를 적어주세요. Axis가 장단점을 정리해 당신의 결정을 돕습니다.</p>
+        <p className="sub">비교할 선택지를 적어주세요. Axis가 장단점을 정리해 당신의 결정을 돕습니다.</p>
       </section>
 
-      <VsInput />
+      <VsInput maxOptions={maxOpts} />
       <HistoryList />
     </main>
   );
