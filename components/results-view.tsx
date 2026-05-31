@@ -2,10 +2,12 @@ import { Fragment } from "react";
 import type { ComparisonResult, ComparisonRow } from "@/lib/types";
 import Link from "next/link";
 import ShareActions from "@/components/share-actions";
+import type { Plan } from "@/lib/plan";
 
 type Props = {
   query: string;
   result: ComparisonResult;
+  plan?: Plan;
   comparisonId?: string;
   shareToken?: string;
 };
@@ -39,7 +41,7 @@ function normalize(result: ComparisonResult, query: string) {
   return { options, rows, sources, analyses };
 }
 
-export default function ResultsView({ query, result, comparisonId, shareToken }: Props) {
+export default function ResultsView({ query, result, plan = "free", comparisonId, shareToken }: Props) {
   const { options, rows, sources, analyses } = normalize(result, query);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
   const cols = options.length;
@@ -81,8 +83,10 @@ export default function ResultsView({ query, result, comparisonId, shareToken }:
       <ShareActions
         selectedOption={result.selectedOption}
         category={result.category}
+        plan={plan}
         comparisonId={comparisonId}
         shareToken={shareToken}
+        guestPayload={!comparisonId ? { query, result } : undefined}
       />
 
       <section className="detail-card">

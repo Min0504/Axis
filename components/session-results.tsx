@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ResultsView from "@/components/results-view";
 import type { ComparisonResult } from "@/lib/types";
+import type { Plan } from "@/lib/plan";
 
 export const SESSION_RESULT_KEY = "axis:lastResult";
 
@@ -11,7 +12,7 @@ type Payload = {
   result: ComparisonResult;
 };
 
-export default function SessionResults() {
+export default function SessionResults({ plan = "free" }: { plan?: Plan }) {
   const [payload, setPayload] = useState<Payload | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -39,5 +40,5 @@ export default function SessionResults() {
     );
   }
 
-  return <ResultsView query={payload.query} result={payload.result} />;
+  return <ResultsView query={payload.query} result={payload.result} plan={plan} />;
 }

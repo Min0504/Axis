@@ -16,6 +16,26 @@ export const PLAN_MAX_OPTIONS: Record<Plan, number> = {
   pro: 5
 };
 
+/**
+ * Whether the plan shows affiliate purchase links.
+ * Pro users pay for a clean, ad-free experience.
+ */
+export const PLAN_SHOW_AFFILIATE: Record<Plan, boolean> = {
+  free: true,
+  plus: true,
+  pro: false
+};
+
+/**
+ * Watermark on shared pages: Free shares show an Axis CTA to drive virality;
+ * paid plans share cleanly.
+ */
+export const PLAN_SHARE_WATERMARK: Record<Plan, boolean> = {
+  free: true,
+  plus: false,
+  pro: false
+};
+
 /** Guests (not logged in) compare two options. */
 export const GUEST_MAX_OPTIONS = 2;
 
@@ -78,13 +98,14 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { label: "동시 비교 항목", free: "2개", plus: "2개", pro: "최대 5개" },
   { label: "공식 스펙 비교", free: true, plus: true, pro: true },
   { label: "기록 저장", free: true, plus: true, pro: true },
-  { label: "결과 공유 · 내보내기", free: false, plus: true, pro: true },
+  { label: "결과 공유", free: "워터마크 포함", plus: true, pro: true },
+  { label: "광고 없는 클린 경험", free: false, plus: false, pro: true },
   { label: "우선 처리 (빠른 응답)", free: false, plus: false, pro: true }
 ];
 
 /** Short bullet list per plan used on pricing cards. */
 export const PLAN_POINTS: Record<Plan, string[]> = {
-  free: ["하루 5회 선택", "2개 비교", "공식 스펙 비교"],
-  plus: ["하루 30회 선택", "2개 비교", "공식 스펙 비교", "결과 공유 · 내보내기"],
-  pro: ["무제한 선택", "최대 5개 동시 비교", "공식 스펙 비교", "결과 공유 · 내보내기", "우선 처리"]
+  free: ["하루 5회 선택", "2개 비교", "공식 스펙 비교", "결과 공유 (워터마크)"],
+  plus: ["하루 30회 선택", "2개 비교", "공식 스펙 비교", "클린 결과 공유"],
+  pro: ["무제한 선택", "최대 5개 동시 비교", "공식 스펙 비교", "클린 공유 · 내보내기", "광고 없는 경험", "우선 처리"]
 };
