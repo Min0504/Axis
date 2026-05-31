@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/logout-button";
 import { getCurrentProfile } from "@/lib/users/get-profile";
-import { FREE_DAILY_LIMIT, PLAN_LABELS } from "@/lib/plan";
+import { dailyLimit, PLAN_LABELS } from "@/lib/plan";
 
 export const metadata = { title: "내 정보" };
 
@@ -13,8 +13,9 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  const isPro = profile.plan === "pro";
-  const remaining = isPro ? null : Math.max(0, FREE_DAILY_LIMIT - profile.dailyUsage);
+  const limit = dailyLimit(profile.plan);
+  const isUnlimited = limit === null;
+  const remaining = isUnlimited ? null : Math.max(0, limit - profile.dailyUsage);
   const joined = new Date(profile.createdAt).toLocaleDateString("ko-KR");
 
   return (
@@ -40,17 +41,17 @@ export default async function AccountPage() {
         <div className="account-row">
           <span className="account-key">멤버십</span>
           <span className="account-val">
-            <span className={`plan-badge ${isPro ? "pro" : "free"}`}>{PLAN_LABELS[profile.plan]}</span>
+            <span className={`plan-badge ${profile.plan}`}>{PLAN_LABELS[profile.plan]}</span>
           </span>
         </div>
         <div className="account-row">
           <span className="account-key">오늘 사용량</span>
           <span className="account-val">
-            {isPro ? (
+            {isUnlimited ? (
               "무제한"
             ) : (
               <>
-                {profile.dailyUsage} / {FREE_DAILY_LIMIT}회{" "}
+                {profile.dailyUsage} / {limit}회{" "}
                 <span className="hint-inline">(남은 {remaining}회)</span>
               </>
             )}
@@ -58,10 +59,10 @@ export default async function AccountPage() {
         </div>
       </section>
 
-      {!isPro && (
+      {profile.plan !== "pro" && (
         <section className="detail-card upsell">
-          <h2>Pro로 더 많은 결정을</h2>
-          <p>매일 무제한 결정, 고급 AI 분석, 공식 스펙 비교까지.</p>
+          <h2>더 많은 결정이 필요하세요?</h2>
+          <p>Plus는 하루 50회, Pro는 무제한. 공식 스펙 비교까지 한 번에.</p>
           <Link className="btn-primary block" href="/membership">
             멤버십 보기
           </Link>
