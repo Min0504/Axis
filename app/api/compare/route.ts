@@ -3,7 +3,7 @@ import { buildDecision, buildQuery } from "@/lib/decision-engine";
 import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
-import { FREE_DAILY_LIMIT, normalizePlan, type Plan } from "@/lib/plan";
+import { PLAN_DAILY_LIMIT, dailyLimit, normalizePlan, type Plan } from "@/lib/plan";
 import type { ComparisonResult } from "@/lib/types";
 
 const MAX_OPTION_LENGTH = 100;
@@ -65,14 +65,15 @@ export async function POST(req: Request) {
     await ensureUserProfile(supabase, user);
 
     const { data: quota, error: quotaError } = await supabase.rpc("consume_daily_quota", {
-      p_free_limit: FREE_DAILY_LIMIT
+      p_free_limit: PLAN_DAILY_LIMIT.free,
+      p_plus_limit: PLAN_DAILY_LIMIT.plus
     });
 
     const row = Array.isArray(quota) ? quota[0] : quota;
 
     if (!quotaError && row) {
       const plan = normalizePlan(row.plan);
-      usage = { plan, dailyUsage: row.daily_usage, limit: plan === "pro" ? null : FREE_DAILY_LIMIT };
+      usage = { plan, dailyUsage: row.daily_usage, limit: dailyLimit(plan) };
 
       if (!row.allowed) {
         return NextResponse.json(

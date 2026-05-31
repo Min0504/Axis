@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { createSupabaseBrowserClient, hasSupabaseEnv } from "@/lib/supabase";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
+import { PLAN_DAILY_LIMIT } from "@/lib/plan";
 
 type Mode = "signIn" | "signUp";
 
@@ -124,7 +125,7 @@ export default function AuthCard() {
       </form>
 
       {mode === "signUp" && (
-        <p className="auth-foot">가입하면 하루 {3}회 무료로 결정을 받아볼 수 있어요.</p>
+        <p className="auth-foot">가입하면 하루 {PLAN_DAILY_LIMIT.free}회 무료로 결정을 받아볼 수 있어요.</p>
       )}
       {!hasSupabaseEnv() && <p className="hint">Supabase 환경변수가 필요합니다.</p>}
       {message && <p className="hint">{message}</p>}
