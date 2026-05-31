@@ -34,6 +34,11 @@ export function buildFallbackDecision(
       key,
       values: options.map((opt) => `${opt} 관점`)
     })),
+    analyses: options.map((opt) =>
+      opt === selectedOption
+        ? `${opt}은(는) 이번 비교에서 가장 균형 잡힌 선택입니다. (AI 미연결 · 임시 분석)`
+        : `${opt}도 좋은 선택지이지만 이번에는 우선순위가 낮습니다. (AI 미연결 · 임시 분석)`
+    ),
     detail,
     specCollectionNote: reason === "ai-failed" ? "AI 응답 실패 · 임시 결론" : "AI 미연결 · 임시 결론"
   };

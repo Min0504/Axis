@@ -41,7 +41,8 @@ JSON 스키마:
   "reasons": ["이유1", "이유2", "이유3"],
   "comparison": [{ "key": "항목명", "values": ["선택지1 값", "선택지2 값", ...] }],
   "detail": "상세 설명 (짧고 명확하게)",
-  "officialUrls": ["선택지1 공식 페이지 URL", "선택지2 공식 페이지 URL", ...]
+  "officialUrls": ["선택지1 공식 페이지 URL", "선택지2 공식 페이지 URL", ...],
+  "analyses": ["선택지1 상세 분석", "선택지2 상세 분석", ...]
 }
 
 규칙:
@@ -49,5 +50,6 @@ JSON 스키마:
 - comparison 배열은 templateKeys를 모두 포함해야 한다.
 - 각 comparison 항목의 "values"는 위 선택지 순서와 동일하게 ${input.options.length}개를 채운다.
 - officialUrls는 각 선택지의 공식 제조사/수입사 제품 페이지 URL을 선택지 순서와 동일하게 채운다. 공식 페이지를 모르면 빈 문자열("")로 둔다. 추측으로 URL을 만들지 않는다.
+- analyses는 각 선택지별 상세 분석을 선택지 순서와 동일하게 채운다. 각 분석은 그 선택지의 장점·단점·어떤 사람에게 맞는지를 2~3문장으로 구체적으로 쓴다.
 - selectedOption은 반드시 다음 중 하나와 동일해야 한다: ${optionListJson}`;
 }

@@ -23,6 +23,8 @@ export type ComparisonResult = {
   reasons: string[];
   comparison: ComparisonRow[];
   detail: string;
+  /** Per-option AI analysis, aligned to options. */
+  analyses?: string[];
   /** Official page URLs aligned to options. */
   officialSources?: (string | undefined)[];
   specCollectionNote?: string;
