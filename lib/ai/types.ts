@@ -4,13 +4,13 @@ export type AiDecisionPayload = {
   selectedOption: string;
   oneLineConclusion: string;
   reasons: string[];
-  comparison: Array<{ key: string; a: string; b: string }>;
+  /** values aligned to the input options order. */
+  comparison: Array<{ key: string; values: string[] }>;
   detail: string;
 };
 
 export type AiDecisionInput = {
-  optionA: string;
-  optionB: string;
+  options: string[];
   category: Category;
   templateKeys: string[];
 };

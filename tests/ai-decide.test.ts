@@ -5,7 +5,7 @@ const validPayload = JSON.stringify({
   selectedOption: "A",
   oneLineConclusion: "결론",
   reasons: ["r1"],
-  comparison: [{ key: "k", a: "1", b: "2" }],
+  comparison: [{ key: "k", values: ["1", "2"] }],
   detail: "d"
 });
 
@@ -32,22 +32,25 @@ describe("parseAiJson", () => {
 });
 
 describe("normalizeSelectedOption", () => {
-  it("matches exact option", () => {
-    expect(normalizeSelectedOption("갤럭시 S25", "아이폰 16", "갤럭시 S25")).toBe("갤럭시 S25");
+  it("matches an exact option", () => {
+    expect(normalizeSelectedOption("갤럭시 S25", ["아이폰 16", "갤럭시 S25"])).toBe("갤럭시 S25");
   });
 
   it("matches case-insensitively", () => {
-    expect(normalizeSelectedOption("IPHONE 16", "iPhone 16", "Galaxy S25")).toBe("iPhone 16");
+    expect(normalizeSelectedOption("IPHONE 16", ["iPhone 16", "Galaxy S25"])).toBe("iPhone 16");
   });
 
   it("prefers the more specific name when both are contained", () => {
-    // AI answers "iPhone 16 Pro"; both "iPhone 16" and "iPhone 16 Pro" are substrings.
-    expect(normalizeSelectedOption("iPhone 16 Pro", "iPhone 16", "iPhone 16 Pro")).toBe(
+    expect(normalizeSelectedOption("iPhone 16 Pro", ["iPhone 16", "iPhone 16 Pro"])).toBe(
       "iPhone 16 Pro"
     );
   });
 
-  it("returns the raw answer when it matches neither", () => {
-    expect(normalizeSelectedOption("둘 다", "A옵션", "B옵션")).toBe("둘 다");
+  it("works across 3+ options", () => {
+    expect(normalizeSelectedOption("픽셀 9", ["아이폰 16", "갤럭시 S25", "픽셀 9"])).toBe("픽셀 9");
+  });
+
+  it("returns the raw answer when it matches none", () => {
+    expect(normalizeSelectedOption("모두", ["A옵션", "B옵션"])).toBe("모두");
   });
 });

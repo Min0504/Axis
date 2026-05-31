@@ -3,6 +3,7 @@ import { normalizePlan, type Plan } from "@/lib/plan";
 
 export type Profile = {
   email: string;
+  nickname: string | null;
   plan: Plan;
   /** Today's decision count (resets daily). */
   dailyUsage: number;
@@ -25,7 +26,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
   const { data } = await supabase
     .from("users")
-    .select("email, plan, daily_usage, usage_date, created_at")
+    .select("email, nickname, plan, daily_usage, usage_date, created_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -34,6 +35,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   if (!data) {
     return {
       email: user.email ?? "",
+      nickname: null,
       plan: "free",
       dailyUsage: 0,
       createdAt: user.created_at ?? new Date().toISOString()
@@ -42,6 +44,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
   return {
     email: data.email ?? user.email ?? "",
+    nickname: data.nickname ?? null,
     plan: normalizePlan(data.plan),
     dailyUsage: data.usage_date === today ? (data.daily_usage ?? 0) : 0,
     createdAt: data.created_at

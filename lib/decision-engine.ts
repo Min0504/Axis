@@ -3,56 +3,68 @@ import { runAiDecision, isAiConfigured } from "@/lib/ai/decide";
 import { buildFallbackDecision } from "@/lib/decision-engine-fallback";
 import { collectOfficialSpecs } from "@/lib/specs/collect";
 import { buildOfficialComparisonTable } from "@/lib/specs/compare-table";
-import type { ComparisonResult } from "@/lib/types";
+import type { ComparisonResult, ComparisonRow } from "@/lib/types";
 
-export function parseOptions(query: string): { a: string; b: string } {
-  const parts = query.split(/\s+vs\s+|\s+VS\s+|\svs\s|\s대\s/i).map((v) => v.trim()).filter(Boolean);
+const SPLIT_RE = /\s+vs\s+|\s+VS\s+|\svs\s|\s대\s/i;
 
-  if (parts.length >= 2) {
-    return { a: parts[0], b: parts[1] };
-  }
-
-  return { a: "", b: "" };
+/** Split a query like "A vs B vs C" into its options. */
+export function parseOptions(query: string): string[] {
+  return query
+    .split(SPLIT_RE)
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
-export function buildQuery(optionA: string, optionB: string) {
-  return `${optionA.trim()} vs ${optionB.trim()}`;
+export function buildQuery(options: string[]) {
+  return options.map((o) => o.trim()).filter(Boolean).join(" vs ");
 }
 
 const isOfficialSpecsEnabled = () => process.env.AXIS_OFFICIAL_SPECS === "true";
 
-export async function buildDecision(query: string): Promise<ComparisonResult> {
-  const { a, b } = parseOptions(query);
-  const optionA = a || "선택지 A";
-  const optionB = b || "선택지 B";
+/** Ensure each comparison row has exactly `count` values. */
+function padValues(values: string[] | undefined, count: number): string[] {
+  const v = Array.isArray(values) ? values.slice(0, count) : [];
+  while (v.length < count) v.push("—");
+  return v;
+}
+
+export async function buildDecision(query: string, maxOptionsAllowed = 2): Promise<ComparisonResult> {
+  const parsed = parseOptions(query);
+
+  // Clamp to the caller's allowed option count, ensure at least two labels.
+  const options = parsed.slice(0, Math.max(2, maxOptionsAllowed));
+  while (options.length < 2) {
+    options.push(`선택지 ${options.length + 1}`);
+  }
+
   const category = detectCategory(query);
 
   const aiPayload = await runAiDecision({
-    optionA,
-    optionB,
+    options,
     category,
     templateKeys: categoryTemplateMap[category]
   });
 
   if (!aiPayload) {
-    // Distinguish "no key configured" from "AI was configured but the call failed"
-    // so the user-facing note is accurate.
-    return buildFallbackDecision(optionA, optionB, category, isAiConfigured() ? "ai-failed" : "no-key");
+    return buildFallbackDecision(options, category, isAiConfigured() ? "ai-failed" : "no-key");
   }
 
-  let comparison = aiPayload.comparison;
+  let comparison: ComparisonRow[] = aiPayload.comparison.map((row) => ({
+    key: row.key,
+    values: padValues(row.values, options.length)
+  }));
+
   let officialSources: ComparisonResult["officialSources"];
   let specCollectionNote: string | undefined;
 
   if (isOfficialSpecsEnabled()) {
-    const [productA, productB] = await Promise.all([
-      collectOfficialSpecs(optionA).catch(() => null),
-      collectOfficialSpecs(optionB).catch(() => null)
-    ]);
+    const products = await Promise.all(
+      options.map((opt) => collectOfficialSpecs(opt).catch(() => null))
+    );
 
-    if (productA?.specs.length || productB?.specs.length) {
-      comparison = buildOfficialComparisonTable(productA, productB);
-      officialSources = { a: productA?.officialUrl, b: productB?.officialUrl };
+    if (products.some((p) => p?.specs.length)) {
+      comparison = buildOfficialComparisonTable(products);
+      officialSources = products.map((p) => p?.officialUrl);
     } else {
       specCollectionNote = "공식 스펙 수집 실패 · AI 비교표 사용";
     }
@@ -61,6 +73,7 @@ export async function buildDecision(query: string): Promise<ComparisonResult> {
   return {
     selectedOption: aiPayload.selectedOption,
     category,
+    options,
     oneLineConclusion: aiPayload.oneLineConclusion,
     reasons: aiPayload.reasons.slice(0, 5),
     comparison,
