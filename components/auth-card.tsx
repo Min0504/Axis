@@ -125,7 +125,7 @@ export default function AuthCard() {
       </form>
 
       {mode === "signUp" && (
-        <p className="auth-foot">가입하면 하루 {PLAN_DAILY_LIMIT.free}회 무료로 결정을 받아볼 수 있어요.</p>
+        <p className="auth-foot">가입하면 하루 {PLAN_DAILY_LIMIT.free}회 무료로 이용할 수 있어요.</p>
       )}
       {!hasSupabaseEnv() && <p className="hint">Supabase 환경변수가 필요합니다.</p>}
       {message && <p className="hint">{message}</p>}

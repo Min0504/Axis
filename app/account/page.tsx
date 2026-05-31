@@ -37,7 +37,7 @@ export default async function AccountPage() {
 
       <section className="detail-card usage-card">
         <div className="usage-head">
-          <h2>오늘의 결정</h2>
+          <h2>오늘의 선택</h2>
           <span className="usage-count">
             {isUnlimited ? "무제한" : `${used} / ${limit}회`}
           </span>
@@ -47,10 +47,10 @@ export default async function AccountPage() {
             <div className="usage-bar">
               <span className="usage-fill" style={{ width: `${pct}%` }} />
             </div>
-            <p className="usage-sub">오늘 {remaining}회 더 결정할 수 있어요. 매일 0시에 초기화됩니다.</p>
+            <p className="usage-sub">오늘 {remaining}회 더 선택할 수 있어요. 매일 0시에 초기화됩니다.</p>
           </>
         )}
-        {isUnlimited && <p className="usage-sub">Pro 멤버는 매일 무제한으로 결정할 수 있어요.</p>}
+        {isUnlimited && <p className="usage-sub">Pro 멤버는 매일 무제한으로 선택할 수 있어요.</p>}
       </section>
 
       <section className="detail-card account-card">
@@ -66,7 +66,7 @@ export default async function AccountPage() {
 
       {profile.plan !== "pro" && (
         <section className="detail-card upsell">
-          <h2>더 많은 결정이 필요하세요?</h2>
+          <h2>더 많은 선택이 필요하세요?</h2>
           <p>Plus는 하루 30회, Pro는 무제한 + 최대 5개 동시 비교.</p>
           <Link className="btn-primary block" href="/membership">
             멤버십 보기

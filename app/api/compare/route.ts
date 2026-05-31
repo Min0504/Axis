@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       if (!row.allowed) {
         return NextResponse.json(
           {
-            error: "오늘 결정 횟수를 모두 사용했어요. 상위 플랜으로 더 많이 결정할 수 있어요.",
+            error: "오늘 선택 횟수를 모두 사용했어요. 상위 플랜으로 더 많이 선택할 수 있어요.",
             limitReached: true,
             usage
           },

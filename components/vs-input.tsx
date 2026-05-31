@@ -119,7 +119,7 @@ export default function VsInput({ maxOptions = 2 }: { maxOptions?: number }) {
       )}
 
       <button className="btn-primary large" type="submit" disabled={isLoading}>
-        {isLoading ? "Axis가 결정 중..." : "Axis에게 물어보기 →"}
+        {isLoading ? "Axis가 선택 중..." : "Axis에게 물어보기 →"}
       </button>
 
       {maxOptions < 3 && (
@@ -131,7 +131,7 @@ export default function VsInput({ maxOptions = 2 }: { maxOptions?: number }) {
       {error && <p className="hint error">{error}</p>}
       {limitReached && (
         <Link className="btn-outline upgrade-cta" href="/membership">
-          더 많이 결정하려면 업그레이드 →
+          더 많이 선택하려면 업그레이드 →
         </Link>
       )}
     </form>

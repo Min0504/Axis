@@ -43,7 +43,7 @@ export default function ResultsView({ query, result }: Props) {
   return (
     <main className="container narrow">
       <p className="back-link">
-        <Link href="/">← 다시 결정하기</Link>
+        <Link href="/">← 다시 선택하기</Link>
       </p>
 
       <div className="result-chips">
