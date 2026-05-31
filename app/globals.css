@@ -18,6 +18,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: Pretendard, Inter, system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
@@ -1124,6 +1128,76 @@ a {
   font-size: 0.72rem;
   font-weight: 700;
   color: #c4c9d4;
+}
+
+/* ---- per-option analysis ---- */
+.analysis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.analysis-item {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  scroll-margin-top: 1.2rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.analysis-item:target {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.analysis-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.analysis-letter {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #3454e8, #7c5cff);
+}
+
+.analysis-name {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.analysis-pick {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(52, 84, 232, 0.1);
+  border-radius: 9999px;
+  padding: 0.15rem 0.5rem;
+}
+
+.analysis-official {
+  margin-left: auto;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.analysis-official:hover {
+  color: var(--accent);
+}
+
+.analysis-item p {
+  margin: 0;
+  line-height: 1.6;
 }
 
 .vs-upsell {

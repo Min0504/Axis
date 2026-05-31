@@ -9,6 +9,8 @@ export type AiDecisionPayload = {
   detail: string;
   /** Official product/manufacturer page URLs, aligned to the options order. */
   officialUrls?: string[];
+  /** Short per-option analysis, aligned to the options order. */
+  analyses?: string[];
 };
 
 export type AiDecisionInput = {

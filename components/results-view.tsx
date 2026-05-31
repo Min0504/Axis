@@ -31,12 +31,13 @@ function normalize(result: ComparisonResult, query: string) {
   });
 
   const sources = Array.isArray(result.officialSources) ? result.officialSources : undefined;
+  const analyses = Array.isArray(result.analyses) ? result.analyses : [];
 
-  return { options, rows, sources };
+  return { options, rows, sources, analyses };
 }
 
 export default function ResultsView({ query, result }: Props) {
-  const { options, rows, sources } = normalize(result, query);
+  const { options, rows, sources, analyses } = normalize(result, query);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
   const cols = options.length;
 
@@ -48,16 +49,16 @@ export default function ResultsView({ query, result }: Props) {
 
       <div className="result-chips">
         {options.map((opt, i) => {
-          const url = sources?.[i];
-          const cls = `result-chip${i === selectedIndex ? " win" : ""}${url ? " link" : ""}`;
+          const hasAnalysis = Boolean(analyses[i]);
+          const cls = `result-chip${i === selectedIndex ? " win" : ""}${hasAnalysis ? " link" : ""}`;
           return (
             <Fragment key={i}>
               {i > 0 && <span className="result-vs">vs</span>}
-              {url ? (
-                <a className={cls} href={url} target="_blank" rel="noreferrer" title={`${opt} 공식 페이지`}>
+              {hasAnalysis ? (
+                <a className={cls} href={`#analysis-${i}`} title={`${opt} 상세 분석 보기`}>
                   {opt}
                   <span className="chip-ext" aria-hidden>
-                    ↗
+                    ↓
                   </span>
                 </a>
               ) : (
@@ -121,8 +122,33 @@ export default function ResultsView({ query, result }: Props) {
         </div>
       </section>
 
+      {analyses.some(Boolean) && (
+        <section className="detail-card">
+          <h2>선택지별 상세 분석</h2>
+          <div className="analysis-list">
+            {options.map((opt, i) =>
+              analyses[i] ? (
+                <div className="analysis-item" id={`analysis-${i}`} key={i}>
+                  <div className="analysis-head">
+                    <span className="analysis-letter">{String.fromCharCode(65 + i)}</span>
+                    <span className="analysis-name">{opt}</span>
+                    {i === selectedIndex && <span className="analysis-pick">선택</span>}
+                    {sources?.[i] && (
+                      <a className="analysis-official" href={sources[i]} target="_blank" rel="noreferrer">
+                        공식 ↗
+                      </a>
+                    )}
+                  </div>
+                  <p>{analyses[i]}</p>
+                </div>
+              ) : null
+            )}
+          </div>
+        </section>
+      )}
+
       <section className="detail-card">
-        <h2>상세 설명</h2>
+        <h2>종합 설명</h2>
         <p>{result.detail}</p>
       </section>
     </main>

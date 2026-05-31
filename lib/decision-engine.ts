@@ -84,6 +84,7 @@ export async function buildDecision(query: string, maxOptionsAllowed = 2): Promi
     reasons: aiPayload.reasons.slice(0, 5),
     comparison,
     detail: aiPayload.detail,
+    analyses: options.map((_, i) => aiPayload.analyses?.[i] ?? ""),
     officialSources,
     specCollectionNote
   };
