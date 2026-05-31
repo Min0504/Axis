@@ -40,11 +40,14 @@ JSON 스키마:
   "oneLineConclusion": "한 줄 결론",
   "reasons": ["이유1", "이유2", "이유3"],
   "comparison": [{ "key": "항목명", "values": ["선택지1 값", "선택지2 값", ...] }],
-  "detail": "상세 설명 (짧고 명확하게)"
+  "detail": "상세 설명 (짧고 명확하게)",
+  "officialUrls": ["선택지1 공식 페이지 URL", "선택지2 공식 페이지 URL", ...]
 }
 
 규칙:
+- comparison의 값은 가능한 한 제조사·공식 수입사의 공식 스펙을 기준으로 정확히 기입한다. 확실하지 않으면 추정 수치를 만들지 말고 "정보 없음"으로 둔다.
 - comparison 배열은 templateKeys를 모두 포함해야 한다.
 - 각 comparison 항목의 "values"는 위 선택지 순서와 동일하게 ${input.options.length}개를 채운다.
+- officialUrls는 각 선택지의 공식 제조사/수입사 제품 페이지 URL을 선택지 순서와 동일하게 채운다. 공식 페이지를 모르면 빈 문자열("")로 둔다. 추측으로 URL을 만들지 않는다.
 - selectedOption은 반드시 다음 중 하나와 동일해야 한다: ${optionListJson}`;
 }

@@ -1102,6 +1102,24 @@ a {
   background: rgba(52, 84, 232, 0.07);
 }
 
+.result-chip.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.result-chip.link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(52, 84, 232, 0.14);
+}
+
+.chip-ext {
+  font-size: 0.72rem;
+  opacity: 0.6;
+}
+
 .result-vs {
   font-size: 0.72rem;
   font-weight: 700;

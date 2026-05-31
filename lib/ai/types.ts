@@ -7,6 +7,8 @@ export type AiDecisionPayload = {
   /** values aligned to the input options order. */
   comparison: Array<{ key: string; values: string[] }>;
   detail: string;
+  /** Official product/manufacturer page URLs, aligned to the options order. */
+  officialUrls?: string[];
 };
 
 export type AiDecisionInput = {
