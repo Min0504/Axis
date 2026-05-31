@@ -109,14 +109,14 @@ export default function VsInput({ maxOptions = 2 }: { maxOptions?: number }) {
             </span>
           </label>
         ))}
-
-        {canAdd && (
-          <button type="button" className="opt-add" onClick={addOption}>
-            <span>＋</span>
-            선택지 추가
-          </button>
-        )}
       </div>
+
+      {canAdd && (
+        <button type="button" className="opt-add-btn" onClick={addOption}>
+          ＋ 선택지 추가
+          <span className="opt-add-count">{options.length}/{maxOptions}</span>
+        </button>
+      )}
 
       <button className="btn-primary large" type="submit" disabled={isLoading}>
         {isLoading ? "Axis가 결정 중..." : "Axis에게 물어보기 →"}

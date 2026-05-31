@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { ComparisonResult, ComparisonRow } from "@/lib/types";
 import Link from "next/link";
 
@@ -44,7 +45,15 @@ export default function ResultsView({ query, result }: Props) {
       <p className="back-link">
         <Link href="/">← 다시 결정하기</Link>
       </p>
-      <p className="hint history-query">{query}</p>
+
+      <div className="result-chips">
+        {options.map((opt, i) => (
+          <Fragment key={i}>
+            {i > 0 && <span className="result-vs">vs</span>}
+            <span className={`result-chip${i === selectedIndex ? " win" : ""}`}>{opt}</span>
+          </Fragment>
+        ))}
+      </div>
 
       <section className="result-card">
         <p className="label">AXIS의 선택</p>
