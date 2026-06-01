@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SESSION_RESULT_KEY } from "@/components/session-results";
+import { getDictionary, type Locale } from "@/lib/i18n";
 import type { ComparisonResult } from "@/lib/types";
 
 type CompareResponse = {
@@ -12,9 +13,9 @@ type CompareResponse = {
 };
 
 const LETTERS = ["A", "B", "C", "D", "E"];
-const ORDINALS = ["첫 번째", "두 번째", "세 번째", "네 번째", "다섯 번째"];
 
-export default function VsInput({ maxOptions = 2 }: { maxOptions?: number }) {
+export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?: number; locale?: Locale }) {
+  const t = getDictionary(locale).input;
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,7 +41,7 @@ export default function VsInput({ maxOptions = 2 }: { maxOptions?: number }) {
 
     const trimmed = options.map((o) => o.trim()).filter(Boolean);
     if (trimmed.length < 2) {
-      setError("두 개 이상의 선택지를 입력해주세요.");
+      setError(t.errorEmpty);
       return;
     }
 
@@ -56,7 +57,7 @@ export default function VsInput({ maxOptions = 2 }: { maxOptions?: number }) {
 
     if (!res.ok) {
       const body = (await res.json()) as { error?: string; limitReached?: boolean };
-      setError(body.error ?? "분석 중 오류가 발생했습니다.");
+      setError(body.error ?? t.errorGeneral);
       setLimitReached(Boolean(body.limitReached));
       setIsLoading(false);
       return;
@@ -79,59 +80,73 @@ export default function VsInput({ maxOptions = 2 }: { maxOptions?: number }) {
     router.push("/results");
   }
 
+  const isTwoWay = options.length === 2;
+
+  function renderCard(value: string, index: number) {
+    return (
+      <label className={`opt-card opt-${index}`} key={index}>
+        <div className="opt-card-top">
+          <span className="opt-tag">{LETTERS[index]}</span>
+          <span className="opt-label">{t.optionSlot(index + 1)}</span>
+          {options.length > 2 && (
+            <button
+              type="button"
+              className="opt-remove"
+              onClick={() => removeOption(index)}
+              aria-label={t.optionSlot(index + 1)}
+            >
+              ×
+            </button>
+          )}
+        </div>
+        <input
+          value={value}
+          onChange={(e) => updateOption(index, e.target.value)}
+          placeholder={t.placeholders[index] ?? t.placeholders[0]}
+          required={index < 2}
+        />
+        <span className="opt-watermark" aria-hidden>
+          {LETTERS[index]}
+        </span>
+      </label>
+    );
+  }
+
   return (
     <form className="vs-shell" onSubmit={(e) => void handleSubmit(e)}>
-      <div className="opt-grid">
-        {options.map((value, index) => (
-          <label className={`opt-card opt-${index}`} key={index}>
-            <div className="opt-card-top">
-              <span className="opt-tag">{LETTERS[index]}</span>
-              <span className="opt-label">{ORDINALS[index]} 선택지</span>
-              {options.length > 2 && (
-                <button
-                  type="button"
-                  className="opt-remove"
-                  onClick={() => removeOption(index)}
-                  aria-label="선택지 삭제"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-            <input
-              value={value}
-              onChange={(e) => updateOption(index, e.target.value)}
-              placeholder={index === 0 ? "예: 아이폰 16" : index === 1 ? "예: 갤럭시 S25" : "예: 픽셀 9"}
-              required={index < 2}
-            />
-            <span className="opt-watermark" aria-hidden>
-              {LETTERS[index]}
-            </span>
-          </label>
-        ))}
-      </div>
+      {isTwoWay ? (
+        <div className="vs-grid">
+          {renderCard(options[0], 0)}
+          <span className="vs-divider" aria-hidden>vs</span>
+          {renderCard(options[1], 1)}
+        </div>
+      ) : (
+        <div className="opt-grid">
+          {options.map((value, index) => renderCard(value, index))}
+        </div>
+      )}
 
       {canAdd && (
         <button type="button" className="opt-add-btn" onClick={addOption}>
-          ＋ 선택지 추가
+          {t.addOption}
           <span className="opt-add-count">{options.length}/{maxOptions}</span>
         </button>
       )}
 
       <button className="btn-primary large" type="submit" disabled={isLoading}>
-        {isLoading ? "Axis가 선택 중..." : "Axis에게 물어보기 →"}
+        {isLoading ? t.submitting : t.submit}
       </button>
 
       {maxOptions < 3 && (
         <p className="vs-upsell">
-          3개 이상 한 번에 비교하고 싶다면 <Link href="/membership">Pro</Link>
+          {t.proUpsell} <Link href="/membership">{t.pro}</Link>
         </p>
       )}
 
       {error && <p className="hint error">{error}</p>}
       {limitReached && (
         <Link className="btn-outline upgrade-cta" href="/membership">
-          더 많이 선택하려면 업그레이드 →
+          {t.upgradePrompt}
         </Link>
       )}
     </form>

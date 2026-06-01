@@ -2,7 +2,10 @@ import { Fragment } from "react";
 import type { ComparisonResult, ComparisonRow } from "@/lib/types";
 import Link from "next/link";
 import ShareActions from "@/components/share-actions";
+import SettingsBar from "@/components/settings-bar";
+import UserNav from "@/components/user-nav";
 import type { Plan } from "@/lib/plan";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 type Props = {
   query: string;
@@ -10,6 +13,7 @@ type Props = {
   plan?: Plan;
   comparisonId?: string;
   shareToken?: string;
+  locale?: Locale;
 };
 
 type NormalizedRow = { key: string; values: string[] };
@@ -41,71 +45,70 @@ function normalize(result: ComparisonResult, query: string) {
   return { options, rows, sources, analyses };
 }
 
-export default function ResultsView({ query, result, plan = "free", comparisonId, shareToken }: Props) {
+export default function ResultsView({ query, result, plan = "free", comparisonId, shareToken, locale = "ko" }: Props) {
   const { options, rows, sources, analyses } = normalize(result, query);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
   const cols = options.length;
+  const t = getDictionary(locale).results;
 
   return (
-    <main className="container narrow">
-      <p className="back-link">
-        <Link href="/">← 다시 선택하기</Link>
-      </p>
+    <div className="container">
+      <header className="topbar results-topbar">
+        <Link href="/" className="brand">
+          axis<span className="brand-beta">beta</span>
+        </Link>
+        <div className="topbar-right">
+          <SettingsBar />
+          <UserNav />
+        </div>
+      </header>
 
-      <div className="result-chips">
-        {options.map((opt, i) => {
-          const hasAnalysis = Boolean(analyses[i]);
-          const cls = `result-chip${i === selectedIndex ? " win" : ""}${hasAnalysis ? " link" : ""}`;
-          return (
-            <Fragment key={i}>
-              {i > 0 && <span className="result-vs">vs</span>}
-              {hasAnalysis ? (
-                <a className={cls} href={`#analysis-${i}`} title={`${opt} 상세 분석 보기`}>
-                  {opt}
-                  <span className="chip-ext" aria-hidden>
-                    ↓
-                  </span>
-                </a>
-              ) : (
-                <span className={cls}>{opt}</span>
-              )}
-            </Fragment>
-          );
-        })}
-      </div>
+      <main className="results-body">
+      <Link href="/" className="btn-back">{t.back}</Link>
 
       <section className="result-card">
-        <p className="label">AXIS의 선택</p>
+        <p className="result-context">
+          {options.map((opt, i) => (
+            <Fragment key={i}>
+              {i > 0 && <span className="result-context-sep"> vs </span>}
+              <span className={i === selectedIndex ? "result-context-win" : ""}>{opt}</span>
+            </Fragment>
+          ))}
+        </p>
+        <p className="label">{t.axisChoice}</p>
         <h1>{result.selectedOption}</h1>
-        <p>{result.oneLineConclusion ?? "이번에는 이걸 선택하는 것이 더 적합합니다."}</p>
+        <p>{result.oneLineConclusion ?? t.defaultConclusion}</p>
       </section>
 
-      <ShareActions
-        selectedOption={result.selectedOption}
-        category={result.category}
-        plan={plan}
-        comparisonId={comparisonId}
-        shareToken={shareToken}
-        guestPayload={!comparisonId ? { query, result } : undefined}
-      />
+      <section className="decision-basis" aria-label={t.basisTitle}>
+        {t.basis.map((item) => (
+          <article key={item.title}>
+            <strong>{item.title}</strong>
+            <span>{item.body}</span>
+          </article>
+        ))}
+      </section>
 
       <section className="detail-card">
-        <h2>왜 이렇게 선택했을까?</h2>
-        <ul>
+        <h2>{t.whyChosen}</h2>
+        <ul className="reason-list">
           {result.reasons.map((reason) => (
-            <li key={reason}>{reason}</li>
+            <li key={reason}>
+              <span className="reason-mark" aria-hidden>✓</span>
+              <span>{reason}</span>
+            </li>
           ))}
         </ul>
       </section>
 
       <section className="detail-card">
-        <h2>항목별 비교</h2>
+        <h2>{t.specComparison}</h2>
         {sources?.some(Boolean) && (
           <p className="source-links">
             {sources.map((src, i) =>
               src ? (
                 <a key={i} href={src} target="_blank" rel="noreferrer">
-                  {options[i]} 공식
+                  {t.officialLink(options[i])}
                 </a>
               ) : null
             )}
@@ -118,7 +121,7 @@ export default function ResultsView({ query, result, plan = "free", comparisonId
             <span className="cmp-key" />
             {options.map((opt, i) => (
               <span key={i} className={`cmp-col${i === selectedIndex ? " winner" : ""}`}>
-                {i === selectedIndex && <span className="cmp-win-tag">선택</span>}
+                {i === selectedIndex && <span className="cmp-win-tag">{t.winner}</span>}
                 {opt}
               </span>
             ))}
@@ -138,7 +141,7 @@ export default function ResultsView({ query, result, plan = "free", comparisonId
 
       {analyses.some(Boolean) && (
         <section className="detail-card">
-          <h2>선택지별 상세 분석</h2>
+          <h2>{t.perItemAnalysis}</h2>
           <div className="analysis-list">
             {options.map((opt, i) =>
               analyses[i] ? (
@@ -146,10 +149,10 @@ export default function ResultsView({ query, result, plan = "free", comparisonId
                   <div className="analysis-head">
                     <span className="analysis-letter">{String.fromCharCode(65 + i)}</span>
                     <span className="analysis-name">{opt}</span>
-                    {i === selectedIndex && <span className="analysis-pick">선택</span>}
+                    {i === selectedIndex && <span className="analysis-pick">{t.winner}</span>}
                     {sources?.[i] && (
                       <a className="analysis-official" href={sources[i]} target="_blank" rel="noreferrer">
-                        공식 ↗
+                        {t.officialShort}
                       </a>
                     )}
                   </div>
@@ -162,9 +165,26 @@ export default function ResultsView({ query, result, plan = "free", comparisonId
       )}
 
       <section className="detail-card">
-        <h2>종합 설명</h2>
+        <h2>{t.summary}</h2>
         <p>{result.detail}</p>
       </section>
-    </main>
+
+      <section className="detail-card purchase-card">
+        <div className="purchase-head">
+          <h2>{t.purchaseTitle}</h2>
+          <p>{t.purchaseSub}</p>
+        </div>
+        <ShareActions
+          selectedOption={result.selectedOption}
+          category={result.category}
+          plan={plan}
+          locale={locale}
+          comparisonId={comparisonId}
+          shareToken={shareToken}
+          guestPayload={!comparisonId ? { query, result } : undefined}
+        />
+      </section>
+      </main>
+    </div>
   );
 }

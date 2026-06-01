@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { primaryBuyLink } from "@/lib/affiliate";
 import type { Category, ComparisonResult } from "@/lib/types";
 import type { Plan } from "@/lib/plan";
 import { PLAN_SHOW_AFFILIATE } from "@/lib/plan";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 type Props = {
   selectedOption: string;
   category: Category;
   plan: Plan;
+  locale?: Locale;
   comparisonId?: string;
   shareToken?: string;
-  /** Full result + query for guest share (no DB id yet). */
   guestPayload?: { query: string; result: ComparisonResult };
 };
 
@@ -21,6 +21,7 @@ export default function ShareActions({
   selectedOption,
   category,
   plan,
+  locale = "ko",
   comparisonId,
   shareToken,
   guestPayload
@@ -30,7 +31,8 @@ export default function ShareActions({
   const [copied, setCopied] = useState(false);
 
   const showAffiliate = PLAN_SHOW_AFFILIATE[plan];
-  const buyUrl = primaryBuyLink(selectedOption, category);
+  const buyLink = primaryBuyLink(selectedOption, category, locale);
+  const t = getDictionary(locale).share;
 
   async function getShareUrl(): Promise<string> {
     if (token) return `${location.origin}/share/${token}`;
@@ -76,10 +78,10 @@ export default function ShareActions({
 
   async function handleShare() {
     const url = await getShareUrl();
-    const text = `Axis가 "${selectedOption}"을(를) 선택했어요 → ${url}`;
+    const text = t.shareMessage(selectedOption, url);
 
     if (navigator.share) {
-      await navigator.share({ title: `Axis의 선택: ${selectedOption}`, url }).catch(() => null);
+      await navigator.share({ title: t.shareTitle(selectedOption), url }).catch(() => null);
     } else {
       await navigator.clipboard.writeText(text).catch(() => null);
       setCopied(true);
@@ -90,10 +92,10 @@ export default function ShareActions({
   return (
     <div className="share-actions">
       {showAffiliate && (
-        <a className="btn-buy" href={buyUrl} target="_blank" rel="noreferrer sponsored">
-          <span>🛒</span>
-          {selectedOption} 구매하기
-          <span className="buy-store">쿠팡</span>
+        <a className="btn-buy" href={buyLink.url} target="_blank" rel="noreferrer sponsored">
+          <span className="buy-icon" aria-hidden>↗</span>
+          {t.buyOn(selectedOption)}
+          <span className="buy-store">{buyLink.label}</span>
         </a>
       )}
 
@@ -103,18 +105,11 @@ export default function ShareActions({
         onClick={() => void handleShare()}
         disabled={sharing}
       >
-        {sharing ? "링크 생성 중..." : copied ? "복사됨 ✓" : "결과 공유하기"}
+        {sharing ? t.sharing : copied ? t.copied : t.shareBtn}
       </button>
 
-      {showAffiliate && (
-        <p className="affiliate-note">
-          구매 링크는 제휴 링크로, Axis 운영에 도움이 됩니다. 추가 비용 없이 동일한 가격으로 구매할 수 있어요.
-        </p>
-      )}
-
-      {!showAffiliate && plan === "pro" && (
-        <p className="affiliate-note">Pro 멤버는 광고 없는 클린 경험을 이용합니다.</p>
-      )}
+      {showAffiliate && <p className="affiliate-note">{t.affiliateNote}</p>}
+      {!showAffiliate && plan === "pro" && <p className="affiliate-note">{t.proClean}</p>}
     </div>
   );
 }

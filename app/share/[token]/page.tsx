@@ -4,6 +4,8 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import ResultsView from "@/components/results-view";
 import type { ComparisonResult } from "@/lib/types";
 import type { Metadata } from "next";
+import { getLocale } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -25,17 +27,19 @@ async function loadShared(token: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
-  const data = await loadShared(token);
+  const [data, locale] = await Promise.all([loadShared(token), getLocale()]);
+  const t = getDictionary(locale);
   if (!data) {
-    return { title: "공유된 선택" };
+    return { title: t.share.sharedFallback };
   }
 
   const result = data.analysis_result as ComparisonResult;
+  const title = `${result.selectedOption} — ${t.results.axisChoice}`;
   return {
-    title: `${result.selectedOption} — Axis의 선택`,
+    title,
     description: result.oneLineConclusion ?? data.query,
     openGraph: {
-      title: `Axis가 선택했어요: ${result.selectedOption}`,
+      title: t.share.shareTitle(result.selectedOption),
       description: result.oneLineConclusion ?? data.query
     }
   };
@@ -43,7 +47,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SharePage({ params }: Props) {
   const { token } = await params;
-  const data = await loadShared(token);
+  const [data, locale] = await Promise.all([loadShared(token), getLocale()]);
+  const t = getDictionary(locale).share;
 
   if (!data) {
     notFound();
@@ -61,16 +66,17 @@ export default async function SharePage({ params }: Props) {
       <ResultsView
         query={data.query}
         result={result}
+        locale={locale}
         shareToken={token}
       />
 
       {showWatermark && (
         <div className="share-watermark">
           <p>
-            <strong>axis</strong>로 비교한 결과예요.
+            <strong>axis</strong>{t.watermarkText}
           </p>
           <Link className="btn-primary block" href="/" style={{ marginTop: "0.6rem", maxWidth: 300, margin: "0.6rem auto 0" }}>
-            나도 비교해보기 →
+            {t.watermarkCta}
           </Link>
         </div>
       )}

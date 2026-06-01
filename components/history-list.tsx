@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 type HistoryItem = {
   id: string;
@@ -11,17 +12,18 @@ type HistoryItem = {
   created_at: string;
 };
 
-function relativeDate(iso: string) {
+function relativeDate(iso: string, t: ReturnType<typeof getDictionary>["history"]) {
   const then = new Date(iso).getTime();
   const diff = Date.now() - then;
   const day = 24 * 60 * 60 * 1000;
-  if (diff < day) return "오늘";
-  if (diff < 2 * day) return "어제";
-  if (diff < 7 * day) return `${Math.floor(diff / day)}일 전`;
-  return new Date(iso).toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
+  if (diff < day) return t.today;
+  if (diff < 2 * day) return t.yesterday;
+  if (diff < 7 * day) return t.daysAgo(Math.floor(diff / day));
+  return new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric" });
 }
 
-export default function HistoryList() {
+export default function HistoryList({ locale = "ko" }: { locale?: Locale }) {
+  const t = getDictionary(locale).history;
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -48,7 +50,7 @@ export default function HistoryList() {
   }, []);
 
   async function handleDelete(id: string) {
-    if (!window.confirm("이 기록을 삭제할까요? 되돌릴 수 없습니다.")) {
+    if (!window.confirm(t.deleteConfirm)) {
       return;
     }
     setDeletingId(id);
@@ -66,9 +68,9 @@ export default function HistoryList() {
   if (!isLoggedIn) {
     return (
       <section className="history-card history-empty" id="history">
-        <p>로그인하면 최근 기록이 저장돼요.</p>
+        <p>{t.loginPrompt}</p>
         <Link className="history-empty-cta" href="/login">
-          로그인하기 →
+          {t.loginLink}
         </Link>
       </section>
     );
@@ -77,7 +79,7 @@ export default function HistoryList() {
   if (!history.length) {
     return (
       <section className="history-card history-empty" id="history">
-        <p>아직 기록이 없어요. 첫 선택을 시작해보세요.</p>
+        <p>{t.empty}</p>
       </section>
     );
   }
@@ -85,33 +87,51 @@ export default function HistoryList() {
   return (
     <section className="history-card" id="history">
       <div className="history-head">
-        <h3>최근 기록</h3>
+        <h3>{t.title}</h3>
         <span className="history-count">{history.length}</span>
       </div>
       <ul className="history-items">
-        {history.map((item) => (
-          <li className="history-item" key={item.id}>
-            <Link className="history-item-main" href={`/results?historyId=${item.id}`}>
-              <span className="history-item-q">{item.query}</span>
-              <span className="history-item-pick">
-                <span className="pick-dot" aria-hidden />
-                {item.selected_option}
-              </span>
-            </Link>
-            <div className="history-item-side">
-              <time dateTime={item.created_at}>{relativeDate(item.created_at)}</time>
-              <button
-                type="button"
-                className="history-delete"
-                onClick={() => void handleDelete(item.id)}
-                disabled={deletingId === item.id}
-                aria-label="기록 삭제"
-              >
-                {deletingId === item.id ? "삭제 중" : "삭제"}
-              </button>
-            </div>
-          </li>
-        ))}
+        {history.map((item) => {
+          const opts = item.query
+            .split(/\s+vs\s+/i)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const matchup = opts.length >= 2 ? opts : [item.query];
+          return (
+            <li className="history-item" key={item.id}>
+              <Link className="history-item-main" href={`/results?historyId=${item.id}`}>
+                <span className="history-matchup">
+                  {matchup.map((opt, i) => (
+                    <span key={i} className="hm-part">
+                      {i > 0 && <span className="hm-vs" aria-hidden>vs</span>}
+                      <span className={opt === item.selected_option ? "hm-win" : "hm-opt"}>
+                        {opt}
+                      </span>
+                    </span>
+                  ))}
+                </span>
+                <span className="history-verdict">
+                  <span className="verdict-mark" aria-hidden>✓</span>
+                  {item.selected_option}
+                </span>
+              </Link>
+              <div className="history-item-meta">
+                <time dateTime={item.created_at} className="history-item-date">
+                  {relativeDate(item.created_at, t)}
+                </time>
+                <button
+                  type="button"
+                  className="history-delete"
+                  onClick={() => void handleDelete(item.id)}
+                  disabled={deletingId === item.id}
+                  aria-label={t.delete}
+                >
+                  {deletingId === item.id ? "···" : "×"}
+                </button>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

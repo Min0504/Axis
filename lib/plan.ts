@@ -98,7 +98,8 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { label: "동시 비교 항목", free: "2개", plus: "2개", pro: "최대 5개" },
   { label: "공식 스펙 비교", free: true, plus: true, pro: true },
   { label: "기록 저장", free: true, plus: true, pro: true },
-  { label: "결과 공유", free: "워터마크 포함", plus: true, pro: true },
+  { label: "결과 공유", free: true, plus: true, pro: true },
+  { label: "워터마크 없는 공유", free: false, plus: true, pro: true },
   { label: "광고 없는 클린 경험", free: false, plus: false, pro: true },
   { label: "우선 처리 (빠른 응답)", free: false, plus: false, pro: true }
 ];

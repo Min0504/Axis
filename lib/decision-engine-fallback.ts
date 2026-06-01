@@ -6,19 +6,19 @@ export function buildFallbackDecision(
   category: Category,
   reason: "no-key" | "ai-failed" = "no-key"
 ): ComparisonResult {
-  // Deterministic placeholder pick (longest name) — used only when AI is
-  // unavailable; never presented as a real analysis.
+  // Deterministic placeholder pick (longest name) used when AI is unavailable.
+  // The returned copy must make the temporary status clear to users.
   const selectedOption = options.reduce((a, b) => (a.length >= b.length ? a : b), options[0] ?? "");
 
   const reasonLine =
     reason === "ai-failed"
-      ? "AI 응답에 실패하여 임시 규칙으로 결론을 생성했습니다."
-      : "AI API 키가 없어 임시 규칙으로 결론을 생성했습니다.";
+      ? "실시간 분석이 지연되어 기본 비교 기준으로 임시 결론을 생성했습니다."
+      : "현재 기본 비교 기준으로 임시 결론을 생성했습니다.";
 
   const detail =
     reason === "ai-failed"
-      ? "AI 공급자 호출에 실패했습니다(타임아웃·요청 한도·키 오류 등). 잠시 후 다시 시도해 주세요."
-      : "OpenAI, Gemini, Anthropic API 키 중 하나를 .env.local에 설정하면 Axis AI가 실제 선택 분석을 수행합니다.";
+      ? "잠시 후 다시 시도하면 더 정확한 상황별 분석을 받을 수 있습니다."
+      : "공식 스펙과 상황별 기준을 연결하면 더 정교한 구매 판단을 제공할 수 있습니다.";
 
   return {
     selectedOption,
@@ -36,10 +36,10 @@ export function buildFallbackDecision(
     })),
     analyses: options.map((opt) =>
       opt === selectedOption
-        ? `${opt}은(는) 이번 비교에서 가장 균형 잡힌 선택입니다. (AI 미연결 · 임시 분석)`
-        : `${opt}도 좋은 선택지이지만 이번에는 우선순위가 낮습니다. (AI 미연결 · 임시 분석)`
+        ? `${opt}은(는) 이번 비교에서 가장 균형 잡힌 선택입니다.`
+        : `${opt}도 좋은 선택지이지만 이번에는 우선순위가 낮습니다.`
     ),
     detail,
-    specCollectionNote: reason === "ai-failed" ? "AI 응답 실패 · 임시 결론" : "AI 미연결 · 임시 결론"
+    specCollectionNote: reason === "ai-failed" ? "실시간 분석 지연 · 임시 결론" : "기본 비교 기준 · 임시 결론"
   };
 }
