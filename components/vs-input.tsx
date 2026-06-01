@@ -45,6 +45,18 @@ export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?
       return;
     }
 
+    const MAX_LEN = 50;
+    if (trimmed.some((o) => o.length > MAX_LEN)) {
+      setError(t.errorLength(MAX_LEN));
+      return;
+    }
+
+    const unique = new Set(trimmed.map((o) => o.toLowerCase()));
+    if (unique.size !== trimmed.length) {
+      setError(t.errorDuplicate);
+      return;
+    }
+
     setError("");
     setLimitReached(false);
     setIsLoading(true);

@@ -62,6 +62,7 @@ export const ja = {
     upgradePrompt: "もっと選択するにはアップグレード →",
     errorEmpty: "2つ以上の選択肢を入力してください。",
     errorLength: (n: number) => `各選択肢は${n}文字以内にしてください。`,
+    errorDuplicate: "選択肢は重複できません。",
     errorGeneral: "エラーが発生しました。もう一度お試しください。",
   },
 

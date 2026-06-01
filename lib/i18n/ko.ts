@@ -65,6 +65,7 @@ export const ko = {
     upgradePrompt: "더 많이 선택하려면 업그레이드 →",
     errorEmpty: "두 개 이상의 선택지를 입력해주세요.",
     errorLength: (n: number) => `선택지는 각각 ${n}자 이하로 입력해주세요.`,
+    errorDuplicate: "선택지는 중복될 수 없습니다.",
     errorGeneral: "분석 중 오류가 발생했습니다.",
   },
 
