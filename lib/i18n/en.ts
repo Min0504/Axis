@@ -62,6 +62,7 @@ export const en = {
     upgradePrompt: "Upgrade for more →",
     errorEmpty: "Please enter at least two options.",
     errorLength: (n: number) => `Each option must be under ${n} characters.`,
+    errorDuplicate: "Options must be unique.",
     errorGeneral: "Something went wrong. Please try again.",
   },
 

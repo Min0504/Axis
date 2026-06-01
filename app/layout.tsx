@@ -39,6 +39,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('axis-theme');
+                  var preferred = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  document.documentElement.setAttribute('data-theme', preferred);
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
+      </head>
       <body>
         <ThemeProvider initialLocale={locale}>{children}</ThemeProvider>
       </body>
