@@ -3,6 +3,8 @@ import SessionResults from "@/components/session-results";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getCurrentProfile } from "@/lib/users/get-profile";
 import type { ComparisonResult } from "@/lib/types";
+import { getLocale } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n";
 
 type Payload = {
   query: string;
@@ -46,8 +48,9 @@ export default async function ResultsPage({
   searchParams: Promise<{ historyId?: string }>;
 }) {
   const params = await searchParams;
-  const profile = await getCurrentProfile();
+  const [profile, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
   const plan = profile?.plan ?? "free";
+  const t = getDictionary(locale).results;
 
   // Logged-in path: load the saved comparison by id (server-side, RLS-guarded).
   if (params.historyId) {
@@ -56,7 +59,7 @@ export default async function ResultsPage({
     if (!parsed) {
       return (
         <main className="container narrow">
-          <p className="hint error">결과를 찾을 수 없습니다. 다시 비교해 주세요.</p>
+          <p className="hint error">{t.notFound}</p>
         </main>
       );
     }
@@ -66,6 +69,7 @@ export default async function ResultsPage({
         query={parsed.query}
         result={parsed.result}
         plan={plan}
+        locale={locale}
         comparisonId={params.historyId}
       />
     );
@@ -73,5 +77,5 @@ export default async function ResultsPage({
 
   // Guest path: the result was stashed in sessionStorage by the compare form,
   // so render it client-side instead of carrying it in the URL.
-  return <SessionResults plan={plan} />;
+  return <SessionResults plan={plan} locale={locale} />;
 }
