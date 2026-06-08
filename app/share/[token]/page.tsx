@@ -4,7 +4,8 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import ResultsView from "@/components/results-view";
 import type { ComparisonResult } from "@/lib/types";
 import type { Metadata } from "next";
-import { getLocale } from "@/lib/i18n/server";
+import { buildDecision } from "@/lib/decision-engine";
+import { getCountry, getLocale } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 
 type Props = { params: Promise<{ token: string }> };
@@ -17,12 +18,18 @@ async function loadShared(token: string) {
 
   const { data } = await supabase
     .from("comparisons")
-    .select("query, analysis_result, user_id, plan:users(plan)")
+    .select("query, analysis_result, user_id")
     .eq("share_token", token)
     .eq("is_public", true)
     .maybeSingle();
 
   return data ?? null;
+}
+
+async function resultForLocale(query: string, result: ComparisonResult, locale: Awaited<ReturnType<typeof getLocale>>) {
+  if (result.locale === locale) return result;
+  const country = await getCountry();
+  return buildDecision(query, 6, locale, country);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -33,11 +40,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: t.share.sharedFallback };
   }
 
-  const result = data.analysis_result as ComparisonResult;
+  const result = await resultForLocale(data.query, data.analysis_result as ComparisonResult, locale);
   const title = `${result.selectedOption} — ${t.results.axisChoice}`;
+  // Verification gate: only verified spec tables are allowed into the search
+  // index. AI-grade / partial results render but stay noindex so we never
+  // present unverified specs as authority.
+  const indexable = result.verification === "verified";
   return {
     title,
     description: result.oneLineConclusion ?? data.query,
+    robots: indexable ? undefined : { index: false, follow: true },
     openGraph: {
       title: t.share.shareTitle(result.selectedOption),
       description: result.oneLineConclusion ?? data.query
@@ -54,12 +66,10 @@ export default async function SharePage({ params }: Props) {
     notFound();
   }
 
-  const result = data.analysis_result as ComparisonResult;
+  const result = await resultForLocale(data.query, data.analysis_result as ComparisonResult, locale);
 
-  // Determine if the sharer is on a paid plan (watermark shown for free/guest).
-  // Guest shares (no user_id) always show the watermark.
-  const sharerPlan = (data as { plan?: { plan?: string } | null }).plan?.plan ?? "free";
-  const showWatermark = sharerPlan === "free" || !data.user_id;
+  // Guests (no user_id) get the viral watermark; logged-in shares are clean.
+  const showWatermark = !data.user_id;
 
   return (
     <>

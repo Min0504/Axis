@@ -1,50 +1,100 @@
-import type { ProductRegistryEntry } from "@/lib/specs/types";
+import type {
+  ProductRegistryEntry,
+  ProductSourceCandidate,
+  RegionalUrlMap
+} from "@/lib/specs/types";
+import type { Country } from "@/lib/i18n";
+import { normalizeProductName } from "@/lib/specs/product-aliases";
+import { registry } from "@/lib/specs/product-registry-data";
 
-/** Level 1: official manufacturer pages (expand over time). */
-const registry: Record<string, ProductRegistryEntry> = {
-  "iphone 16": {
-    officialUrl: "https://www.apple.com/iphone-16/specs/",
-    parser: "apple",
-    columnClass: "iphone",
-    level: 1
-  },
-  "iphone 16 pro": {
-    officialUrl: "https://www.apple.com/iphone-16-pro/specs/",
-    parser: "apple",
-    columnClass: "iphone",
-    level: 1
-  },
-  "갤럭시 s25": {
-    officialUrl: "https://www.samsung.com/global/smartphones/galaxy-s25/specs/",
-    parser: "samsung",
-    level: 1
-  },
-  "galaxy s25": {
-    officialUrl: "https://www.samsung.com/global/smartphones/galaxy-s25/specs/",
-    parser: "samsung",
-    level: 1
-  },
-
+const SAMSUNG_COUNTRY_MARKERS: Record<Country, string> = {
+  KR: "/sec/",
+  US: "/us/",
+  JP: "/jp/"
 };
-
-const aliases: Record<string, string> = {
-  "아이폰 16": "iphone 16",
-  "아이폰16": "iphone 16",
-  "아이폰 16 pro": "iphone 16 pro",
-  "갤럭시s25": "갤럭시 s25"
-};
-
-function normalizeProductName(name: string) {
-  const key = name.trim().toLowerCase().replace(/\s+/g, " ");
-  return aliases[key] ?? key;
-}
 
 export function resolveOfficialProduct(name: string): ProductRegistryEntry | null {
   const key = normalizeProductName(name);
-  if (registry[key]) {
-    return registry[key];
+  if (registry[key]) return registry[key];
+
+  const fuzzy = Object.entries(registry).find(([registryKey]) => (
+    key.includes(registryKey) || registryKey.includes(key)
+  ));
+  return fuzzy ? fuzzy[1] : null;
+}
+
+function regionalUrl(urls: RegionalUrlMap | undefined, country: Country): string | null {
+  return urls?.[country] ?? null;
+}
+
+function countryForLegacyLocale(locale: string): Country {
+  if (locale === "ko") return "KR";
+  if (locale === "ja") return "JP";
+  return "US";
+}
+
+function localizedManufacturerUrl(
+  url: string,
+  parser: ProductRegistryEntry["parser"],
+  country: Country,
+  officialUrls?: ProductRegistryEntry["officialUrls"]
+): string | null {
+  const explicit = regionalUrl(officialUrls, country);
+  if (explicit) return explicit;
+
+  if (url.startsWith("https://support.apple.com/")) {
+    if (country === "KR") return url.replace("/en-us/", "/ko-kr/");
+    if (country === "JP") return url.replace("/en-us/", "/ja-jp/");
+    return url;
   }
 
-  const fuzzy = Object.entries(registry).find(([k]) => key.includes(k) || k.includes(key));
-  return fuzzy ? fuzzy[1] : null;
+  if (parser === "apple" && url.startsWith("https://www.apple.com/")) {
+    if (country === "KR") return url.replace("https://www.apple.com/", "https://www.apple.com/kr/");
+    if (country === "JP") return url.replace("https://www.apple.com/", "https://www.apple.com/jp/");
+    return url;
+  }
+
+  if (parser === "samsung") {
+    return url.includes(SAMSUNG_COUNTRY_MARKERS[country]) ? url : null;
+  }
+
+  return country === "US" ? url : null;
+}
+
+export function resolveProductSource(
+  entry: ProductRegistryEntry,
+  country: Country
+): ProductSourceCandidate | null {
+  const officialUrl = localizedManufacturerUrl(entry.officialUrl, entry.parser, country, entry.officialUrls);
+  if (officialUrl) {
+    return { url: officialUrl, tier: 1, kind: "manufacturer" };
+  }
+
+  const importerUrl = regionalUrl(entry.importerUrls, country);
+  if (entry.allowImporterFallback && importerUrl) {
+    return { url: importerUrl, tier: 2, kind: "authorized_importer" };
+  }
+
+  return null;
+}
+
+export function localizeOfficialUrl(
+  url: string,
+  parser: ProductRegistryEntry["parser"],
+  locale: string,
+  officialUrls?: ProductRegistryEntry["officialUrls"]
+): string {
+  const country = countryForLegacyLocale(locale);
+  const explicit = regionalUrl(officialUrls, country);
+  if (explicit) return explicit;
+  if (url.startsWith("https://support.apple.com/")) {
+    if (locale === "ko") return url.replace("/en-us/", "/ko-kr/");
+    if (locale === "ja") return url.replace("/en-us/", "/ja-jp/");
+    return url;
+  }
+  if (parser === "apple") {
+    if (locale === "ko") return url.replace("https://www.apple.com/", "https://www.apple.com/kr/");
+    if (locale === "ja") return url.replace("https://www.apple.com/", "https://www.apple.com/jp/");
+  }
+  return url;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseOptions, buildQuery } from "@/lib/decision-engine";
+import { parseOptions, buildQuery, gradeVerification, buildDecision } from "@/lib/decision-engine";
 
 describe("parseOptions", () => {
   it("splits two options on ' vs '", () => {
@@ -34,5 +34,48 @@ describe("buildQuery", () => {
 
   it("trims and drops empties", () => {
     expect(buildQuery(["  A ", "", " B  "])).toBe("A vs B");
+  });
+});
+
+describe("gradeVerification", () => {
+  it("downgrades incomplete sourced primary rows to partial", () => {
+    expect(
+      gradeVerification("smartphone", [
+        {
+          key: "칩셋",
+          values: ["A18", "—", "Snapdragon"],
+          sources: ["https://apple.example", undefined, "https://samsung.example"]
+        },
+        {
+          key: "화면 크기",
+          values: ["15.5cm", "156.4mm", "153.9mm"],
+          sources: ["https://apple.example", "https://samsung.example", "https://samsung.example"]
+        },
+        {
+          key: "배터리",
+          values: ["22시간", "4000mAh", "3900mAh"],
+          sources: ["https://apple.example", "https://samsung.example", "https://samsung.example"]
+        },
+        {
+          key: "메인 카메라",
+          values: ["48", "50", "50"],
+          sources: ["https://apple.example", "https://samsung.example", "https://samsung.example"]
+        }
+      ])
+    ).toBe("partial");
+  });
+});
+
+describe("buildDecision", () => {
+  it("returns product-not-found when every requested product is not in official sources", async () => {
+    const result = await buildDecision("아이폰 19 vs 아이폰 20", 2, "ko");
+
+    expect(result.status).toBe("not_found");
+    expect(result.selectedOption).toBe("제품을 찾을 수 없습니다");
+    expect(result.locale).toBe("ko");
+    expect(result.missingOptions).toEqual(["아이폰 19", "아이폰 20"]);
+    expect(result.comparison).toEqual([]);
+    expect(result.analyses).toEqual([]);
+    expect(result.oneLineConclusion).toContain("공식");
   });
 });

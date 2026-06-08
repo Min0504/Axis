@@ -18,15 +18,18 @@ const AMAZON_US_ID = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_US;
 const AMAZON_JP_ID = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_JP;
 
 function coupangUrl(query: string) {
+  // Coupang search results page for the specific product
+  // Affiliate tracking: Coupang Partners requires generating per-product short links
+  // via their dashboard. Until then, use the direct search URL so users land on
+  // the correct product page.
   const q = encodeURIComponent(query);
-  const base = `https://www.coupang.com/np/search?q=${q}`;
-  if (!COUPANG_ID) return base;
-  return `https://link.coupang.com/a/${COUPANG_ID}?url=${encodeURIComponent(base)}`;
+  return `https://www.coupang.com/np/search?q=${q}&channel=user&searchTabCode=ALL`;
 }
 
 function amazonUrl(query: string, tld: string, affiliateId: string | undefined) {
+  // Sort by featured/relevance to surface the best match
   const q = encodeURIComponent(query);
-  const base = `https://www.amazon.${tld}/s?k=${q}`;
+  const base = `https://www.amazon.${tld}/s?k=${q}&s=featured-rank`;
   if (!affiliateId) return base;
   return `${base}&tag=${affiliateId}`;
 }

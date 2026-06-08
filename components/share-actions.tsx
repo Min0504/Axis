@@ -3,14 +3,11 @@
 import { useState } from "react";
 import { primaryBuyLink } from "@/lib/affiliate";
 import type { Category, ComparisonResult } from "@/lib/types";
-import type { Plan } from "@/lib/plan";
-import { PLAN_SHOW_AFFILIATE } from "@/lib/plan";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 type Props = {
   selectedOption: string;
   category: Category;
-  plan: Plan;
   locale?: Locale;
   comparisonId?: string;
   shareToken?: string;
@@ -20,17 +17,15 @@ type Props = {
 export default function ShareActions({
   selectedOption,
   category,
-  plan,
   locale = "ko",
   comparisonId,
   shareToken,
-  guestPayload
+  guestPayload,
 }: Props) {
   const [token, setToken] = useState(shareToken ?? "");
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const showAffiliate = PLAN_SHOW_AFFILIATE[plan];
   const buyLink = primaryBuyLink(selectedOption, category, locale);
   const t = getDictionary(locale).share;
 
@@ -40,7 +35,6 @@ export default function ShareActions({
     setSharing(true);
 
     try {
-      // Logged-in users: create/get token from saved comparison.
       if (comparisonId) {
         const res = await fetch(`/api/share/${comparisonId}`, { method: "POST" });
         if (res.ok) {
@@ -52,12 +46,11 @@ export default function ShareActions({
         }
       }
 
-      // Guests: store the session result as a public anonymous comparison.
       if (guestPayload) {
         const res = await fetch("/api/share/guest", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(guestPayload)
+          body: JSON.stringify(guestPayload),
         });
         if (res.ok) {
           const data = (await res.json()) as { token?: string };
@@ -91,13 +84,11 @@ export default function ShareActions({
 
   return (
     <div className="share-actions">
-      {showAffiliate && (
-        <a className="btn-buy" href={buyLink.url} target="_blank" rel="noreferrer sponsored">
-          <span className="buy-icon" aria-hidden>↗</span>
-          {t.buyOn(selectedOption)}
-          <span className="buy-store">{buyLink.label}</span>
-        </a>
-      )}
+      <a className="btn-buy" href={buyLink.url} target="_blank" rel="noreferrer sponsored">
+        <span className="buy-icon" aria-hidden>↗</span>
+        {t.buyOn(selectedOption)}
+        <span className="buy-store">{buyLink.label}</span>
+      </a>
 
       <button
         type="button"
@@ -108,8 +99,7 @@ export default function ShareActions({
         {sharing ? t.sharing : copied ? t.copied : t.shareBtn}
       </button>
 
-      {showAffiliate && <p className="affiliate-note">{t.affiliateNote}</p>}
-      {!showAffiliate && plan === "pro" && <p className="affiliate-note">{t.proClean}</p>}
+      <p className="affiliate-note">{t.affiliateNote}</p>
     </div>
   );
 }

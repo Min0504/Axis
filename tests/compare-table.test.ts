@@ -17,15 +17,11 @@ function product(name: string, specs: Array<[string, string]>): OfficialProductS
 }
 
 describe("buildOfficialComparisonTable", () => {
-  it("merges specs by normalized key and fills missing values with a dash", () => {
+  it("does not promote one-sided official scrapes into a comparison table", () => {
     const a = product("A", [["Display", "6.1in"]]);
     const b = product("B", [["Battery", "4000mAh"]]);
 
-    const rows = buildOfficialComparisonTable([a, b]);
-    const byKey = Object.fromEntries(rows.map((r) => [r.key.toLowerCase(), r]));
-
-    expect(byKey["display"].values).toEqual(["6.1in", "—"]);
-    expect(byKey["battery"].values).toEqual(["—", "4000mAh"]);
+    expect(buildOfficialComparisonTable([a, b])).toEqual([]);
   });
 
   it("aligns matching specs across products (case-insensitive key)", () => {
@@ -46,7 +42,8 @@ describe("buildOfficialComparisonTable", () => {
     expect(rows[0].values).toEqual(["6.1in", "6.7in", "6.3in"]);
   });
 
-  it("handles all-null products", () => {
+  it("handles incomplete or all-null products", () => {
+    expect(buildOfficialComparisonTable([product("A", [["Display", "6.1in"]]), null])).toEqual([]);
     expect(buildOfficialComparisonTable([null, null])).toEqual([]);
   });
 });
