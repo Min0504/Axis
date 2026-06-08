@@ -32,19 +32,31 @@ async function fetchHtml(url: string) {
   }
 }
 
-export async function collectOfficialSpecs(productName: string): Promise<OfficialProductSpecs | null> {
+/** Localize Apple spec page URL based on user locale. */
+function localizeUrl(url: string, parser: string, locale: string): string {
+  if (parser !== "apple") return url;
+  if (locale === "ko") return url.replace("https://www.apple.com/", "https://www.apple.com/kr/");
+  if (locale === "ja") return url.replace("https://www.apple.com/", "https://www.apple.com/jp/");
+  return url;
+}
+
+export async function collectOfficialSpecs(
+  productName: string,
+  locale = "ko"
+): Promise<OfficialProductSpecs | null> {
   const entry = resolveOfficialProduct(productName);
   if (!entry) {
     return null;
   }
 
-  const html = await fetchHtml(entry.officialUrl);
+  const targetUrl = localizeUrl(entry.officialUrl, entry.parser, locale);
+  const html = await fetchHtml(targetUrl);
   const specs =
     entry.parser === "apple"
-      ? parseAppleSpecsHtml(html, { url: entry.officialUrl, columnClass: entry.columnClass })
+      ? parseAppleSpecsHtml(html, { url: targetUrl, columnClass: entry.columnClass })
       : entry.parser === "samsung"
-        ? parseSamsungSpecsHtml(html, entry.officialUrl)
-        : parseGenericSpecsHtml(html, entry.officialUrl);
+        ? parseSamsungSpecsHtml(html, targetUrl)
+        : parseGenericSpecsHtml(html, targetUrl);
 
   if (!specs.length) {
     return null;
@@ -52,7 +64,7 @@ export async function collectOfficialSpecs(productName: string): Promise<Officia
 
   return {
     productName,
-    officialUrl: entry.officialUrl,
+    officialUrl: targetUrl,
     specs,
     fetchedAt: new Date().toISOString(),
     level: entry.level

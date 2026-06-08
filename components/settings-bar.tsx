@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
-import { LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n";
+import { LOCALE_LABELS, SUPPORTED_LOCALES, getDictionary, type Locale } from "@/lib/i18n";
 
 export default function SettingsBar() {
   const { theme, locale, setTheme, setLocale } = useTheme();
@@ -57,7 +57,10 @@ export default function SettingsBar() {
         type="button"
         className="theme-toggle"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        aria-label={theme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환"}
+        aria-label={theme === "dark"
+          ? getDictionary(locale).settings.switchToLight
+          : getDictionary(locale).settings.switchToDark
+        }
       >
         {theme === "dark" ? "☀︎" : "◑"}
       </button>

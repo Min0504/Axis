@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient, hasSupabaseEnv } from "@/lib/supabase";
+import { getDictionary } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n/types";
 
-export default function UserNav() {
+export default function UserNav({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale).nav;
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(hasSupabaseEnv());
   const [open, setOpen] = useState(false);
@@ -14,18 +17,14 @@ export default function UserNav() {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
-    if (!supabase) {
-      return;
-    }
+    if (!supabase) return;
 
     void supabase.auth.getUser().then(({ data }) => {
       setEmail(data.user?.email ?? null);
       setLoading(false);
     });
 
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setEmail(session?.user?.email ?? null);
       setLoading(false);
     });
@@ -34,9 +33,7 @@ export default function UserNav() {
   }, []);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
     function onClick(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
@@ -48,9 +45,7 @@ export default function UserNav() {
 
   async function handleSignOut() {
     const supabase = createSupabaseBrowserClient();
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+    if (supabase) await supabase.auth.signOut();
     setEmail(null);
     setOpen(false);
     router.push("/");
@@ -58,11 +53,7 @@ export default function UserNav() {
   }
 
   if (!hasSupabaseEnv()) {
-    return (
-      <Link className="menu" href="/login">
-        로그인
-      </Link>
-    );
+    return <Link className="menu" href="/login">{t.login}</Link>;
   }
 
   if (loading) {
@@ -70,11 +61,7 @@ export default function UserNav() {
   }
 
   if (!email) {
-    return (
-      <Link className="menu" href="/login">
-        로그인
-      </Link>
-    );
+    return <Link className="menu" href="/login">{t.login}</Link>;
   }
 
   const initial = email.charAt(0).toUpperCase();
@@ -90,9 +77,7 @@ export default function UserNav() {
       >
         <span className="user-avatar">{initial}</span>
         <span className="user-email">{email}</span>
-        <span className="user-caret" aria-hidden>
-          ▾
-        </span>
+        <span className="user-caret" aria-hidden>▾</span>
       </button>
 
       {open && (
@@ -101,22 +86,19 @@ export default function UserNav() {
             <span className="user-avatar lg">{initial}</span>
             <div className="user-dropdown-id">
               <strong>{email}</strong>
-              <span>로그인됨</span>
+              <span>{t.loggedIn}</span>
             </div>
           </div>
           <div className="user-dropdown-list">
             <Link href="/account" role="menuitem" onClick={() => setOpen(false)}>
-              내 정보
-            </Link>
-            <Link href="/membership" role="menuitem" onClick={() => setOpen(false)}>
-              멤버십
+              {t.myInfo}
             </Link>
             <Link href="/#history" role="menuitem" onClick={() => setOpen(false)}>
-              최근 기록
+              {t.recentHistory}
             </Link>
           </div>
           <button type="button" className="user-dropdown-signout" onClick={() => void handleSignOut()}>
-            로그아웃
+            {t.logout}
           </button>
         </div>
       )}

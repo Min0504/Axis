@@ -1,22 +1,23 @@
 export const ko = {
   // Meta
   siteName: "axis",
-  siteTagline: "구매 결정 나침반",
+  siteTagline: "공식 스펙 기반 구매 결정",
   siteDescription: "공식 스펙과 내 상황을 함께 보고 구매 결정을 빠르게 좁혀주는 선택 가이드",
 
   // Home
   home: {
-    badge: "공식 스펙 기반 구매 결정 가이드",
-    hero1: "무엇을 살지,",
-    hero2: "근거 있게 좁혀드립니다.",
-    sub: "제조사 공식 스펙과 예산, 용도, 우선순위를 함께 보고 구매 직전의 고민 시간을 줄여드립니다.",
+    badge: "검증된 스펙 · 즉각 결론",
+    hero1: "비교하다 지쳤다면,",
+    hero2: "Axis가 지금 바로 골라드립니다.",
+    sub: "제조사 공식 스펙과 실제 사용 상황을 함께 분석해,\n최적의 선택을 내릴 수 있도록 도와드립니다.",
     proof: [
-      { value: "공식", label: "제조사 스펙 우선" },
-      { value: "상황", label: "용도별 선택 기준" },
-      { value: "투명", label: "제휴 링크 분리 고지" }
+      { value: "공식 스펙 검증", label: "" },
+      { value: "정확한", label: " 비교" },
+      { value: "합리적", label: " 근거" }
     ],
-    examplesTitle: "많이 고민하는 구매 비교",
-    examplesSub: "검색으로 들어온 사용자가 바로 이해할 수 있도록, Axis는 고관여 제품부터 깊게 비교합니다.",
+    examplesTitle: "이런 비교로 시작해보세요",
+    examplesSub: "클릭하면 바로 입력창에 채워집니다. Axis는 고관여 전자기기부터 깊게 비교합니다.",
+    tryThis: "비교하기 →",
     examples: [
       {
         category: "스마트폰",
@@ -35,7 +36,16 @@ export const ko = {
       }
     ],
     methodTitle: "Axis가 판단하는 방식",
-    methodSub: "광고 문구가 아니라, 확인 가능한 정보와 사용자의 상황을 먼저 봅니다.",
+    methodSubEm: "광고 문구가 아니라,",
+    methodSub: "확인 가능한 정보와 사용자의 상황을 먼저 봅니다.",
+    features: [
+      { title: "공식 스펙 검증", body: "제조사 공식 데이터 기반 비교" },
+      { title: "AI 구매 결론", body: "즉각적인 추천 이유 제공" },
+      { title: "최대 5개 동시 비교", body: "N-way 비교 지원" },
+      { title: "가격 추적 · 알림", body: "가격 하락 시 즉시 알림" },
+      { title: "비교 결과 공유", body: "링크 하나로 결과 공유" },
+      { title: "다국어 지원", body: "한국어 · 영어 · 일본어" },
+    ],
     method: [
       {
         title: "공식 스펙 확인",
@@ -50,6 +60,17 @@ export const ko = {
         body: "추천 제품뿐 아니라 어떤 사람에게는 맞지 않는지도 함께 보여줍니다."
       }
     ],
+    // Popular comparisons section
+    compareTitle: "많이 찾는 비교",
+    compareSub: "공식 스펙 기반으로 미리 분석해둔 인기 비교입니다.",
+    compareRealData: "사용자들이 가장 많이 찾은 비교입니다.",
+    compareViewAll: (n: number) => `비교 전체 보기 (${n}개) →`,
+    categoryLabels: {
+      laptop: "노트북",
+      smartphone: "스마트폰",
+      earphones: "이어폰·헤드폰",
+      tablet: "태블릿",
+    },
   },
 
   // Input
@@ -57,8 +78,8 @@ export const ko = {
     ordinals: ["첫 번째", "두 번째", "세 번째", "네 번째", "다섯 번째"],
     placeholders: ["예: 아이폰 16", "예: 갤럭시 S25", "예: 픽셀 9", "예: 샤오미 15", "예: 원플러스 13"],
     addOption: "＋ 선택지 추가",
-    submit: "Axis에게 물어보기 →",
-    submitting: "Axis가 선택 중...",
+    submit: "Axis에게 맡기기 →",
+    submitting: "분석 중...",
     optionSlot: (n: number) => `선택지 ${n}`,
     proUpsell: "3개 이상 한 번에 비교하고 싶다면",
     pro: "Pro",
@@ -71,25 +92,63 @@ export const ko = {
 
   // Results
   results: {
-    back: "← 다시 선택하기",
-    axisChoice: "AXIS의 추천",
-    defaultConclusion: "이번에는 이걸 선택하는 것이 더 적합합니다.",
+    back: "← 다시 비교하기",
+    axisChoice: "Axis 추천",
+    defaultConclusion: "공식 스펙과 실사용 기준으로 이 제품이 더 적합합니다.",
     basisTitle: "판단 기준",
     basis: [
       { title: "공식 스펙", body: "확인 가능한 공식 자료를 우선 기준으로 비교합니다." },
       { title: "상황 적합도", body: "가격, 용도, 휴대성, 장기 사용성을 함께 봅니다." },
       { title: "구매 투명성", body: "구매 링크는 추천 근거와 분리해 표시합니다." }
     ],
-    whyChosen: "왜 이렇게 선택했을까?",
-    specComparison: "항목별 비교",
-    winner: "선택",
+    whyChosen: "추천 이유",
+    specComparison: "공식 스펙 비교",
+    specComparisonPending: "스펙 비교",
+    specEmptyNote: "공식 스펙 데이터 수집 중입니다. 아래 공식 페이지에서 직접 확인하세요.",
+    winner: "추천",
     officialLink: (name: string) => `${name} 공식`,
-    perItemAnalysis: "선택지별 상세 분석",
+    perItemAnalysis: "선택지 분석",
     officialShort: "공식 ↗",
-    summary: "종합 설명",
+    sourceManufacturer: "제조사 공식",
+    sourceImporter: "공식 수입처",
+    summary: "종합",
     purchaseTitle: "구매 전 마지막 확인",
     purchaseSub: "근거를 확인한 뒤 가격과 재고를 비교해보세요. 제휴 링크는 Axis 운영에 도움이 될 수 있지만 추천 기준에는 영향을 주지 않습니다.",
     notFound: "결과를 찾을 수 없습니다. 다시 비교해 주세요.",
+    productNotFoundTitle: "제품을 찾을 수 없습니다",
+    productNotFoundConclusion: (items: string[]) => `${items.join(", ")}은(는) 공식 제품 페이지에서 확인되지 않았습니다.`,
+    productNotFoundReason: "출시 전 제품명, 오타, 지역 미출시 제품일 수 있어 추천을 생성하지 않았습니다.",
+    productNotFoundDetail: "Axis는 공식 제조사 페이지에서 확인 가능한 제품만 비교합니다. 제품명을 다시 확인하거나 현재 출시된 모델명으로 비교해 주세요.",
+    verificationPendingTitle: "공식 스펙 검증 대기",
+    verificationPendingConclusion: "공식 제품은 확인됐지만 스펙 표를 만들 만큼 충분한 공식 항목을 아직 수집하지 못했습니다.",
+    verificationPendingReason: "확실하지 않은 스펙으로 추천하지 않기 위해 결과 생성을 중단했습니다.",
+    verificationPendingDetail: "공식 페이지 연결 또는 추출 규칙을 보강한 뒤 다시 비교하면 검증된 표로 표시됩니다.",
+  },
+
+  // Price
+  price: {
+    title: "현재 가격",
+    lowest: "역대 최저",
+    average: "평균가",
+    deal: "지금 저렴",
+    cheapest: "최저가",
+    viewDeal: "가격 보기 ↗",
+    demo: "데모 가격",
+  },
+
+  // Watch / Track
+  watch: {
+    track: "가격 추적",
+    tracking: "추적 중",
+    title: "관심 목록",
+    empty: "추적 중인 제품이 없어요. 비교 결과에서 가격을 추적해보세요.",
+    alertNote: "가격이 내리면 알림을 보내드려요.",
+    remove: "삭제",
+    pushPrompt: "가격이 내리면 바로 알림 받기",
+    pushSub: "브라우저를 닫아도 알림이 와요. 언제든 해제할 수 있어요.",
+    pushAllow: "알림 허용하기",
+    pushSkip: "알림 없이 추적",
+    pushDenied: "알림이 차단되어 있어요. 브라우저 설정에서 허용할 수 있어요.",
   },
 
   // History
@@ -113,18 +172,38 @@ export const ko = {
     logout: "로그아웃",
     loggedIn: "로그인됨",
     myInfo: "내 정보",
-    membership: "멤버십",
     recentHistory: "최근 기록",
   },
 
   // Auth
   auth: {
+    tagline: "가장 합리적인 선택을 도와드립니다.",
+    guestContinue: "로그인 없이 계속하기 →",
     welcome: "Axis에 오신 걸 환영해요",
-    subtitle: "선택에 어려움을 겪는 당신의 조용한 동반자",
+    subtitle: "검증된 스펙으로 결론까지",
     loginTab: "로그인",
     signupTab: "회원가입",
     email: "이메일",
     password: "비밀번호",
+    passwordConfirm: "비밀번호 확인",
+    passwordMinHint: "6자 이상",
+    passwordConfirmPlaceholder: "비밀번호 재입력",
+    forgotPassword: "비밀번호 찾기",
+    noAccount: "계정이 없으신가요?",
+    hasAccount: "이미 계정이 있으신가요?",
+    signupLink: "회원가입 →",
+    loginLink: "로그인 →",
+    orSeparator: "또는",
+    googleBtn: "Google로 계속하기",
+    emailVerifyTitle: "이메일을 확인해주세요",
+    emailVerifyBody: (e: string) => `${e}으로 인증 링크를 보냈습니다.`,
+    resetTitle: "재설정 링크를 보냈습니다",
+    resetBody: (e: string) => `${e}으로 비밀번호 재설정 링크를 보냈습니다.`,
+    back: "돌아가기",
+    invalidCredentials: "이메일 또는 비밀번호가 올바르지 않습니다.",
+    passwordMismatch: "비밀번호가 일치하지 않습니다.",
+    passwordTooShort: "비밀번호는 6자 이상이어야 합니다.",
+    emailRequired: "이메일을 먼저 입력해주세요.",
     loginBtn: "로그인",
     signupBtn: "회원가입",
     processing: "처리 중...",
@@ -135,60 +214,23 @@ export const ko = {
     envNote: "`.env.local`에 Supabase URL과 ANON KEY를 추가해 주세요.",
   },
 
-  // Account
-  account: {
-    title: "내 정보",
-    email: "이메일",
-    joinedAt: "가입일",
-    membershipLabel: "멤버십",
-    member: "멤버",
-    todayUsage: "오늘의 선택",
-    unlimited: "무제한",
-    usageOf: (used: number, limit: number) => `${used} / ${limit}회`,
-    remaining: (n: number) => `오늘 ${n}회 더 선택할 수 있어요. 매일 0시에 초기화됩니다.`,
-    proUnlimited: "Pro 멤버는 매일 무제한으로 선택할 수 있어요.",
-    needMore: "더 많은 선택이 필요하세요?",
-    needMoreDesc: "Plus는 하루 30회, Pro는 무제한 + 최대 5개 동시 비교.",
-    viewMembership: "멤버십 보기",
-    editNickname: "별명 수정",
-    nicknamePlaceholder: "별명을 입력하세요",
-    save: "저장",
-    saving: "저장 중...",
-    cancel: "취소",
-    saveError: "저장하지 못했습니다.",
-    loginRequired: "로그인이 필요합니다.",
-  },
-
-  // Membership
-  membership: {
-    badge: "멤버십",
-    title: "선택에 한계를 두지 마세요",
-    sub: "필요한 만큼만, 부담 없는 가격으로.",
-    popular: "가장 인기",
-    currentPlan: "현재 플랜",
-    included: "포함됨",
-    compareTitle: "플랜 비교",
-    paymentNote: "결제 연동(Toss·Stripe)은 준비 중입니다. 언제든 해지할 수 있어요.",
-    startFree: "무료로 시작하기",
-    proCurrent: "현재 Pro 멤버입니다. 감사합니다 🙌",
-    waitlistDone: "대기자 등록 완료 🙌",
-    upgrade: (plan: string) => `${plan} 업그레이드`,
-  },
 
   // Share / Affiliate
   share: {
     shareBtn: "결과 공유하기",
     sharing: "링크 생성 중...",
     copied: "복사됨 ✓",
-    buyOn: (product: string) => `${product} 가격 확인하기`,
+    buyOn: (product: string) => `${product} 최저가 확인`,
+    buyOnPro: (product: string) => `${product} 최저가 & 혜택 확인`,
     buyStore: "쿠팡",
     buyStoreGlobal: "Amazon",
-    affiliateNote: "구매 링크는 제휴 링크로, Axis 운영에 도움이 됩니다. 추가 비용 없이 동일한 가격으로 구매할 수 있어요.",
-    proClean: "Pro 멤버는 광고 없는 클린 경험을 이용합니다.",
+    affiliateNote: "제휴 링크로 추가 비용 없이 동일 가격 구매 가능. 링크 수익은 Axis 운영에 사용됩니다.",
+    proAffiliateNote: "Pro 멤버에게는 최적의 구매 혜택이 실시간 매핑됩니다. 추천 결과는 어떠한 상업적 대가 없이 독립적으로 도출됩니다.",
+    proClean: "Pro 멤버에게는 검증된 판매처의 실시간 최저가와 혜택 정보가 자동 연동됩니다.",
     watermarkText: "로 비교한 결과예요.",
     watermarkCta: "나도 비교해보기 →",
-    shareTitle: (product: string) => `Axis의 선택: ${product}`,
-    shareMessage: (product: string, url: string) => `Axis가 "${product}"을(를) 선택했어요 → ${url}`,
+    shareTitle: (product: string) => `Axis 추천: ${product}`,
+    shareMessage: (product: string, url: string) => `Axis가 "${product}"을(를) 추천했어요 → ${url}`,
     sharedFallback: "공유된 선택",
   },
 
@@ -216,5 +258,7 @@ export const ko = {
     theme: "테마",
     light: "라이트",
     dark: "다크",
+    switchToDark: "다크 모드로 전환",
+    switchToLight: "라이트 모드로 전환",
   },
 };

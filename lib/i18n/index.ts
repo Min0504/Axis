@@ -2,14 +2,26 @@ import { ko } from "./ko";
 import { en } from "./en";
 import { ja } from "./ja";
 import {
+  DEFAULT_COUNTRY,
   COUNTRY_LOCALE,
   DEFAULT_LOCALE,
+  LOCALE_COUNTRY,
+  SUPPORTED_COUNTRIES,
   SUPPORTED_LOCALES,
+  type Country,
   type Locale
 } from "./types";
 
-export type { Locale, Dictionary } from "./types";
-export { LOCALE_COOKIE, SUPPORTED_LOCALES, LOCALE_LABELS } from "./types";
+export type { Country, Locale, Dictionary } from "./types";
+export {
+  COUNTRY_COOKIE,
+  COUNTRY_LABELS,
+  DEFAULT_COUNTRY,
+  LOCALE_COOKIE,
+  SUPPORTED_COUNTRIES,
+  SUPPORTED_LOCALES,
+  LOCALE_LABELS
+} from "./types";
 
 const dictionaries = { ko, en, ja } as const;
 
@@ -21,10 +33,24 @@ export function isLocale(value: string | null | undefined): value is Locale {
   return SUPPORTED_LOCALES.includes(value as Locale);
 }
 
-/**
- * Detect locale from request headers (used in middleware/proxy).
- * Priority: existing cookie → Vercel country → Accept-Language → default.
- */
+export function isCountry(value: string | null | undefined): value is Country {
+  return SUPPORTED_COUNTRIES.includes(value as Country);
+}
+
+export function countryForLocale(locale: Locale): Country {
+  return LOCALE_COUNTRY[locale] ?? DEFAULT_COUNTRY;
+}
+
+export function detectCountry(
+  cookieValue: string | undefined,
+  countryCode: string | undefined,
+  locale: Locale
+): Country {
+  if (isCountry(cookieValue)) return cookieValue;
+  if (isCountry(countryCode)) return countryCode;
+  return countryForLocale(locale);
+}
+
 export function detectLocale(
   cookieValue: string | undefined,
   countryCode: string | undefined,

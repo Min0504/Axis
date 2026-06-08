@@ -36,8 +36,9 @@ export function ThemeProvider({
   useEffect(() => {
     let cancelled = false;
     const saved = localStorage.getItem("axis-theme") as Theme | null;
-    const preferred =
-      saved ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    // Default to light on first visit — white canvas is the intended baseline.
+    // Only honour a previously saved preference.
+    const preferred = (saved === "light" || saved === "dark") ? saved : "light";
     applyTheme(preferred);
 
     queueMicrotask(() => {

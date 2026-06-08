@@ -1,29 +1,24 @@
+import type { Metadata } from "next";
 import ResultsView from "@/components/results-view";
 import SessionResults from "@/components/session-results";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { getCurrentProfile } from "@/lib/users/get-profile";
 import type { ComparisonResult } from "@/lib/types";
-import { getLocale } from "@/lib/i18n/server";
+import { buildDecision } from "@/lib/decision-engine";
+import { getCountry, getLocale } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 
-type Payload = {
-  query: string;
-  result: ComparisonResult;
+export const metadata: Metadata = {
+  robots: { index: false, follow: false }
 };
+
+type Payload = { query: string; result: ComparisonResult };
 
 async function loadFromHistory(historyId: string): Promise<Payload | null> {
   const supabase = await createSupabaseServerClient();
-  if (!supabase) {
-    return null;
-  }
+  if (!supabase) return null;
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
 
   const { data } = await supabase
     .from("comparisons")
@@ -32,27 +27,20 @@ async function loadFromHistory(historyId: string): Promise<Payload | null> {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!data) {
-    return null;
-  }
+  if (!data) return null;
 
-  return {
-    query: data.query,
-    result: data.analysis_result as ComparisonResult
-  };
+  return { query: data.query, result: data.analysis_result as ComparisonResult };
 }
 
 export default async function ResultsPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: Promise<{ historyId?: string }>;
 }) {
   const params = await searchParams;
-  const [profile, locale] = await Promise.all([getCurrentProfile(), getLocale()]);
-  const plan = profile?.plan ?? "free";
+  const [locale, country] = await Promise.all([getLocale(), getCountry()]);
   const t = getDictionary(locale).results;
 
-  // Logged-in path: load the saved comparison by id (server-side, RLS-guarded).
   if (params.historyId) {
     const parsed = await loadFromHistory(params.historyId);
 
@@ -64,18 +52,20 @@ export default async function ResultsPage({
       );
     }
 
+    const result =
+      parsed.result.locale === locale
+        ? parsed.result
+        : await buildDecision(parsed.query, 6, locale, country);
+
     return (
       <ResultsView
         query={parsed.query}
-        result={parsed.result}
-        plan={plan}
+        result={result}
         locale={locale}
         comparisonId={params.historyId}
       />
     );
   }
 
-  // Guest path: the result was stashed in sessionStorage by the compare form,
-  // so render it client-side instead of carrying it in the URL.
-  return <SessionResults plan={plan} locale={locale} />;
+  return <SessionResults locale={locale} />;
 }

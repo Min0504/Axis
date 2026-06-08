@@ -1,14 +1,25 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { buildAxisSystemPrompt, buildAxisUserPrompt } from "@/lib/ai/axis-prompt";
 import type { AiDecisionInput, AiDecisionPayload } from "@/lib/ai/types";
 
-type Provider = "openai" | "gemini" | "anthropic";
-
 const AI_TIMEOUT_MS = 20_000;
+
+/**
+ * Resolved provider configuration — derived once per request, never mutates
+ * process.env (which caused cross-request pollution in concurrent environments).
+ */
+type ProviderConfig =
+  | { kind: "openai"; apiKey: string; baseUrl: string; model: string }
+  | { kind: "gemini"; apiKey: string; model: string }
+  | { kind: "anthropic"; apiKey: string; model: string };
 
 /** True if at least one provider API key is configured (regardless of call success). */
 export function isAiConfigured() {
   return Boolean(
-    process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY
+    process.env.OPENAI_API_KEY ||
+    process.env.GROQ_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.ANTHROPIC_API_KEY
   );
 }
 
@@ -22,29 +33,39 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
   }
 }
 
-function resolveProvider(): Provider | null {
+function resolveProviderConfig(): ProviderConfig | null {
   const preferred = process.env.AI_PROVIDER?.toLowerCase();
 
-  if (preferred === "openai" && process.env.OPENAI_API_KEY) {
-    return "openai";
+  if ((preferred === "groq" || !preferred) && process.env.GROQ_API_KEY) {
+    return {
+      kind: "openai",
+      apiKey: process.env.GROQ_API_KEY,
+      baseUrl: "https://api.groq.com/openai",
+      model: process.env.OPENAI_MODEL ?? "llama-3.1-8b-instant"
+    };
   }
-  if (preferred === "gemini" && process.env.GEMINI_API_KEY) {
-    return "gemini";
+  if ((preferred === "openai" || !preferred) && process.env.OPENAI_API_KEY) {
+    return {
+      kind: "openai",
+      apiKey: process.env.OPENAI_API_KEY,
+      baseUrl: (process.env.OPENAI_BASE_URL ?? "https://api.openai.com").replace(/\/$/, ""),
+      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini"
+    };
   }
-  if (preferred === "anthropic" && process.env.ANTHROPIC_API_KEY) {
-    return "anthropic";
+  if ((preferred === "gemini" || !preferred) && process.env.GEMINI_API_KEY) {
+    return {
+      kind: "gemini",
+      apiKey: process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_MODEL ?? "gemini-2.0-flash"
+    };
   }
-
-  if (process.env.OPENAI_API_KEY) {
-    return "openai";
+  if ((preferred === "anthropic" || !preferred) && process.env.ANTHROPIC_API_KEY) {
+    return {
+      kind: "anthropic",
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      model: process.env.ANTHROPIC_MODEL ?? "claude-3-5-haiku-20241022"
+    };
   }
-  if (process.env.GEMINI_API_KEY) {
-    return "gemini";
-  }
-  if (process.env.ANTHROPIC_API_KEY) {
-    return "anthropic";
-  }
-
   return null;
 }
 
@@ -98,15 +119,15 @@ export function normalizeSelectedOption(selected: string, options: string[]) {
   return selected;
 }
 
-async function callOpenAi(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
-  const response = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
+async function callOpenAiConfig(cfg: Extract<ProviderConfig, { kind: "openai" }>, input: AiDecisionInput): Promise<AiDecisionPayload | null> {
+  const response = await fetchWithTimeout(`${cfg.baseUrl}/v1/chat/completions`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${cfg.apiKey}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+      model: cfg.model,
       temperature: 0.4,
       response_format: { type: "json_object" },
       messages: [
@@ -115,104 +136,69 @@ async function callOpenAi(input: AiDecisionInput): Promise<AiDecisionPayload | n
       ]
     })
   });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-
+  if (!response.ok) return null;
+  const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
   return parseAiJson(data.choices?.[0]?.message?.content ?? "");
 }
 
-async function callGemini(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
-  const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
-
-  const response = await fetchWithTimeout(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `${buildAxisSystemPrompt()}\n\n${buildAxisUserPrompt(input)}` }]
-        }
-      ],
-      generationConfig: {
-        temperature: 0.4,
-        responseMimeType: "application/json"
-      }
-    })
+async function callGeminiConfig(cfg: Extract<ProviderConfig, { kind: "gemini" }>, input: AiDecisionInput): Promise<AiDecisionPayload | null> {
+  const genAI = new GoogleGenerativeAI(cfg.apiKey);
+  const model = genAI.getGenerativeModel({
+    model: cfg.model,
+    systemInstruction: buildAxisSystemPrompt(),
+    generationConfig: { temperature: 0.4, responseMimeType: "application/json" }
   });
 
-  if (!response.ok) {
-    return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+  try {
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: buildAxisUserPrompt(input) }] }]
+    });
+    return parseAiJson(result.response.text());
+  } finally {
+    clearTimeout(timer);
   }
-
-  const data = (await response.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-
-  return parseAiJson(data.candidates?.[0]?.content?.parts?.[0]?.text ?? "");
 }
 
-async function callAnthropic(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
+async function callAnthropicConfig(cfg: Extract<ProviderConfig, { kind: "anthropic" }>, input: AiDecisionInput): Promise<AiDecisionPayload | null> {
   const response = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      "x-api-key": process.env.ANTHROPIC_API_KEY ?? "",
+      "x-api-key": cfg.apiKey,
       "anthropic-version": "2023-06-01",
       "content-type": "application/json"
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL ?? "claude-3-5-haiku-20241022",
+      model: cfg.model,
       max_tokens: 1200,
       temperature: 0.4,
       system: buildAxisSystemPrompt(),
       messages: [{ role: "user", content: buildAxisUserPrompt(input) }]
     })
   });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const data = (await response.json()) as {
-    content?: Array<{ type?: string; text?: string }>;
-  };
-
-  const text = data.content?.find((block) => block.type === "text")?.text ?? "";
-  return parseAiJson(text);
+  if (!response.ok) return null;
+  const data = (await response.json()) as { content?: Array<{ type?: string; text?: string }> };
+  return parseAiJson(data.content?.find((b) => b.type === "text")?.text ?? "");
 }
 
 export async function runAiDecision(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
-  const provider = resolveProvider();
-  if (!provider) {
-    return null;
-  }
+  const cfg = resolveProviderConfig();
+  if (!cfg) return null;
 
   let raw: AiDecisionPayload | null = null;
   try {
     raw =
-      provider === "openai"
-        ? await callOpenAi(input)
-        : provider === "gemini"
-          ? await callGemini(input)
-          : await callAnthropic(input);
+      cfg.kind === "openai"
+        ? await callOpenAiConfig(cfg, input)
+        : cfg.kind === "gemini"
+          ? await callGeminiConfig(cfg, input)
+          : await callAnthropicConfig(cfg, input);
   } catch (err) {
-    console.error(`[runAiDecision:${provider}]`, err);
+    console.error("[runAiDecision]", cfg.kind, err);
     return null;
   }
 
-  if (!raw) {
-    return null;
-  }
-
-  return {
-    ...raw,
-    selectedOption: normalizeSelectedOption(raw.selectedOption, input.options)
-  };
+  if (!raw) return null;
+  return { ...raw, selectedOption: normalizeSelectedOption(raw.selectedOption, input.options) };
 }

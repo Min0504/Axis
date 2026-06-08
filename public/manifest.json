@@ -1,0 +1,13 @@
+{
+  "name": "Axis",
+  "short_name": "Axis",
+  "description": "사기 전에 결정해주고, 최적 타이밍까지 알려주는 도구",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/icon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

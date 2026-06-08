@@ -6,7 +6,10 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
-      "autoPort": true
+      "autoPort": true,
+      "env": {
+        "AXIS_PRICE_SOURCE": "seed"
+      }
     }
   ]
 }

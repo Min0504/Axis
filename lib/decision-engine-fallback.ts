@@ -1,4 +1,3 @@
-import { categoryTemplateMap } from "@/lib/category";
 import type { Category, ComparisonResult } from "@/lib/types";
 
 export function buildFallbackDecision(
@@ -30,16 +29,14 @@ export function buildFallbackDecision(
       `다른 선택지 대비 선택 피로가 더 낮습니다.`,
       reasonLine
     ],
-    comparison: categoryTemplateMap[category].map((key) => ({
-      key,
-      values: options.map((opt) => `${opt} 관점`)
-    })),
+    comparison: [],
     analyses: options.map((opt) =>
       opt === selectedOption
         ? `${opt}은(는) 이번 비교에서 가장 균형 잡힌 선택입니다.`
         : `${opt}도 좋은 선택지이지만 이번에는 우선순위가 낮습니다.`
     ),
     detail,
-    specCollectionNote: reason === "ai-failed" ? "실시간 분석 지연 · 임시 결론" : "기본 비교 기준 · 임시 결론"
+    specCollectionNote: reason === "ai-failed" ? "실시간 분석 지연 · 임시 결론" : "기본 비교 기준 · 임시 결론",
+    verification: "unverified"
   };
 }

@@ -3,23 +3,13 @@ import { buildDecision, buildQuery, parseOptions } from "@/lib/decision-engine";
 import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
-import {
-  GUEST_MAX_OPTIONS,
-  PLAN_DAILY_LIMIT,
-  dailyLimit,
-  devPlanOverride,
-  maxOptions,
-  normalizePlan,
-  type Plan
-} from "@/lib/plan";
+import { COUNTRY_COOKIE, LOCALE_COOKIE, countryForLocale, isCountry, isLocale } from "@/lib/i18n";
 import type { ComparisonResult } from "@/lib/types";
 
+const MAX_OPTIONS = 6;
 const MAX_OPTION_LENGTH = 100;
-const HARD_MAX_OPTIONS = 5;
-const RATE_LIMIT = 20; // requests
-const RATE_WINDOW_MS = 60_000; // per minute
-
-type Usage = { plan: Plan; dailyUsage: number; limit: number | null };
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
 
 type Body = { query?: string; optionA?: string; optionB?: string; options?: unknown };
 
@@ -29,14 +19,11 @@ function collectOptions(body: Body): string[] {
   }
   const a = body.optionA?.trim() ?? "";
   const b = body.optionB?.trim() ?? "";
-  if (a || b) {
-    return [a, b].filter(Boolean);
-  }
+  if (a || b) return [a, b].filter(Boolean);
   return body.query ? parseOptions(body.query) : [];
 }
 
 export async function POST(req: Request) {
-  // Best-effort abuse guard: AI calls cost money, so cap requests per client.
   const ip = getClientIp(req);
   const limit = rateLimit(`compare:${ip}`, RATE_LIMIT, RATE_WINDOW_MS);
   if (!limit.allowed) {
@@ -54,13 +41,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "잘못된 요청 형식입니다." }, { status: 400 });
   }
 
-  const allOptions = collectOptions(body).slice(0, HARD_MAX_OPTIONS);
+  const options = collectOptions(body).slice(0, MAX_OPTIONS);
 
-  if (allOptions.length < 2) {
+  if (options.length < 2) {
     return NextResponse.json({ error: "두 개 이상의 선택지를 입력해주세요." }, { status: 400 });
   }
 
-  if (allOptions.some((opt) => opt.length > MAX_OPTION_LENGTH)) {
+  if (options.some((opt) => opt.length > MAX_OPTION_LENGTH)) {
     return NextResponse.json(
       { error: `선택지는 각각 ${MAX_OPTION_LENGTH}자 이하로 입력해주세요.` },
       { status: 400 }
@@ -68,57 +55,27 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createSupabaseRouteClient(req);
+  const { data: { user } } = supabase
+    ? await supabase.auth.getUser()
+    : { data: { user: null } };
 
-  const {
-    data: { user }
-  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
-
-  let usage: Usage | undefined;
-  let allowedOptions = GUEST_MAX_OPTIONS;
-
-  // Quota gate (logged-in users): enforce the free daily limit BEFORE the AI
-  // call so blocked requests don't incur cost. Guests are governed by the IP
-  // rate limit above and compare two options.
   if (supabase && user) {
     await ensureUserProfile(supabase, user);
-
-    const { data: quota, error: quotaError } = await supabase.rpc("consume_daily_quota", {
-      p_free_limit: PLAN_DAILY_LIMIT.free,
-      p_plus_limit: PLAN_DAILY_LIMIT.plus
-    });
-
-    const row = Array.isArray(quota) ? quota[0] : quota;
-
-    if (!quotaError && row) {
-      const plan = normalizePlan(row.plan);
-      allowedOptions = maxOptions(plan);
-      usage = { plan, dailyUsage: row.daily_usage, limit: dailyLimit(plan) };
-
-      if (!row.allowed) {
-        return NextResponse.json(
-          {
-            error: "오늘 선택 횟수를 모두 사용했어요. 상위 플랜으로 더 많이 선택할 수 있어요.",
-            limitReached: true,
-            usage
-          },
-          { status: 402 }
-        );
-      }
-    }
   }
 
-  // Dev-only override so Pro multi-way can be tried locally without an account.
-  const dev = devPlanOverride();
-  if (dev) {
-    allowedOptions = maxOptions(dev);
-  }
+  const cookieHeader = req.headers.get("cookie") ?? "";
+  const localeCookieMatch = cookieHeader.match(new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE}=([^;]*)`));
+  const countryCookieMatch = cookieHeader.match(new RegExp(`(?:^|;\\s*)${COUNTRY_COOKIE}=([^;]*)`));
+  const locale = isLocale(localeCookieMatch?.[1]) ? localeCookieMatch[1] : "ko";
+  const country = isCountry(countryCookieMatch?.[1])
+    ? countryCookieMatch[1]
+    : countryForLocale(locale);
 
-  const options = allOptions.slice(0, allowedOptions);
   const query = buildQuery(options);
 
   let result: ComparisonResult;
   try {
-    result = await buildDecision(query, allowedOptions);
+    result = await buildDecision(query, MAX_OPTIONS, locale, country);
   } catch (err) {
     console.error("[buildDecision]", err);
     return NextResponse.json(
@@ -137,7 +94,7 @@ export async function POST(req: Request) {
         query,
         category: result.category,
         selected_option: result.selectedOption,
-        analysis_result: result
+        analysis_result: result,
       })
       .select("id")
       .single();
@@ -149,5 +106,5 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ result, comparisonId, usage });
+  return NextResponse.json({ result, comparisonId });
 }
