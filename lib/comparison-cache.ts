@@ -6,7 +6,9 @@
  * response latency without sacrificing freshness (spec pages rarely change
  * intra-day).
  *
- * Cache key = `{query}|{locale}|{country}` (lowercase, trimmed).
+ * Cache key = `v{CACHE_VERSION}|{query}|{locale}|{country}` (lowercase, trimmed).
+ * Bump CACHE_VERSION when the comparison schema or result format changes significantly
+ * so old cached entries are automatically bypassed (they expire naturally within 24h).
  */
 import { createServiceClientSafe } from "@/lib/supabase-server";
 import type { ComparisonResult } from "@/lib/types";
@@ -14,8 +16,11 @@ import type { Country, Locale } from "@/lib/i18n";
 
 const CACHE_TTL_HOURS = 24;
 
+/** Bump this when comparison output format changes to invalidate stale cached results. */
+const CACHE_VERSION = 8;  // v8: 제품명 로케일 정규화(nameEn/nameJa) + 태블릿 추가 + 2020+ 모델 확장
+
 function cacheKey(query: string, locale: Locale, country: Country): string {
-  return `${query.trim().toLowerCase()}|${locale}|${country}`;
+  return `v${CACHE_VERSION}|${query.trim().toLowerCase()}|${locale}|${country}`;
 }
 
 export async function getCachedComparison(

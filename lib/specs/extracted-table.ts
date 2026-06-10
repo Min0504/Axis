@@ -1,31 +1,8 @@
-import { getCategorySchema, type SpecField } from "@/lib/specs/schema";
+import { fieldLabelForLocale, getCategorySchema, type SpecField } from "@/lib/specs/schema";
 import { isMeaningful } from "@/lib/specs/source";
 import type { ExtractedSpecs } from "@/lib/specs/extract";
 import type { Locale } from "@/lib/i18n";
 import type { Category, ComparisonRow } from "@/lib/types";
-
-const JA_LABELS: Record<string, string> = {
-  model_name: "モデル名",
-  os: "OS",
-  chipset: "チップセット",
-  display_inch: "画面サイズ",
-  battery: "バッテリー",
-  weight_g: "重量",
-  camera_mp: "メインカメラ",
-  storage_gb: "ストレージ",
-  refresh_hz: "リフレッシュレート",
-  price_krw: "価格",
-  cpu: "CPU",
-  gpu: "GPU",
-  ram_gb: "メモリ",
-  storage_gb_laptop: "ストレージ",
-  panel: "パネル",
-  resolution: "解像度",
-  battery_wh: "バッテリー",
-  ports: "ポート",
-  brightness_nits: "明るさ",
-  latency: "遅延"
-};
 
 const MAX_TABLE_VALUE_LENGTH = 120;
 
@@ -36,9 +13,7 @@ const LOCALIZED_UNITS: Record<string, Partial<Record<Locale, string>>> = {
 };
 
 function labelForField(field: SpecField, locale: Locale): string {
-  if (locale === "en") return field.labelEn;
-  if (locale === "ja") return JA_LABELS[field.key] ?? field.labelEn;
-  return field.label;
+  return fieldLabelForLocale(field, locale);
 }
 
 function unitForField(field: SpecField, locale: Locale): string | null {

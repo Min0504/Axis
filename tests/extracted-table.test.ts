@@ -71,7 +71,7 @@ describe("buildExtractedComparisonTable", () => {
     ]);
 
     expect(rows.find((row) => row.key === "무게")?.values).toEqual(["170g", "162g"]);
-    expect(rows.find((row) => row.key === "메인 카메라")?.values).toEqual(["48MP", "50MP"]);
+    expect(rows.find((row) => row.key === "카메라")?.values).toEqual(["48MP", "50MP"]);
     expect(rows.find((row) => row.key === "저장공간")?.values).toEqual(["128GB", "256GB"]);
   });
 

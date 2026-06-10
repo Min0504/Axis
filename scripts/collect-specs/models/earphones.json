@@ -1,0 +1,77 @@
+{
+  "description": "Wireless earphones and headphones to collect specs for — KR/US/JP markets.",
+  "models": [
+    {
+      "id": "airpods-4-anc",
+      "canonicalName": { "KR": "에어팟 4 ANC", "US": "AirPods 4 (ANC)", "JP": "AirPods 4（ANC搭載）" },
+      "aliases": { "KR": ["에어팟 4 anc", "에어팟4 anc"], "US": ["airpods 4 anc", "airpods 4 with anc"], "JP": ["AirPods 4 ANC"] },
+      "searchQuery": { "KR": "에어팟 4 ANC", "US": "Apple AirPods 4 ANC", "JP": "AirPods 4 ANC" }
+    },
+    {
+      "id": "airpods-4",
+      "canonicalName": { "KR": "에어팟 4", "US": "AirPods 4", "JP": "AirPods 4" },
+      "aliases": { "KR": ["에어팟 4", "에어팟4"], "US": ["airpods 4"], "JP": ["AirPods 4"] },
+      "searchQuery": { "KR": "에어팟 4", "US": "Apple AirPods 4", "JP": "AirPods 4" }
+    },
+    {
+      "id": "airpods-pro-2",
+      "canonicalName": { "KR": "에어팟 프로 2세대", "US": "AirPods Pro 2", "JP": "AirPods Pro（第2世代）" },
+      "aliases": { "KR": ["에어팟 프로 2세대", "에어팟 프로2", "airpods pro 2", "에어팟 프로"], "US": ["airpods pro 2", "airpods pro (2nd generation)"], "JP": ["AirPods Pro 第2世代", "AirPods Pro 2"] },
+      "searchQuery": { "KR": "에어팟 프로 2세대", "US": "Apple AirPods Pro 2nd generation", "JP": "AirPods Pro 第2世代" }
+    },
+    {
+      "id": "airpods-max",
+      "canonicalName": { "KR": "에어팟 맥스", "US": "AirPods Max", "JP": "AirPods Max" },
+      "aliases": { "KR": ["에어팟 맥스", "airpods max"], "US": ["airpods max"], "JP": ["AirPods Max"] },
+      "searchQuery": { "KR": "에어팟 맥스", "US": "Apple AirPods Max", "JP": "AirPods Max" }
+    },
+    {
+      "id": "galaxy-buds4-pro",
+      "canonicalName": { "KR": "갤럭시 버즈4 프로", "US": "Galaxy Buds4 Pro", "JP": "Galaxy Buds4 Pro" },
+      "aliases": { "KR": ["갤럭시 버즈4 프로", "갤럭시버즈4 프로", "버즈4 프로", "galaxy buds4 pro"], "US": ["galaxy buds4 pro", "galaxy buds 4 pro"], "JP": ["Galaxy Buds4 Pro"] },
+      "searchQuery": { "KR": "갤럭시 버즈4 프로", "US": "Samsung Galaxy Buds4 Pro", "JP": "Galaxy Buds4 Pro" }
+    },
+    {
+      "id": "galaxy-buds4",
+      "canonicalName": { "KR": "갤럭시 버즈4", "US": "Galaxy Buds4", "JP": "Galaxy Buds4" },
+      "aliases": { "KR": ["갤럭시 버즈4", "galaxy buds4"], "US": ["galaxy buds4", "galaxy buds 4"], "JP": ["Galaxy Buds4"] },
+      "searchQuery": { "KR": "갤럭시 버즈4", "US": "Samsung Galaxy Buds4", "JP": "Galaxy Buds4" }
+    },
+    {
+      "id": "galaxy-buds3-pro",
+      "canonicalName": { "KR": "갤럭시 버즈3 프로", "US": "Galaxy Buds3 Pro", "JP": "Galaxy Buds3 Pro" },
+      "aliases": { "KR": ["갤럭시 버즈3 프로", "galaxy buds3 pro"], "US": ["galaxy buds3 pro"], "JP": ["Galaxy Buds3 Pro"] },
+      "searchQuery": { "KR": "갤럭시 버즈3 프로", "US": "Samsung Galaxy Buds3 Pro", "JP": "Galaxy Buds3 Pro" }
+    },
+    {
+      "id": "sony-wf-1000xm5",
+      "canonicalName": { "KR": "소니 WF-1000XM5", "US": "Sony WF-1000XM5", "JP": "Sony WF-1000XM5" },
+      "aliases": { "KR": ["소니 wf-1000xm5", "wf-1000xm5"], "US": ["sony wf-1000xm5", "wf-1000xm5"], "JP": ["Sony WF-1000XM5", "WF-1000XM5"] },
+      "searchQuery": { "KR": "소니 WF-1000XM5", "US": "Sony WF-1000XM5", "JP": "Sony WF-1000XM5" }
+    },
+    {
+      "id": "sony-wf-1000xm4",
+      "canonicalName": { "KR": "소니 WF-1000XM4", "US": "Sony WF-1000XM4", "JP": "Sony WF-1000XM4" },
+      "aliases": { "KR": ["소니 wf-1000xm4", "wf-1000xm4"], "US": ["sony wf-1000xm4", "wf-1000xm4"], "JP": ["Sony WF-1000XM4", "WF-1000XM4"] },
+      "searchQuery": { "KR": "소니 WF-1000XM4", "US": "Sony WF-1000XM4", "JP": "Sony WF-1000XM4" }
+    },
+    {
+      "id": "sony-wh-1000xm5",
+      "canonicalName": { "KR": "소니 WH-1000XM5", "US": "Sony WH-1000XM5", "JP": "Sony WH-1000XM5" },
+      "aliases": { "KR": ["소니 wh-1000xm5", "wh-1000xm5"], "US": ["sony wh-1000xm5", "wh-1000xm5"], "JP": ["Sony WH-1000XM5", "WH-1000XM5"] },
+      "searchQuery": { "KR": "소니 WH-1000XM5", "US": "Sony WH-1000XM5", "JP": "Sony WH-1000XM5" }
+    },
+    {
+      "id": "bose-qc-ultra",
+      "canonicalName": { "KR": "보스 QC 울트라 이어버드", "US": "Bose QuietComfort Ultra Earbuds", "JP": "Bose QuietComfort Ultra Earbuds" },
+      "aliases": { "KR": ["보스 qc 울트라", "bose qc ultra earbuds"], "US": ["bose qc ultra earbuds", "bose quietcomfort ultra earbuds"], "JP": ["Bose QC Ultra Earbuds"] },
+      "searchQuery": { "KR": "보스 QC 울트라 이어버드", "US": "Bose QuietComfort Ultra Earbuds", "JP": "Bose QuietComfort Ultra Earbuds" }
+    },
+    {
+      "id": "jabra-elite-10",
+      "canonicalName": { "KR": "자브라 Elite 10", "US": "Jabra Elite 10", "JP": "Jabra Elite 10" },
+      "aliases": { "KR": ["자브라 elite 10", "jabra elite 10"], "US": ["jabra elite 10"], "JP": ["Jabra Elite 10"] },
+      "searchQuery": { "KR": "자브라 Elite 10", "US": "Jabra Elite 10", "JP": "Jabra Elite 10" }
+    }
+  ]
+}

@@ -7,6 +7,8 @@ import UserNav from "@/components/user-nav";
 import PriceComparison from "@/components/price-comparison";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { verificationLabel } from "@/lib/specs/source";
+import { resolveFieldByLabel } from "@/lib/specs/schema";
+import type { Category } from "@/lib/types";
 
 type Props = {
   query: string;
@@ -41,6 +43,42 @@ function normalize(result: ComparisonResult, query: string) {
   return { options, rows, sources, sourceMeta, analyses };
 }
 
+/**
+ * Compute spec-win percentages for each option.
+ * For every numeric field with a known "better" direction, score the winner.
+ * Returns an array of integers (0-100) aligned to options, or null if no
+ * comparable rows exist.
+ */
+function computeFitScores(
+  options: string[],
+  comparison: ComparisonRow[],
+  category: Category
+): number[] | null {
+  const scores = options.map(() => 0);
+  let total = 0;
+
+  for (const row of comparison) {
+    const field = resolveFieldByLabel(category, row.key);
+    if (!field || field.better === "none") continue;
+
+    const parsed = row.values.map((v) => {
+      const m = (v ?? "").replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+      return m ? Number(m[0]) : null;
+    });
+    if (parsed.some((v) => v === null)) continue;
+    const nums = parsed as number[];
+    const target = field.better === "higher" ? Math.max(...nums) : Math.min(...nums);
+    const winners = nums.map((n, i) => ({ n, i })).filter(({ n }) => n === target);
+    if (winners.length !== 1) continue; // tie → skip
+
+    scores[winners[0].i]++;
+    total++;
+  }
+
+  if (total === 0) return null;
+  return scores.map((s) => Math.round((s / total) * 100));
+}
+
 function sourceLabel(source: OfficialSourceMeta | undefined, t: ReturnType<typeof getDictionary>["results"]) {
   if (!source) return t.officialShort;
   return source.kind === "authorized_importer" ? t.sourceImporter : t.sourceManufacturer;
@@ -60,6 +98,7 @@ export default function ResultsView({
   const t = getDictionary(locale).results;
   const isBlockedResult =
     result.status === "not_found" || result.status === "verification_pending";
+  const fitScores = computeFitScores(options, rows, result.category);
 
   // Only show the verification badge for confirmed/partial data — not for unverified.
   const showVerifyBadge =
@@ -98,6 +137,25 @@ export default function ResultsView({
                   </span>
                 </Fragment>
               ))}
+            </div>
+          )}
+
+          {/* ── Fit score bars ── */}
+          {fitScores && !isBlockedResult && (
+            <div className="fit-bars" aria-label={t.fitScoreLabel}>
+              {options.map((opt, i) => (
+                <div key={i} className={`fit-bar-row${i === selectedIndex ? " fit-winner" : ""}`}>
+                  <span className="fit-bar-name">{opt}</span>
+                  <div className="fit-bar-track" aria-hidden>
+                    <div
+                      className="fit-bar-fill"
+                      style={{ width: `${fitScores[i]}%` }}
+                    />
+                  </div>
+                  <span className="fit-bar-pct">{fitScores[i]}%</span>
+                </div>
+              ))}
+              <p className="fit-bar-note">{t.fitScoreNote}</p>
             </div>
           )}
         </section>

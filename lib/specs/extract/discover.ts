@@ -159,8 +159,11 @@ export async function discoverOfficialUrl(
   _category: Category,
   opts?: { country?: Country; search?: SearchFn; complete?: CompleteFn }
 ): Promise<string | null> {
+  // Catalog hit — but only short-circuit when the source is a manufacturer
+  // official domain. Tier-2 dataset sources (다나와 등 검증 서드파티) are kept for
+  // spec enrichment but must not masquerade as the "official URL" here.
   const known = resolveVerifiedAny(productName)?.source;
-  if (known) return known;
+  if (known && isOfficialUrl(known)) return known;
 
   const country = opts?.country ?? "KR";
 

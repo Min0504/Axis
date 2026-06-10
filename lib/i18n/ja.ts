@@ -96,6 +96,8 @@ export const ja = {
       { title: "状況適合度", body: "価格、用途、携帯性、長期利用を合わせて見ます。" },
       { title: "購入の透明性", body: "購入リンクは推薦理由と分けて表示します。" }
     ],
+    fitScoreLabel: "スペック優位比率",
+    fitScoreNote: "数値比較可能な公式スペック項目を基準",
     whyChosen: "おすすめの理由",
     specComparison: "公式スペック比較",
     specComparisonPending: "スペック比較",
@@ -215,7 +217,6 @@ export const ja = {
     buyStore: "Coupang",
     buyStoreGlobal: "Amazon",
     affiliateNote: "このリンクはアフィリエイトリンクです。Axisの運営に役立てられます。追加費用はかかりません。",
-    proClean: "Proメンバーは広告なしのクリーンな体験をご利用いただけます。",
     watermarkText: "でこの比較をしました。",
     watermarkCta: "自分でも試してみる →",
     shareTitle: (product: string) => `Axisのおすすめ: ${product}`,

@@ -5,6 +5,7 @@ import VsInput from "@/components/vs-input";
 import SettingsBar from "@/components/settings-bar";
 import ExampleChips from "@/components/example-chips";
 import WatchList from "@/components/watch-list";
+import PopularRankList from "@/components/popular-rank-list";
 import { getLocale } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 import { COMPARISONS } from "@/lib/compare-pages/comparisons";
@@ -119,26 +120,25 @@ export default async function Home() {
         </div>
 
         <div className="home-rank-wrap">
-          <ul className="home-rank-list">
-            {hasRealData
-              ? popularQueries.map((item, i) => (
-                  <li key={item.query} className="home-rank-item">
-                    <Link href={`/?q=${encodeURIComponent(item.query)}`} className="home-rank-link">
-                      <span className="home-rank-num">{i + 1}</span>
-                      <span className="home-rank-text">{item.query}</span>
-                    </Link>
-                  </li>
-                ))
-              : COMPARISONS.slice(0, 10).map((c, i) => (
-                  <li key={c.slug} className="home-rank-item">
-                    <Link href={`/compare/${c.slug}`} className="home-rank-link">
-                      <span className="home-rank-num">{i + 1}</span>
-                      <span className="home-rank-text">{c.title}</span>
-                    </Link>
-                  </li>
-                ))
-            }
-          </ul>
+          {hasRealData ? (
+            <PopularRankList
+              items={popularQueries}
+              locale={locale}
+            />
+          ) : (
+            // Static curated comparisons → direct result page (no loading needed)
+            <ul className="home-rank-list">
+              {COMPARISONS.slice(0, 10).map((c, i) => (
+                <li key={c.slug} className="home-rank-item">
+                  <Link href={`/compare/${c.slug}`} className="home-rank-link">
+                    <span className="home-rank-num">{i + 1}</span>
+                    <span className="home-rank-text">{c.title}</span>
+                    <span className="home-rank-arrow" aria-hidden>→</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="home-rank-fade" aria-hidden />
         </div>
 

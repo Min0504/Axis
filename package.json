@@ -13,7 +13,11 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "collect": "tsx scripts/collect-specs/index.ts",
+    "collect:kr": "tsx scripts/collect-specs/index.ts all KR",
+    "collect:us": "tsx scripts/collect-specs/index.ts all US",
+    "collect:jp": "tsx scripts/collect-specs/index.ts all JP"
   },
   "type": "module",
   "dependencies": {

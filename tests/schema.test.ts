@@ -72,8 +72,9 @@ describe("category schema registry", () => {
     expect(getField("monitor", "refresh_hz")?.better).toBe("higher");
     expect(getField("monitor", "response_ms")?.better).toBe("lower");
     expect(primaryFieldKeys("earphones")).toContain("anc");
-    expect(primaryFieldKeys("earphones")).toContain("codec");
-    expect(primaryFieldKeys("earphones")).toContain("latency");
+    expect(primaryFieldKeys("earphones")).toContain("driver");
+    expect(primaryFieldKeys("earphones")).toContain("charging_type");
+    // codec and latency are non-primary enrichment fields in the earphones schema
     // price stays out of the trust gate everywhere
     expect(primaryFieldKeys("monitor")).not.toContain("price_krw");
     expect(primaryFieldKeys("earphones")).not.toContain("price_krw");
@@ -83,7 +84,7 @@ describe("category schema registry", () => {
     it("maps a Korean display label back to its field", () => {
       expect(resolveFieldByLabel("laptop", "무게")?.key).toBe("weight_g");
       expect(resolveFieldByLabel("laptop", "배터리")?.key).toBe("battery_wh");
-      expect(resolveFieldByLabel("smartphone", "메인 카메라")?.key).toBe("camera_mp");
+      expect(resolveFieldByLabel("smartphone", "카메라")?.key).toBe("camera_mp");
     });
 
     it("is case- and whitespace-insensitive and accepts English labels", () => {
