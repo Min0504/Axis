@@ -741,10 +741,25 @@ a {
   padding: 0.78rem 0.4rem;
   color: var(--fg);
   text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
   transition: color 0.15s ease;
 }
 
 .home-rank-link:hover {
+  color: var(--accent);
+}
+
+.home-rank-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.home-rank-link.home-rank-loading {
   color: var(--accent);
 }
 
@@ -755,12 +770,41 @@ a {
   min-width: 18px;
   text-align: right;
   opacity: 0.8;
+  flex-shrink: 0;
 }
 
 .home-rank-text {
   font-size: 0.93rem;
   font-weight: 600;
   line-height: 1.35;
+  flex: 1;
+}
+
+.home-rank-arrow {
+  font-size: 0.8rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.home-rank-link:hover .home-rank-arrow {
+  transform: translateX(3px);
+  color: var(--accent);
+}
+
+@keyframes rankSpin {
+  to { transform: rotate(360deg); }
+}
+
+.home-rank-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: rankSpin 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
 .home-rank-fade {
@@ -2449,6 +2493,18 @@ a {
   flex-shrink: 0;
 }
 
+.buy-official-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.22);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+  letter-spacing: 0.02em;
+}
+
 .buy-store {
   margin-left: auto;
   font-size: 0.8rem;
@@ -3822,4 +3878,80 @@ a {
   font-size: 1rem;
   text-decoration: none;
   margin-top: 0;
+}
+
+/* ── Fit score bars (스펙 우위 비율) ─────────────────────────────────────── */
+.fit-bars {
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.fit-bar-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fit-bar-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.fit-winner .fit-bar-name {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.fit-bar-track {
+  width: 100px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .fit-bar-track { width: 72px; }
+}
+
+.fit-bar-fill {
+  height: 100%;
+  background: var(--muted);
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fit-winner .fit-bar-fill {
+  background: linear-gradient(90deg, var(--accent), #6c8fff);
+}
+
+.fit-bar-pct {
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 34px;
+  text-align: right;
+  color: var(--muted);
+}
+
+.fit-winner .fit-bar-pct {
+  color: var(--accent);
+}
+
+.fit-bar-note {
+  font-size: 0.72rem;
+  color: var(--muted);
+  opacity: 0.6;
+  margin: 0.3rem 0 0;
+  line-height: 1.4;
 }
