@@ -1,11 +1,11 @@
-import { categoryTemplateMap, detectCategory } from "@/lib/category";
+import { detectCategory } from "@/lib/category";
 import { runAiDecision, isAiConfigured } from "@/lib/ai/decide";
 import { expandComparisonOptions } from "@/lib/query-expansion";
 import { extractProductSpecs } from "@/lib/specs/extract/pipeline";
 import { buildExtractedComparisonTable } from "@/lib/specs/extracted-table";
-import { discoverOfficialUrl } from "@/lib/specs/extract/discover";
+import { discoverOfficialUrl, isOfficialUrl } from "@/lib/specs/extract/discover";
 import { resolveOfficialProduct, resolveProductSource } from "@/lib/specs/product-registry";
-import { primaryFieldKeys, resolveFieldByLabel } from "@/lib/specs/schema";
+import { fieldLabelForLocale, getCategorySchema, primaryFieldKeys, resolveFieldByLabel, schemaFieldLabelsForLocale } from "@/lib/specs/schema";
 import {
   isMeaningful,
   verificationLevel,
@@ -15,9 +15,11 @@ import {
 import { safeHttpUrl } from "@/lib/safe-url";
 import { countryForLocale, getDictionary, type Country, type Locale } from "@/lib/i18n";
 import type { Category, ComparisonResult, ComparisonRow, OfficialSourceMeta } from "@/lib/types";
+import type { ExtractedSpecs } from "@/lib/specs/extract";
 import type { ProductSourceCandidate } from "@/lib/specs/types";
 import { logSearchMiss } from "@/lib/search-miss-log";
 import { getCachedComparison, setCachedComparison } from "@/lib/comparison-cache";
+import { localizeDisplayName, resolveVerifiedProduct, stripForeignMarketFields } from "@/lib/specs/dataset";
 
 const SPLIT_RE = /\s+vs\s+|\s+VS\s+|\svs\s|\s대\s/i;
 
@@ -77,6 +79,54 @@ async function collectOfficialExtractedSpecs(
   return extractProductSpecs({ productName, category, sourceUrl: source.url }).catch(() => null);
 }
 
+/**
+ * Enrich scraped specs with hardcoded dataset.
+ *
+ * Two modes:
+ *  1. Scraping FAILED (null) — inject the full dataset entry as context so the AI
+ *     always has concrete, verified values to echo.
+ *  2. Scraping SUCCEEDED — **merge** dataset values into the scraped spec to fill
+ *     any fields the scraper didn't capture (e.g. refresh_hz, water_resist).
+ *     Scraped values win field-by-field; dataset fills the gaps.
+ *
+ * This guarantees that fields like "주사율" (refresh_hz) always appear in the AI
+ * context with the correct verified value (e.g. 120Hz for iPhone 16 Pro) even when
+ * Apple/Samsung spec pages express the same spec in prose ("ProMotion", "최대 120Hz").
+ */
+function enrichWithDatasetFallback(
+  scraped: (ExtractedSpecs | null)[],
+  options: string[],
+  category: Category,
+  country: Country
+): (ExtractedSpecs | null)[] {
+  return scraped.map((spec, index) => {
+    const entry = resolveVerifiedProduct(category, options[index], country);
+    // Cross-market entries (e.g. KR dataset served to US/JP) keep hardware specs
+    // but drop currency-bound fields so the AI fills the local price instead.
+    const datasetSpecs = entry ? stripForeignMarketFields(entry, country) : null;
+    const hasDataset = entry && datasetSpecs && Object.keys(datasetSpecs).length > 0;
+
+    if (!spec) {
+      // Scraping failed entirely — use dataset as full fallback
+      if (!hasDataset) return null;
+      return {
+        productName: options[index],
+        category,
+        source: entry!.source,
+        fetchedAt: entry!.fetchedAt,
+        tier: entry!.tier,
+        specs: datasetSpecs!
+      } satisfies ExtractedSpecs;
+    }
+
+    // Scraping succeeded — merge dataset to fill any missing fields
+    // Scraped values win (live official page is more authoritative); dataset fills gaps
+    if (!hasDataset) return spec;
+    const mergedSpecs: Record<string, string> = { ...datasetSpecs!, ...spec.specs };
+    return { ...spec, specs: mergedSpecs };
+  });
+}
+
 async function resolveComparableSource(
   productName: string,
   category: Category,
@@ -90,9 +140,26 @@ async function resolveComparableSource(
     if (source) return source;
   }
 
+  // Verified dataset hit with a manufacturer-official source URL — no network
+  // needed. (다나와 등 tier-2 소스는 아래 discovery 이후의 최종 fallback으로만 사용)
+  const verified = resolveVerifiedProduct(category, productName, country);
+  if (verified && isOfficialUrl(verified.source)) {
+    return { url: verified.source, tier: 1, kind: "manufacturer" };
+  }
+
   const discoveredUrl = await discoverOfficialUrl(productName, category, { country });
-  if (!discoveredUrl) return null;
-  return { url: discoveredUrl, tier: 2, kind: "manufacturer" };
+  if (discoveredUrl) {
+    return { url: discoveredUrl, tier: 2, kind: "manufacturer" };
+  }
+
+  // Last resort: dataset entry exists but its source is third-party (다나와 등).
+  // Still a verified product — return it so the comparison doesn't dead-end at
+  // "not found" for products we actually have data for.
+  if (verified) {
+    return { url: verified.source, tier: 2, kind: "authorized_importer" };
+  }
+
+  return null;
 }
 
 function officialSourceUrls(
@@ -254,6 +321,97 @@ function buildDeterministicDecision(
   };
 }
 
+const UNIT_MAP_EN: Record<string, string> = {
+  "인치": "in",
+  "시간": "h",
+  "원": "KRW"
+};
+
+function localizedUnit(unit: string, locale: Locale): string {
+  if (locale === "en") return UNIT_MAP_EN[unit] ?? unit;
+  return unit;
+}
+
+function appendUnitIfNeeded(value: string, unit: string | undefined, locale: Locale): string {
+  if (!unit) return value;
+  const u = localizedUnit(unit, locale);
+  const normalized = value.toLowerCase().replace(/\s/g, "");
+  if (normalized.includes(u.toLowerCase())) return value;
+  return `${value}${u}`;
+}
+
+/**
+ * Build the final comparison table by combining:
+ *   1. AI comparison rows  — the AI fills ALL schema fields in order, including
+ *      fields the official page doesn't list (출시일, 출시가격, 램, 충전 speed, etc.)
+ *      using its training knowledge of official product specs.
+ *   2. Officially-scraped values  — where the official page DID provide a value,
+ *      replace the AI value with the scraped one and attach the source URL so the
+ *      row is marked as sourced (drives the verification badge).
+ *
+ * Value-level override (per product, per field) means a row like:
+ *   chipset: ["A18 ← scraped+sourced", "Snapdragon 8 Elite ← scraped+sourced"]
+ * and:
+ *   출시가격: ["125만원부터 ← AI knowledge", "99만원부터 ← AI knowledge"]
+ * both appear in the table, in the user-specified schema order.
+ */
+function buildFinalComparison(
+  aiRows: ComparisonRow[],
+  extractedSpecs: (ExtractedSpecs | null)[],
+  category: Category,
+  locale: Locale
+): ComparisonRow[] {
+  const schema = getCategorySchema(category);
+  if (!schema) return aiRows;
+
+  // Index AI rows by field key (locale-agnostic, handles Korean ↔ English ↔ Japanese)
+  const aiByKey = new Map<string, ComparisonRow>();
+  for (const row of aiRows) {
+    const field = resolveFieldByLabel(category, row.key);
+    if (field) aiByKey.set(field.key, row);
+  }
+
+  const result: ComparisonRow[] = [];
+
+  for (const field of schema.fields) {
+    const aiRow = aiByKey.get(field.key);
+
+    // Per-product scraped values for this field
+    const scrapedValues = extractedSpecs.map((spec) => {
+      const v = spec?.specs[field.key];
+      return v && isMeaningful(v) ? v : null;
+    });
+    const hasScraped = scrapedValues.some((v) => v !== null);
+
+    // Skip field entirely only if AI didn't produce it AND nothing was scraped
+    if (!aiRow && !hasScraped) continue;
+
+    const label = fieldLabelForLocale(field, locale);
+
+    // Base values come from AI (guarantees completeness)
+    const aiValues = aiRow?.values ?? extractedSpecs.map(() => "—");
+
+    // Per-product override: scraped value wins where available (more authoritative)
+    const finalValues = aiValues.map((aiVal, i) => {
+      const sv = scrapedValues[i];
+      if (!sv) return aiVal;
+      // Append localized unit to bare numeric values from the scraper
+      return field.type === "numeric" && field.unit
+        ? appendUnitIfNeeded(sv, field.unit, locale)
+        : sv;
+    });
+
+    // Attach official source URLs only for positions where the scraper had the value
+    const sources = hasScraped
+      ? extractedSpecs.map((spec, i) => (scrapedValues[i] ? spec?.source : undefined))
+      : undefined;
+
+    result.push({ key: label, values: finalValues, sources });
+  }
+
+  return result;
+}
+
 export async function buildDecision(
   query: string,
   maxOptionsAllowed = 2,
@@ -265,63 +423,97 @@ export async function buildDecision(
   if (cached) return cached;
 
   const parsed = parseOptions(query);
+  const dict = getDictionary(locale);
 
   // Clamp to the caller's allowed option count, ensure at least two labels.
-  const options = expandComparisonOptions(parsed, Math.max(2, maxOptionsAllowed), locale);
-  while (options.length < 2) {
-    options.push(`선택지 ${options.length + 1}`);
+  const expanded = expandComparisonOptions(parsed, Math.max(2, maxOptionsAllowed), locale);
+  while (expanded.length < 2) {
+    expanded.push(dict.input.optionSlot(expanded.length + 1));
   }
 
-  const expandedQuery = buildQuery(options);
+  const expandedQuery = buildQuery(expanded);
   const category = detectCategory(`${query} ${expandedQuery}`);
+
+  // Normalize every option to its locale display name (한글 입력 → 영어 로케일이면
+  // "iPhone 16"으로 통일). 카탈로그에 없는 제품은 입력 그대로 유지. 이렇게 하면
+  // 비교표 헤더·AI 입력·구매 링크 검색어가 항상 사용자 로케일과 일치한다.
+  const options = expanded.map((option) => localizeDisplayName(option, category, country, locale));
+
   const sourceCandidates = await Promise.all(
     options.map((option) => resolveComparableSource(option, category, country))
   );
   const missingOptions = missingOfficialProducts(options, sourceCandidates);
+
   if (missingOptions.length > 0) {
-    // Log each unresolved product for coverage analysis
+    // Log missing products for coverage analysis regardless
     await Promise.all(
       missingOptions.map((name) =>
         logSearchMiss({ productName: name, category, country, locale })
       )
     );
-    return buildProductNotFoundDecision(options, category, missingOptions, locale);
+
+    // Hard-stop when ALL products are missing — none of the requested items exist in
+    // our catalog or discoverable official URLs. This covers genuinely unknown or
+    // fictional products (e.g. "아이폰 19 vs 아이폰 20").
+    //
+    // When only SOME are missing in a schematized category (smartphone, earphones…),
+    // the AI has reliable training knowledge for popular products not yet in our
+    // registry — e.g. a newly released earphone. We proceed so the user gets a
+    // result rather than a dead "not found" screen.
+    const allMissing = missingOptions.length === options.length;
+    if (allMissing || !getCategorySchema(category)) {
+      return buildProductNotFoundDecision(options, category, missingOptions, locale);
+    }
   }
 
-  const officialSpecs = await Promise.all(
+  // ── Scrape official pages in parallel (null for products without a source) ─
+  const scrapedSpecs = await Promise.all(
     options.map((option, index) => collectOfficialExtractedSpecs(option, category, sourceCandidates[index] ?? null))
   );
-  const officialComparison = buildExtractedComparisonTable(category, officialSpecs, locale);
+
+  // ── Enrich with dataset fallback where scraping returned null ─────────────
+  // JS-rendered pages (Samsung accessories, Sony importer) return null from static
+  // HTML scraping. Inject the pre-verified dataset entry as context so the AI always
+  // has concrete values to echo, and source URLs appear in the comparison table.
+  const officialSpecs = enrichWithDatasetFallback(scrapedSpecs, options, category, country);
+
   const officialSourceMeta = officialSourceMetadata(officialSpecs, sourceCandidates);
   const officialSources = officialSourceUrls(officialSourceMeta);
-  const specCollectionNote =
-    officialComparison.length > 0 ? "공식 페이지 추출 검증" : "공식 스펙 검증 대기";
+  const specCollectionNote = scrapedSpecs.some((s) => s !== null)
+    ? "공식 페이지 추출 검증"
+    : officialSpecs.some((s) => s !== null)
+    ? "검증 데이터셋 기반"
+    : "AI 지식 기반";
 
-  if (officialComparison.length === 0) {
-    return buildVerificationPendingDecision(
-      options,
-      category,
-      officialSources,
-      officialSourceMeta,
-      locale
-    );
-  }
-
+  // ── Run AI with scraped + dataset context ─────────────────────────────────
+  // The AI fills ALL schema fields in order. For fields present in context, it echoes
+  // verbatim. For fields not in context (출시일 etc.), it fills from training knowledge.
   const aiPayload = await runAiDecision({
     options,
     category,
     locale,
-    templateKeys: categoryTemplateMap[category],
+    templateKeys: schemaFieldLabelsForLocale(category, locale),
     officialSpecs: officialSpecs.map((spec) =>
       spec ? { source: spec.source, specs: spec.specs } : null
     )
   });
 
   if (!aiPayload) {
+    // AI unavailable — fall back to scraped-only deterministic comparison
+    const scrapedComparison = buildExtractedComparisonTable(category, officialSpecs, locale);
+    if (scrapedComparison.length === 0) {
+      return buildVerificationPendingDecision(
+        options,
+        category,
+        officialSources,
+        officialSourceMeta,
+        locale
+      );
+    }
     const deterministicResult = buildDeterministicDecision(
       options,
       category,
-      officialComparison,
+      scrapedComparison,
       officialSources,
       officialSourceMeta,
       specCollectionNote,
@@ -331,6 +523,17 @@ export async function buildDecision(
     return deterministicResult;
   }
 
+  // ── Build final comparison (value-level merge) ────────────────────────────
+  // AI rows provide all fields in schema order.
+  // Scraped values override AI values per-position where the official page had them,
+  // and carry source URLs so those cells get the "sourced" verification badge.
+  const comparison = buildFinalComparison(
+    aiPayload.comparison ?? [],
+    officialSpecs,
+    category,
+    locale
+  );
+
   const finalResult: ComparisonResult = {
     selectedOption: aiPayload.selectedOption,
     category,
@@ -339,13 +542,13 @@ export async function buildDecision(
     status: "ok",
     oneLineConclusion: aiPayload.oneLineConclusion,
     reasons: aiPayload.reasons.slice(0, 5),
-    comparison: officialComparison,
+    comparison,
     detail: aiPayload.detail,
     analyses: options.map((_, i) => aiPayload.analyses?.[i] ?? ""),
     officialSources,
     officialSourceMeta,
     specCollectionNote,
-    verification: gradeVerification(category, officialComparison)
+    verification: gradeVerification(category, comparison)
   };
   void setCachedComparison(query, locale, country, finalResult);
   return finalResult;

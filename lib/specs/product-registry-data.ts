@@ -91,20 +91,30 @@ export const registry: Record<string, ProductRegistryEntry> = {
     level: 1
   },
 
-  // ── Apple — AirPods (generation numbers NOT in URL for Pro/Max) ───────────
+  // ── Apple — AirPods ───────────────────────────────────────────────────────
 
+  "airpods 4 anc": {
+    officialUrl: "https://www.apple.com/kr/airpods-4/specs/",
+    parser: "apple",
+    level: 1
+  },
+  "airpods 4": {
+    officialUrl: "https://www.apple.com/kr/airpods-4/specs/",
+    parser: "apple",
+    level: 1
+  },
   "airpods pro": {
-    officialUrl: "https://www.apple.com/airpods-pro/",
+    officialUrl: "https://www.apple.com/kr/airpods-pro/specs/",
     parser: "apple",
     level: 1
   },
   "airpods pro 2": {
-    officialUrl: "https://www.apple.com/airpods-pro/",
+    officialUrl: "https://www.apple.com/kr/airpods-pro/specs/",
     parser: "apple",
     level: 1
   },
   "airpods max": {
-    officialUrl: "https://www.apple.com/airpods-max/",
+    officialUrl: "https://www.apple.com/kr/airpods-max/specs/",
     parser: "apple",
     level: 1
   },
@@ -308,6 +318,14 @@ export const registry: Record<string, ProductRegistryEntry> = {
   },
   "galaxy book4 pro": {
     officialUrl: "https://www.samsung.com/sec/support/model/NT960QGK-KD70G/",
+    parser: "samsung",
+    level: 1
+  },
+  "galaxy buds4 pro": {
+    officialUrl: "https://www.samsung.com/sec/mobile-accessories/galaxy-buds4-pro/",
+    officialUrls: {
+      KR: "https://www.samsung.com/sec/mobile-accessories/galaxy-buds4-pro/"
+    },
     parser: "samsung",
     level: 1
   },

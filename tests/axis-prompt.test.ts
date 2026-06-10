@@ -14,9 +14,9 @@ describe("buildAxisUserPrompt", () => {
       ]
     });
 
-    expect(prompt).toContain("응답 언어: English");
+    expect(prompt).toContain("Response language: English");
     expect(prompt).toContain("https://apple.example/specs");
-    expect(prompt).toContain("공식 스펙 컨텍스트에 없는 수치·정가·URL은 절대 만들지 않는다");
+    expect(prompt).toContain("never fabricate");
     expect(prompt).not.toContain("retailPrices");
   });
 });

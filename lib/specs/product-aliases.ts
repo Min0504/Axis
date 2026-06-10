@@ -107,20 +107,27 @@ const aliases: Record<string, string> = {
   // ── AirPods ───────────────────────────────────────────────────────────────
   "에어팟 프로": "airpods pro",
   "에어팟 프로 2": "airpods pro 2",
+  "에어팟 프로 2세대": "airpods pro 2",          // query-expansion 결과값
   "airpods pro": "airpods pro",
   "airpods pro 2": "airpods pro 2",
+  "airpods pro 2nd generation": "airpods pro 2",
   "에어팟 맥스": "airpods max",
   "airpods max": "airpods max",
-  "에어팟": "airpods 4",
-  "airpods": "airpods 4",
-  "에어팟 4": "airpods 4",
-  "에어팟 4세대": "airpods 4",
+  "에어팟": "airpods 4 anc",
+  "airpods": "airpods 4 anc",
+  "에어팟 4": "airpods 4 anc",
+  "에어팟 4세대": "airpods 4 anc",
+  "에어팟 4 anc": "airpods 4 anc",              // query-expansion 결과값
+  "airpods 4 anc": "airpods 4 anc",
+  "airpods 4": "airpods 4 anc",
 
   // ── Galaxy Buds ───────────────────────────────────────────────────────────
-  "갤럭시 버즈": "galaxy buds3 pro",
-  "버즈": "galaxy buds3 pro",
+  "갤럭시 버즈": "galaxy buds4 pro",             // 최신 모델로 업데이트
+  "버즈": "galaxy buds4 pro",
+  "갤럭시 버즈4 프로": "galaxy buds4 pro",       // query-expansion 결과값
+  "galaxy buds4 pro": "galaxy buds4 pro",
   "갤럭시 버즈3 프로": "galaxy buds3 pro",
-  "galaxy buds": "galaxy buds3 pro",
+  "galaxy buds": "galaxy buds4 pro",
   "galaxy buds3 pro": "galaxy buds3 pro",
   "갤럭시 버즈3": "galaxy buds3",
   "galaxy buds3": "galaxy buds3",

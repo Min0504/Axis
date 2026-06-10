@@ -26,7 +26,8 @@ describe("verified spec dataset", () => {
 
     it("disambiguates 13 vs 15 inch MacBook Air", () => {
       expect(resolveVerifiedProduct("laptop", "맥북 에어 15 M3")?.canonicalName).toBe("맥북 에어 15 M3");
-      expect(resolveVerifiedProduct("laptop", "맥북 에어")?.canonicalName).toBe("맥북 에어 13 M3");
+      // 세대 미지정 시 최신 모델(M4) — query-expansion의 "맥북 에어"→M4 확장과 일치
+      expect(resolveVerifiedProduct("laptop", "맥북 에어")?.canonicalName).toBe("맥북 에어 13 M4");
     });
 
     it("returns null for unknown products or wrong category", () => {

@@ -1,0 +1,89 @@
+{
+  "description": "Laptops to collect specs for — KR/US/JP markets.",
+  "models": [
+    {
+      "id": "macbook-air-13-m4",
+      "canonicalName": { "KR": "맥북 에어 13 M4", "US": "MacBook Air 13-inch M4", "JP": "MacBook Air 13インチ M4" },
+      "aliases": { "KR": ["맥북 에어 m4", "macbook air m4", "맥북 에어 13 m4"], "US": ["macbook air 13 m4", "macbook air m4"], "JP": ["MacBook Air M4"] },
+      "searchQuery": { "KR": "맥북 에어 13 M4", "US": "Apple MacBook Air 13 M4", "JP": "MacBook Air 13インチ M4" }
+    },
+    {
+      "id": "macbook-air-15-m4",
+      "canonicalName": { "KR": "맥북 에어 15 M4", "US": "MacBook Air 15-inch M4", "JP": "MacBook Air 15インチ M4" },
+      "aliases": { "KR": ["맥북 에어 15 m4", "macbook air 15 m4"], "US": ["macbook air 15 m4"], "JP": ["MacBook Air 15インチ M4"] },
+      "searchQuery": { "KR": "맥북 에어 15 M4", "US": "Apple MacBook Air 15 M4", "JP": "MacBook Air 15インチ M4" }
+    },
+    {
+      "id": "macbook-air-13-m3",
+      "canonicalName": { "KR": "맥북 에어 13 M3", "US": "MacBook Air 13-inch M3", "JP": "MacBook Air 13インチ M3" },
+      "aliases": { "KR": ["맥북 에어 m3", "macbook air m3", "맥북 에어 13 m3", "맥북 에어"], "US": ["macbook air m3", "macbook air 13 m3"], "JP": ["MacBook Air M3"] },
+      "searchQuery": { "KR": "맥북 에어 13 M3", "US": "Apple MacBook Air 13 M3", "JP": "MacBook Air 13インチ M3" }
+    },
+    {
+      "id": "macbook-air-15-m3",
+      "canonicalName": { "KR": "맥북 에어 15 M3", "US": "MacBook Air 15-inch M3", "JP": "MacBook Air 15インチ M3" },
+      "aliases": { "KR": ["맥북 에어 15", "macbook air 15", "맥북 에어 15 m3"], "US": ["macbook air 15 m3"], "JP": ["MacBook Air 15インチ M3"] },
+      "searchQuery": { "KR": "맥북 에어 15 M3", "US": "Apple MacBook Air 15 M3", "JP": "MacBook Air 15インチ M3" }
+    },
+    {
+      "id": "macbook-pro-14-m4",
+      "canonicalName": { "KR": "맥북 프로 14 M4", "US": "MacBook Pro 14-inch M4", "JP": "MacBook Pro 14インチ M4" },
+      "aliases": { "KR": ["맥북 프로 14 m4", "macbook pro 14 m4"], "US": ["macbook pro 14 m4"], "JP": ["MacBook Pro 14インチ M4"] },
+      "searchQuery": { "KR": "맥북 프로 14 M4", "US": "Apple MacBook Pro 14 M4", "JP": "MacBook Pro 14インチ M4" }
+    },
+    {
+      "id": "macbook-pro-16-m4",
+      "canonicalName": { "KR": "맥북 프로 16 M4", "US": "MacBook Pro 16-inch M4", "JP": "MacBook Pro 16インチ M4" },
+      "aliases": { "KR": ["맥북 프로 16 m4", "macbook pro 16 m4"], "US": ["macbook pro 16 m4"], "JP": ["MacBook Pro 16インチ M4"] },
+      "searchQuery": { "KR": "맥북 프로 16 M4", "US": "Apple MacBook Pro 16 M4", "JP": "MacBook Pro 16インチ M4" }
+    },
+    {
+      "id": "macbook-pro-14-m3",
+      "canonicalName": { "KR": "맥북 프로 14 M3", "US": "MacBook Pro 14-inch M3", "JP": "MacBook Pro 14インチ M3" },
+      "aliases": { "KR": ["맥북 프로 14 m3", "맥북프로 14", "macbook pro 14 m3", "맥북 프로 14"], "US": ["macbook pro 14 m3"], "JP": ["MacBook Pro 14インチ M3"] },
+      "searchQuery": { "KR": "맥북 프로 14 M3", "US": "Apple MacBook Pro 14 M3", "JP": "MacBook Pro 14インチ M3" }
+    },
+    {
+      "id": "lg-gram-16",
+      "canonicalName": { "KR": "LG 그램 16", "US": "LG gram 16", "JP": "LG gram 16" },
+      "aliases": { "KR": ["lg 그램 16", "그램 16", "lg gram 16"], "US": ["lg gram 16"], "JP": ["LG gram 16"] },
+      "searchQuery": { "KR": "LG 그램 16", "US": "LG gram 16", "JP": "LG gram 16" }
+    },
+    {
+      "id": "lg-gram-14",
+      "canonicalName": { "KR": "LG 그램 14", "US": "LG gram 14", "JP": "LG gram 14" },
+      "aliases": { "KR": ["lg 그램 14", "그램 14"], "US": ["lg gram 14"], "JP": ["LG gram 14"] },
+      "searchQuery": { "KR": "LG 그램 14", "US": "LG gram 14", "JP": "LG gram 14" }
+    },
+    {
+      "id": "galaxy-book4-pro-14",
+      "canonicalName": { "KR": "갤럭시 북4 프로 14", "US": "Galaxy Book4 Pro 14", "JP": "Galaxy Book4 Pro 14" },
+      "aliases": { "KR": ["갤럭시북4 프로", "갤럭시 북4 프로", "galaxy book4 pro"], "US": ["galaxy book4 pro 14"], "JP": ["Galaxy Book4 Pro"] },
+      "searchQuery": { "KR": "갤럭시 북4 프로 14", "US": "Samsung Galaxy Book4 Pro 14", "JP": "Galaxy Book4 Pro 14" }
+    },
+    {
+      "id": "galaxy-book5-pro-14",
+      "canonicalName": { "KR": "갤럭시 북5 프로 14", "US": "Galaxy Book5 Pro 14", "JP": "Galaxy Book5 Pro 14" },
+      "aliases": { "KR": ["갤럭시북5 프로", "갤럭시 북5 프로", "galaxy book5 pro"], "US": ["galaxy book5 pro 14"], "JP": ["Galaxy Book5 Pro"] },
+      "searchQuery": { "KR": "갤럭시 북5 프로 14", "US": "Samsung Galaxy Book5 Pro 14", "JP": "Galaxy Book5 Pro 14" }
+    },
+    {
+      "id": "dell-xps-13",
+      "canonicalName": { "KR": "델 XPS 13", "US": "Dell XPS 13", "JP": "Dell XPS 13" },
+      "aliases": { "KR": ["델 xps 13", "dell xps 13"], "US": ["dell xps 13"], "JP": ["Dell XPS 13"] },
+      "searchQuery": { "KR": "델 XPS 13", "US": "Dell XPS 13 9340", "JP": "Dell XPS 13" }
+    },
+    {
+      "id": "lenovo-thinkpad-x1-carbon",
+      "canonicalName": { "KR": "레노버 씽크패드 X1 카본", "US": "ThinkPad X1 Carbon", "JP": "ThinkPad X1 Carbon" },
+      "aliases": { "KR": ["씽크패드 x1", "thinkpad x1 carbon"], "US": ["thinkpad x1 carbon", "lenovo x1 carbon"], "JP": ["ThinkPad X1 Carbon"] },
+      "searchQuery": { "KR": "씽크패드 X1 카본", "US": "Lenovo ThinkPad X1 Carbon Gen 12", "JP": "ThinkPad X1 Carbon" }
+    },
+    {
+      "id": "asus-zenbook-14",
+      "canonicalName": { "KR": "에이수스 젠북 14", "US": "ASUS Zenbook 14", "JP": "ASUS Zenbook 14" },
+      "aliases": { "KR": ["젠북 14", "zenbook 14", "asus zenbook 14"], "US": ["asus zenbook 14"], "JP": ["Zenbook 14"] },
+      "searchQuery": { "KR": "에이수스 젠북 14", "US": "ASUS Zenbook 14 OLED", "JP": "ASUS Zenbook 14" }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getProductById, resolveVerifiedAny } from "@/lib/specs/dataset";
+import { getProductById, resolveVerifiedAny, localizedProductName } from "@/lib/specs/dataset";
 import {
   getPriceProvider,
   localeToRegion,
@@ -7,7 +7,7 @@ import {
   type PriceSource,
   type Region
 } from "@/lib/pricing";
-import { isLocale } from "@/lib/i18n";
+import { isLocale, type Locale } from "@/lib/i18n";
 
 export type PriceApiResult = {
   productId: string;
@@ -37,6 +37,7 @@ export async function GET(req: Request) {
   const name = searchParams.get("name")?.trim();
   const localeParam = searchParams.get("locale");
 
+  const locale: Locale = isLocale(localeParam) ? localeParam : "en";
   const region = isLocale(localeParam) ? localeToRegion(localeParam) : "US";
 
   const product = id ? getProductById(id) : name ? resolveVerifiedAny(name) : null;
@@ -49,7 +50,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ result: null });
   }
 
-  const priceable = { id: product.id, name: product.canonicalName, category: product.category };
+  // Localized display + search name so en/ja users see/search the right term.
+  const displayName = localizedProductName(product, locale);
+  const priceable = { id: product.id, name: displayName, category: product.category };
   const [quote, history] = await Promise.all([
     provider.getQuote(priceable, region).catch(() => null),
     provider.getHistory(priceable, region).catch(() => null)
@@ -61,7 +64,7 @@ export async function GET(req: Request) {
 
   const result: PriceApiResult = {
     productId: product.id,
-    name: product.canonicalName,
+    name: displayName,
     region,
     currency: history.currency,
     current: history.current,

@@ -29,7 +29,7 @@ export function buildAxisSystemPrompt() {
 }
 
 export function buildAxisUserPrompt(input: AiDecisionInput) {
-  const optionLines = input.options.map((opt, i) => `선택지 ${i + 1}: ${opt}`).join("\n");
+  const optionLines = input.options.map((opt, i) => `Option ${i + 1}: ${opt}`).join("\n");
   const optionListJson = JSON.stringify(input.options);
   const officialSpecs = input.officialSpecs
     ?.map((spec, i) => ({
@@ -40,34 +40,40 @@ export function buildAxisUserPrompt(input: AiDecisionInput) {
   const officialSpecsJson = JSON.stringify(officialSpecs, null, 2);
   const language = LANGUAGE_NAME[input.locale ?? "ko"];
 
-  return `다음 선택지들을 비교하고 하나를 선택해 결론을 내려라.
+  return `Compare the following options and pick exactly one winner.
 
 ${optionLines}
-카테고리: ${input.category}
-비교 항목(템플릿): ${input.templateKeys.join(", ")}
-응답 언어: ${language}
-공식 스펙 컨텍스트:
+Category: ${input.category}
+Spec fields to fill (use these exact strings as "key" in comparison): ${input.templateKeys.join(", ")}
+Response language: ${language}
+Official spec context (use ONLY these values — never fabricate):
 ${officialSpecsJson}
 
-JSON 스키마:
+Bilingual product recognition:
+- Treat Korean and English names as identical products.
+  Examples: "에어팟 프로" = "AirPods Pro", "갤럭시 버즈" = "Galaxy Buds", "아이폰 16" = "iPhone 16"
+- When spec context is sparse or missing, ALWAYS draw on your training knowledge of official specs.
+  Never default to "정보 없음" just because the context is empty — use what you know.
+
+Output JSON schema:
 {
-  "selectedOption": "선택한 항목의 정확한 이름 문자열",
-  "oneLineConclusion": "한 줄 결론",
-  "reasons": ["이유1", "이유2", "이유3"],
-  "comparison": [{ "key": "항목명", "values": ["선택지1 값", "선택지2 값", ...] }],
-  "detail": "상세 설명 (짧고 명확하게)",
-  "officialUrls": ["선택지1 공식 페이지 URL", "선택지2 공식 페이지 URL", ...],
-  "analyses": ["선택지1 상세 분석", "선택지2 상세 분석", ...]
+  "selectedOption": "exact string matching one of the options above",
+  "oneLineConclusion": "one-line verdict in ${language}",
+  "reasons": ["reason1", "reason2", "reason3"],
+  "comparison": [{ "key": "<field from spec fields list>", "values": ["option1 value", "option2 value", ...] }],
+  "detail": "detailed explanation in ${language} (concise)",
+  "officialUrls": ["option1 official URL", "option2 official URL", ...],
+  "analyses": ["option1 pros/cons/who-it-suits (2-3 sentences)", "option2 pros/cons/who-it-suits"]
 }
 
-규칙:
-- 모든 문장과 판단은 응답 언어(${language})로 작성한다.
-- 공식 스펙 컨텍스트에 없는 수치·정가·URL은 절대 만들지 않는다.
-- comparison은 공식 스펙 컨텍스트에서 확인된 값만 기입한다. 없으면 "정보 없음"으로 둔다.
-- 정가/MSRP는 공식 스펙 컨텍스트에 가격 필드가 있을 때만 언급한다.
-- comparison 배열은 templateKeys를 모두 포함해야 한다.
-- 각 comparison 항목의 "values"는 위 선택지 순서와 동일하게 ${input.options.length}개를 채운다.
-- officialUrls는 공식 스펙 컨텍스트의 source만 사용한다. 없으면 빈 문자열("").
-- analyses는 각 선택지별 장점·단점·어떤 사람에게 맞는지를 2~3문장으로 쓴다.
-- selectedOption은 반드시 다음 중 하나와 동일해야 한다: ${optionListJson}`;
+Hard rules:
+- ALL text (oneLineConclusion, reasons, detail, analyses) MUST be in ${language}.
+- comparison must include EVERY key from the spec fields list above — no omissions.
+- Each comparison "values" array must have exactly ${input.options.length} entries, in the same order as the options.
+- For the model name field (모델명 / Model): use the EXACT official product name from spec context (e.g. "iPhone 16", "Galaxy S25"). Never use a generic or modified name.
+- For fields present in the spec context (chipset, battery, weight, etc.): copy those values verbatim.
+- For fields NOT in the spec context (출시일, 출시가격, 램, 충전 speed, etc.): fill with your best knowledge of the product's official specs. Do NOT write "정보 없음" / "N/A" unless the value is genuinely unknown.
+- officialUrls: use only URLs from official spec context "source" fields. Use "" if missing.
+- selectedOption MUST exactly match one of: ${optionListJson}
+- Never fabricate numeric specs that conflict with the official spec context values.`;
 }
