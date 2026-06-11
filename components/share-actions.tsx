@@ -87,10 +87,7 @@ export default function ShareActions({
       <a className="btn-buy" href={buyLink.url} target="_blank" rel="noreferrer sponsored">
         <span className="buy-icon" aria-hidden>↗</span>
         {t.buyOn(selectedOption)}
-        <span className="buy-store">
-          {buyLink.label}
-          {buyLink.isOfficialStore && <span className="buy-official-badge">공식</span>}
-        </span>
+        <span className="buy-store">{buyLink.label}</span>
       </a>
 
       <button

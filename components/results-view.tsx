@@ -160,8 +160,8 @@ export default function ResultsView({
           )}
         </section>
 
-        {/* ── 2. Live prices (quick action before the data) ── */}
-        {!hidePrices && !isBlockedResult && <PriceComparison options={options} locale={locale} />}
+        {/* ── 2. Live prices — TODO: price data feed not ready, re-enable in next update ── */}
+        {/* {!hidePrices && !isBlockedResult && <PriceComparison options={options} locale={locale} />} */}
 
         {/* ── 3. Official spec comparison ── */}
         <section className="detail-card spec-section">
