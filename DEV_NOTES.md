@@ -1,254 +1,237 @@
-# 개발 이어받기 노트
+# Axis — 개발 노트
 
-> 마지막 업데이트: 2026-06-09  
-> 최신 커밋: `df5fedf` — feat: rebrand to Axis with full product discovery pipeline, UI/UX overhaul, and feature expansion  
-> 테스트: **168 passed / 24 files** (모두 통과)  
+> 마지막 업데이트: 2026-06-11
+> 테스트: `npm test` 통과 기준 유지 · 캐시 버전: **v8**
 > 프로덕션: https://axis-app-beta.vercel.app
+>
+> 이 문서는 개발 단일 참조점이다. 제품 방향·진행 현황·아키텍처·남은 작업을 모두 담는다.
+> 작업 규칙은 [CLAUDE.md](CLAUDE.md), 공개 소개는 [README.md](README.md).
 
 ---
 
-## 1. 현재 프로젝트 상태 요약
+## 1. 제품 방향
 
-**Axis** — 공식 스펙 기반 구매 결정 + 가격 추적·알림 서비스.  
-Next.js 15 App Router / Supabase / Vercel / Groq(Llama 3.1) 스택.
+**한 줄 정의(비전):** 사기 전에 결정해주고, 산 뒤 최적 타이밍까지 알려주는 도구.
+= **결정(Decide) → 추적(Track) → 알림(Alert)**
 
-### 지금까지 완료된 핵심 작업
+단순 비교/결정만으로는 ChatGPT를 못 이긴다. 해자는 **라이브 가격 + 가격 알림 +
+검증 스펙** — 챗봇이 구조적으로 못 하는 것들. **단, 이 해자(가격·알림)는 현재
+미작동(seed 데이터)이고 그 경제성이 미검증이다 → 아래 실행 범위로 좁혀 먼저 검증한다.**
 
-| 영역 | 상태 |
+### 실행 범위 (사업성 검증 반영, 2026-06-11 — v3 narrow)
+
+이전 "글로벌+한국 동시 / 4개 카테고리 / 푸시·구독 로드맵"은 1인 운영에 범위 과잉.
+검증 통과 전까지 다음으로 좁힌다. (이전 방향 전문은 git 이력의 DIRECTION.md 참고.)
+
+- **시장: 한국 단독 먼저.** US/JP 코드 자산은 유지하되 콘텐츠·운영은 KR 집중.
+  **1개 시장 검증 전 다국가 운영 금지.**
+- **카테고리: 노트북 먼저.** 폰/태블릿/이어폰 데이터셋은 유지하되, 출시·SEO·콘텐츠는 노트북 집중.
+- **수익: Phase 1 제휴(쿠팡 파트너스) 단독.** 푸시·구독은 **검증 후로 보류**.
+  제휴 링크는 광고가 아니라 유틸 → 절대 숨기지 않음.
+- **데이터: seed → 실가격은 "쿠팡 현재가 + 선택 SKU 자체 일별 적재"로 PoC.**
+  외부 가격이력 API(Keepa 등) 결제 금지. "역대최저·급락" 알림은 자체 이력이
+  수개월 쌓인 뒤에만 약속.
+- **검증 우선:** 추가 기능 빌드(푸시·구독·다국가·신규 카테고리)는 §6의 30일 검증
+  통과 전까지 중단.
+
+**검증 게이트 (절대 규율):** 스펙 비교는 primary 스펙이 출처 등급 2티어 이상일 때만
+`verified`·색인. 출처 티어: 1 제조사 공식 / 2 검증 자료 / 3 AI 추정. 모든 결과에 출처·수집일 표기.
+
+---
+
+## 2. 아키텍처
+
+### 비교 요청 흐름 (`lib/decision-engine.ts`)
+
+```
+사용자 쿼리 ("에어팟 프로 vs 버즈")
+  ↓
+[1] 캐시 확인 (Supabase comparison_cache, v8|query|locale|country)
+  ↓ 미스
+[2] expandComparisonOptions() — 브랜드명 → 최신 모델 확장
+[3] detectCategory() — 카테고리 분류
+[4] resolveComparableSource() — product-aliases → registry → URL 확인
+[5] extractProductSpecs() — 공식 페이지 HTML 스크래핑 (병렬, apple|samsung|generic 파서)
+    + 데이터셋 fallback (enrichWithDatasetFallback, merge 방식)
+[6] runAiDecision() — Groq API. 스키마 필드 전체 채우기, 스크래핑 값은 context로 복사
+[7] buildFinalComparison() — AI 행 기반 + 스크래핑 값 오버레이 + source URL(검증 배지)
+[8] gradeVerification() — verified / partial / unverified
+[9] setCachedComparison() — 캐시 저장
+```
+
+### 검증 등급
+
+| 등급 | 조건 | SEO |
+|------|------|-----|
+| `verified` | 모든 primary 필드에 공식 source URL | ✅ 인덱싱 |
+| `partial` | 일부 primary 필드만 sourced | 조건부 |
+| `unverified` | AI 단독 (source 없음) | ❌ noindex |
+
+### 레이어 구성
+
+```
+[결정]  분류기 → 스키마 → 검증 스펙 → AI 결정 → 검증 배지
+        lib/category, lib/specs/*, lib/ai/*, lib/decision-engine
+[가격]  Product → PriceProvider(region별) → Quote/History → 차트·최저가
+        lib/pricing/*  (amazon / coupang / seed)
+[추적]  계정 → Watch(관심상품·목표가) → 가격 점검 크론 → 알림(이메일→푸시)
+        Supabase(watches) + cron + lib/watch · lib/push
+```
+
+---
+
+## 3. 데이터셋 현황
+
+수동 검증 데이터셋 (`lib/specs/dataset/`), **2020+ 모델, 인지도 있는 제품 기준**:
+
+| 카테고리 | 파일 | 개수 |
+|---------|------|------|
+| 스마트폰 | `smartphones.ts` | 55 |
+| 이어폰 | `earphones.ts` | 18 |
+| 노트북 | `laptops.ts` | 26 |
+| 태블릿 | `tablets.ts` | 23 |
+| **합계** | | **122** |
+
+추가로 다나와 자동 수집 데이터(`dataset/kr/`)가 수동 데이터 뒤에 병합됨 (ID 중복 시 수동 우선).
+
+### 제품명 로케일 정규화
+
+- `VerifiedProduct`: `canonicalName`(한국어) + `nameEn` + `nameJa`.
+- `localizeDisplayName()` — 제품 해석 후 로케일 표시명 반환. 카탈로그에 없는 제품은
+  EN/JA에서 `koToEnTechName()`로 폴백 (아이폰17 → iPhone 17).
+- 이 정규화로 "영어 설정 + 한글 입력 → 영어 제품명 + Amazon US 검색어"가 일관되게 동작.
+
+### 카테고리 스키마 (primary 필드)
+
+- **smartphone**: model_name, display_inch, chipset, storage_gb, camera_mp, battery, weight_g
+- **laptop**: model_name, cpu, gpu, ram_gb, storage_gb, display_inch, resolution, battery_wh, weight_g, os, refresh_hz, brightness_nits
+- **earphones**: model_name, driver, anc, battery_hr, battery_total_hr, charging_type, water_resist, weight_g
+
+---
+
+## 4. 스펙 수집 인프라 (반자동 확장)
+
+```
+scripts/collect-specs/
+├── index.ts              메인 러너
+├── sources/{danawa,gsmarena,kakaku}.ts   KR/US/JP 소스
+└── models/*.json         수집 대상 목록
+```
+
+```bash
+npm run collect:kr   # 다나와 (KR, KRW 가격)
+npm run collect:us   # GSMArena (US, tier 2)
+npm run collect:jp   # 価格.com (JP, JPY 가격)
+```
+
+수집 후: 결과 파일 검토 → `dataset/index.ts` import → `npm test` 무결성 검사.
+⚠️ Samsung/Apple JS 렌더링 페이지는 정적 스크래핑 실패 가능 → 수동 보완 필요.
+
+---
+
+## 5. 완료된 핵심 작업
+
+- 브랜드 리네임 (nudge/Optio → Axis), 멤버십/플랜 제거
+- 3단계 제품 발견 파이프라인 + 제품 레지스트리/앨리어스
+- AI 연동 (Groq Llama 3.1, 프로바이더 추상화)
+- 가격 추적(lib/watch, lib/pricing) · 푸시 알림(service worker, VAPID) — 코드 완료
+- SEO 비교 페이지(/compare/[slug]), Cron 가격 체크, 비교 결과 캐시, 검색 누락 로깅
+- 스펙 정확도 수정: 아이폰16 프로 주사율(60→120Hz), `enrichWithDatasetFallback` merge 방식
+- 한/미/일 전체 점검: US/JP 데이터셋 fallback, ja 라벨 중앙화(JA_FIELD_LABELS),
+  danawa URL 공식소스 유출 차단
+- 제품명 로케일 정규화 + 데이터셋 122개 확장, 태블릿 카테고리 신설
+- UI: 결과 카드 화이트 리디자인, fit score 바, 어필리에이트 "공식" 제거 + 다이렉트 링크
+
+---
+
+## 6. 남은 작업 / 미확인 사항
+
+### 즉시 (운영 환경 설정)
+
+| 항목 | 내용 |
 |------|------|
-| 브랜드 리네임 (nudge/Optio → Axis) | ✅ 완료 |
-| 멤버십/플랜 제거 | ✅ 완료 |
-| 3단계 제품 발견 파이프라인 | ✅ 완료 |
-| 제품 레지스트리 40+ / 앨리어스 120+ | ✅ 완료 |
-| 사전 검증 스펙 데이터셋 (스마트폰 10종) | ✅ 완료 |
-| AI 연동 (Groq Llama 3.1, 프로바이더 추상화) | ✅ 완료 |
-| 프리미엄 분석 오버레이 (포털 fullscreen) | ✅ 완료 |
-| 단독 입력 자동 파트너 매칭 (AUTO_PAIRS) | ✅ 완료 |
-| 결과 페이지 빈 상태 (Empty State) 개선 | ✅ 완료 |
-| 가격 추적 (lib/watch, lib/pricing, /api/watches) | ✅ 코드 완료 / 실제 가격 데이터 없음 |
-| 푸시 알림 (service worker, VAPID) | ✅ 코드 완료 / 환경변수 미설정 |
-| SEO 비교 페이지 (/compare/[slug]) | ✅ 완료 |
-| Cron 가격 체크 (매일 09:00) | ✅ 완료 / CRON_SECRET 기본값 |
-| 비교 결과 캐시 레이어 | ✅ 완료 |
-| 검색 누락 로깅 (search_misses) | ✅ 완료 |
-
-### 현재 개발 진행 단계
-
-코드 구현은 대부분 완료. **운영 환경 설정(API 키)** 이 남아있어 일부 기능이 프로덕션에서 비활성화 상태.
-
----
-
-## 2. 오늘까지 완료한 작업
-
-### 완료된 기능
-
-- **검색 파이프라인 버그 수정 4건**
-  - iPhone 15 Pro가 iPhone 15 페이지로 오매칭되던 문제 (레지스트리 명시 추가)
-  - 에어팟 프로 URL 404 (Apple은 세대 번호 없이 `/airpods-pro/` 사용)
-  - 삼성 US/JP 사용자 "제품 없음" 오류 (KR 전용 URL → 디스커버리 폴백 추가)
-  - iPad M4 URL 404 (칩 이름 제거 후 슬러그 생성)
-- **UI/UX**: 프리미엄 로딩 오버레이, 자동 파트너 매칭, 결과 빈 상태
-- **대규모 커밋** `df5fedf` — 129 files, +11,496 / -1,754 lines
-
-### 주요 추가/수정 파일
-
-`lib/specs/product-registry-data.ts`, `lib/specs/product-aliases.ts`, `lib/specs/extract/url-patterns.ts`, `lib/specs/dataset/smartphones.ts`, `lib/decision-engine.ts`, `components/vs-input.tsx`, `components/session-results.tsx`, `app/globals.css`
-
----
-
-## 3. 최근 변경된 주요 파일
-
-- **파일 경로**: `lib/decision-engine.ts`  
-  **역할**: 비교 전체 파이프라인 (제품 발견 → 스펙 수집 → AI 결정)  
-  **최근 변경**: 삼성 US/JP 폴백 로직 추가 (`resolveProductSource` → `discoverOfficialUrl`)  
-  **다음에 확인할 점**: `BRAVE_SEARCH_API_KEY` 없을 때 web search 단계가 조용히 실패하는지 확인
-
-- **파일 경로**: `lib/specs/product-registry-data.ts`  
-  **역할**: 제품별 공식 URL 레지스트리 (Apple/Samsung/Sony/LG 40+종)  
-  **최근 변경**: iPhone 15/16 Pro·Max·Plus, AirPods Pro, iPad 전 모델, Galaxy S24/Z Fold/Flip 추가  
-  **다음에 확인할 점**: Sony 한국 URL(`sony.co.kr`) 실제 동작 여부 미확인
-
-- **파일 경로**: `lib/specs/product-aliases.ts`  
-  **역할**: 사용자 입력 → 표준 제품명 매핑 (한국어/영어/일본어 120+개)  
-  **최근 변경**: `"에어팟 프로" → "airpods pro"` (기존엔 2 붙어서 404)  
-  **다음에 확인할 점**: 갤럭시 버즈·워치 계열 앨리어스 부족
-
-- **파일 경로**: `lib/specs/extract/url-patterns.ts`  
-  **역할**: 브랜드별 공식 URL 후보 생성 (`appleSlug`, `buildSamsungCandidates` 등)  
-  **최근 변경**: `appleSlug()` 추가 — iPad 칩 접미사(`m4`) 및 AirPods 세대 번호 제거  
-  **다음에 확인할 점**: LG gram 14/16/17 사이즈 variant 구분이 여전히 containment match 의존
-
-- **파일 경로**: `components/vs-input.tsx`  
-  **역할**: 홈 비교 입력 폼 + 로딩 오버레이 + 자동 파트너 매칭  
-  **최근 변경**: `AUTO_PAIRS` 맵, `createPortal` 오버레이, `isMounted` SSR 가드  
-  **다음에 확인할 점**: 3개 이상 옵션 제출 시 오버레이 Pill 레이아웃 모바일 확인 필요
-
-- **파일 경로**: `lib/pricing/index.ts` + `lib/pricing/seed-provider.ts`  
-  **역할**: 가격 프로바이더 추상화 (실제 API 키 없이 seed 데이터로 데모 동작)  
-  **최근 변경**: 신규 생성  
-  **다음에 확인할 점**: `AXIS_PRICE_SOURCE=seed`는 **절대 프로덕션에 추가 금지** (데모 전용)
-
-- **파일 경로**: `lib/push/send.ts` + `public/sw.js`  
-  **역할**: Web Push 알림 발송 + 서비스 워커  
-  **최근 변경**: 신규 생성  
-  **다음에 확인할 점**: VAPID 키 미설정 시 WatchButton UI가 노출되지 않는 문제 (이전 세션에서 미해결)
-
-- **파일 경로**: `supabase/migrations/` (0009~0013)  
-  **역할**: watches, push_subscriptions, comparisons(SEO), search_misses, comparison_cache 테이블  
-  **최근 변경**: 신규 추가  
-  **다음에 확인할 점**: 프로덕션 Supabase에 마이그레이션 실제 적용 여부 확인 필요
-
----
-
-## 4. 현재 남은 문제
-
-### 보안 위험 (즉시 해결)
-
-- **`CRON_SECRET`** 기본값 사용 중 → `openssl rand -base64 32` 로 교체 후 Vercel Production 환경변수 업데이트 필요
+| `CRON_SECRET` 교체 | 현재 기본값 → `openssl rand -base64 32` → Vercel Production |
+| VAPID 키 생성·등록 | `npx web-push generate-vapid-keys` → 3개 키 → WatchButton 노출 확인 |
+| Supabase 마이그레이션 | 0014_price_history.sql 로컬 적용 완료. 프로덕션은 Vercel 배포 후 `npx supabase db push` |
+| 네이버 쇼핑 API 키 설정 | [https://developers.naver.com/apps/](https://developers.naver.com/apps/) → 앱 등록 → 쇼핑 체크 → `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` → `AXIS_PRICE_SOURCE=naver` |
+| Coupang API (대기) | 누적 15만원 매출 달성 후 파트너스 포털 최종승인 → `COUPANG_ACCESS_KEY` / `COUPANG_SECRET_KEY` → `AXIS_PRICE_SOURCE=coupang` 으로 전환 |
 
 ### 기능 비활성화 (API 키 없음)
 
-- **웹 검색 폴백 작동 안 함**: `BRAVE_SEARCH_API_KEY` 미설정 → 레지스트리/데이터셋에 없는 제품은 "찾을 수 없음"으로 떨어짐
-- **이메일 가격 알림 작동 안 함**: `RESEND_API_KEY` 미설정
-- **푸시 알림 작동 안 함**: `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` 미설정
+- `BRAVE_SEARCH_API_KEY` 미설정 → 미등록 제품 웹 검색 폴백 안 됨
+- `RESEND_API_KEY` 미설정 → 이메일 가격 알림 안 됨
+- `VAPID_*` 미설정 → 푸시 알림 안 됨
 
-### 미확인 사항
+### 미확인
 
-- Sony 한국 URL 구조 (`sony.co.kr/ko/products/...`) 실제 동작 확인 필요
-- LG gram 14형 vs 16형 vs 17형 구분 — containment match로 오매핑 가능성 있음
-- Galaxy Buds/Watch 시리즈 공식 URL 패턴 미등록 (URL 패턴 생성 실패 시 web search로만 처리)
-- Supabase 프로덕션 마이그레이션 0009~0013 실제 적용 여부 확인 필요
-- WatchButton UI 미노출 문제 (VAPID_SUBJECT 관련 가능성, 확인 필요)
+- Sony 한국 URL(`sony.co.kr`) 실제 동작 여부
+- LG gram 14/16/17형 containment match 오매핑 가능성
+- WatchButton UI 미노출 (VAPID_SUBJECT 관련 가능성)
+- WatchButton UI 미노출 (VAPID_SUBJECT 관련 가능성)
+- Sony 한국 URL(`sony.co.kr`) 실제 동작 여부
+- LG gram 14/16/17형 containment match 오매핑 가능성
 
-### 배포 도메인
+### 다음 — 빌드 아님, 검증 먼저 (30일 사업 검증)
 
-- 현재 alias: `axis-app-beta.vercel.app` — "nudge" 잔재 포함된 이름
-- 커스텀 도메인 미연결
+추가 기능 빌드 전에 핵심 가정부터 싸게 검증한다. 통과 시에만 빌드 재개.
 
----
+**핵심 가정 (먼저 검증):**
+- A 실가격·이력을 싸게 확보 가능 — 쿠팡 현재가 + 노트북 26 SKU 자체 일별 적재 PoC
+  → **[준비 완료]** `naver-provider.ts` + `coupang-provider.ts` + `price-snapshot` 크론 구현 완료 (2026-06-11).
+     ① 네이버 쇼핑 API 즉시 발급 후 `AXIS_PRICE_SOURCE=naver` 로 활성화 (가격=전국최저가, 구매링크=쿠팡 제휴).
+     ② Coupang 누적 15만원 매출 달성 → 최종승인 → `AXIS_PRICE_SOURCE=coupang` 으로 전환 (env 변경만으로 완료).
+- B SEO/커뮤니티로 유입 가능 — 노트북 추천/비교 콘텐츠 15~20편 색인
+- C 방문자가 제휴 클릭·구매 — 쿠팡 링크 클릭률 >8%, 전환 추적
+- D 알림이 재방문을 만든다 — 실알림 켜고 M2 재방문 >30%
+- E 검증 배지가 선택에 영향 — 배지 유무 A/B
 
-## 5. 다음에 바로 할 일
+**kill-switch:** A·B·C 모두 통과 → 노트북·KR·제휴로 추진. A 실패 → Track/Alert 폐기·
+결정 전용 PIVOT 검토. B 또는 C 실패 → 사업 재고(STOP).
 
-### 가장 먼저 할 일 (보안 + 기능 활성화)
+**보류 (검증 전 빌드 금지):** P3-푸시앱 · P3-구독 · US/JP 운영 · 신규 카테고리(모니터 등) ·
+외부 가격이력 API 결제.
 
-1. **CRON_SECRET 교체**: `openssl rand -base64 32` → Vercel Production 환경변수 교체
-2. **VAPID 키 생성·등록**: `npx web-push generate-vapid-keys` → Vercel Production 3개 키 등록 → WatchButton 노출 확인
-3. **Supabase 마이그레이션 확인**: Supabase 대시보드에서 0009~0013 테이블 존재 여부 확인 및 미적용 시 `supabase db push`
-
-### 그다음 할 일
-
-1. **Brave Search API 키 등록**: [brave.com/search/api](https://brave.com/search/api/) 발급 → `BRAVE_SEARCH_API_KEY` Vercel Production 추가 → 미등록 제품 자동 발견 활성화
-2. **Resend API 키 발급**: [resend.com](https://resend.com) → `RESEND_API_KEY`, `RESEND_FROM_EMAIL` 등록 → 이메일 가격 알림 활성화
-3. **Sony 한국 URL 수동 검증**: `sony.co.kr` WH-1000XM5 페이지 실제 접근 → product-registry-data.ts KR URL 확인·수정
-
-### 나중에 개선할 일
-
-1. **커스텀 도메인 연결**: Vercel 도메인 설정에서 `axis-app-beta` → 실제 도메인으로 교체
-2. **LG gram 사이즈 variant 명확화**: `lib/specs/product-registry-data.ts`에 14/16/17형 별도 엔트리 추가
-3. **`search_misses` 테이블 정기 분석**: 어떤 제품이 자주 누락되는지 파악 → 레지스트리·앨리어스 보강
-4. **Galaxy Buds/Watch 데이터셋 추가**: `lib/specs/dataset/` 에 이어폰·워치 카테고리 신규 파일
+> 상세 실험·지표·성공/실패 기준은 사업성 검증 보고서 및 메모리
+> (`project_business_validation`) 참조. P3-SEO(정적 비교·제품 페이지 색인)는 가정 B
+> 검증 수단으로 흡수.
 
 ---
 
-## 6. 다음 개발 시작 방법
-
-1. **먼저 확인할 파일**:
-   - `lib/specs/product-registry-data.ts` — 제품 추가·수정 작업
-   - `lib/specs/product-aliases.ts` — 검색어 매핑 추가
-   - `lib/decision-engine.ts` — 파이프라인 로직 수정
-   - `components/vs-input.tsx` — 입력 UI 수정
-
-2. **먼저 실행할 테스트**:
-   ```bash
-   npm test
-   ```
-   현재 168/168 통과 상태. 레지스트리나 파이프라인 수정 후 반드시 재실행.
-
-3. **먼저 확인할 문제**:
-   - Vercel 환경변수 설정 상태 (`vercel env ls`)
-   - Supabase 테이블 0009~0013 존재 여부
-
-4. **이어서 할 작업**:
-   - 환경변수 등록 (VAPID, CRON_SECRET, Brave Search, Resend)
-   - 등록 후 `vercel --prod` 배포
-   - WatchButton·PriceComparison 실제 동작 확인
-
----
-
-## 7. 실행 / 테스트 / 빌드 명령어
+## 7. 명령어
 
 ```bash
-# 개발 서버 (webpack 모드)
-npm run dev
+npm run dev          # 개발 서버 (webpack)
+npm run dev:turbo    # 개발 서버 (turbopack)
+npm test             # 테스트
+npm run test:watch   # 테스트 watch
+npm run build        # 빌드
+npx tsc --noEmit     # 타입 체크
 
-# 개발 서버 (turbopack 모드, 더 빠름)
-npm run dev:turbo
-
-# 테스트 실행
-npm test
-
-# 테스트 watch 모드
-npm run test:watch
-
-# 빌드
-npm run build
-
-# Vercel 환경변수 로컬 동기화
-vercel env pull .env.local
-
-# Vercel 배포 (프로덕션)
-vercel --prod
-
-# Supabase 마이그레이션 적용
-supabase db push
-
-# VAPID 키 생성
-npx web-push generate-vapid-keys
-
-# CRON_SECRET 생성
-openssl rand -base64 32
+vercel env pull .env.local            # 환경변수 로컬 동기화
+vercel env ls                         # 환경변수 상태 확인
+supabase db push                      # 마이그레이션 적용
+npx web-push generate-vapid-keys      # VAPID 키 생성
+openssl rand -base64 32               # CRON_SECRET 생성
 ```
 
 ---
 
-## 8. 다음에 Claude에게 시킬 프롬프트
-
-### 환경변수·배포 후 검증
-```
-VAPID 키를 등록하고 프로덕션 배포했어. WatchButton이 UI에 정상 노출되는지 확인하고,
-푸시 알림 구독 플로우를 처음부터 테스트해줘.
-문제가 있으면 lib/push/, components/watch-button.tsx, public/sw.js 를 확인해.
-```
-
-### 미등록 제품 검색 개선
-```
-다음 제품명으로 비교를 테스트해봐: "갤럭시 버즈3 프로 vs 소니 WF-1000XM5".
-검색 파이프라인이 어디서 실패하는지 추적하고, product-registry-data.ts 와
-product-aliases.ts 에 필요한 엔트리를 추가해줘.
-BRAVE_SEARCH_API_KEY는 아직 없다고 가정하고, URL 패턴으로 처리 가능한 범위까지만 해결해.
-```
-
-### LG gram 사이즈 variant 수정
-```
-"lg gram 14" 검색 시 lg gram 16 스펙이 나오는 버그가 있어.
-lib/specs/product-registry-data.ts 에서 LG gram 14/16/17형을 별도 엔트리로 분리하고,
-lib/specs/product-aliases.ts 에 한국어 앨리어스(엘지 그램 14형 등)도 추가해줘.
-수정 후 npm test 통과 확인.
-```
-
----
-
-## 부록: 주요 환경변수 체크리스트
+## 8. 환경변수 체크리스트
 
 | 변수 | 상태 | 설명 |
 |------|------|------|
-| `NEXT_PUBLIC_SUPABASE_URL` | 설정됨 | Supabase 프로젝트 URL |
+| `NEXT_PUBLIC_SUPABASE_URL` | 설정됨 | Supabase URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 설정됨 | Supabase anon 키 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 설정됨 | Supabase 서비스 키 |
-| `GROQ_API_KEY` | 설정됨 | AI 결정 엔진 (주 프로바이더) |
-| `CRON_SECRET` | ⚠️ 기본값 | **즉시 교체 필요** |
-| `BRAVE_SEARCH_API_KEY` | ❌ 미설정 | 웹 검색 폴백 비활성화 |
-| `RESEND_API_KEY` | ❌ 미설정 | 이메일 알림 비활성화 |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ❌ 미설정 | 푸시 알림 비활성화 |
-| `VAPID_PRIVATE_KEY` | ❌ 미설정 | 푸시 알림 비활성화 |
-| `VAPID_SUBJECT` | ❌ 미설정 | 푸시 알림 비활성화 |
-| `AXIS_PRICE_SOURCE` | 미설정 (정상) | `seed` 값은 **프로덕션 절대 금지** |
+| `GROQ_API_KEY` | 설정됨 | AI 결정 엔진 |
+| `CRON_SECRET` | ✅ 교체 완료 | 2026-06-11 새 키로 교체 |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ✅ 설정됨 | 푸시 알림 |
+| `VAPID_PRIVATE_KEY` | ✅ 설정됨 | 푸시 알림 |
+| `VAPID_SUBJECT` | ✅ 설정됨 | 푸시 알림 |
+| `AXIS_PRICE_SOURCE` | ✅ naver | 네이버 쇼핑 최저가 활성화 |
+| `NAVER_CLIENT_ID` | ✅ 설정됨 | 네이버 쇼핑 API |
+| `NAVER_CLIENT_SECRET` | ✅ 설정됨 | 네이버 쇼핑 API |
+| `BRAVE_SEARCH_API_KEY` | ❌ 미설정 | 웹 검색 폴백 |
+| `RESEND_API_KEY` | ❌ 미설정 | 이메일 알림 (D단계) |
+| `COUPANG_ACCESS_KEY` | ❌ 대기 중 | 쿠팡 파트너스 API (최종승인 후 발급 — 15만원 매출 필요) |
+| `COUPANG_SECRET_KEY` | ❌ 대기 중 | 쿠팡 파트너스 API |

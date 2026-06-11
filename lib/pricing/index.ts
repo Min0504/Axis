@@ -1,4 +1,6 @@
 import { seedPriceProvider } from "./seed-provider";
+import { coupangProvider } from "./coupang-provider";
+import { naverProvider } from "./naver-provider";
 import type { PriceProvider, Region } from "./types";
 
 export * from "./types";
@@ -6,16 +8,18 @@ export * from "./types";
 /**
  * Resolve the active price provider for a region.
  *
- * Until a real data source is wired, prices are only available when explicitly
- * opted into the seed provider (dev/demo) via `AXIS_PRICE_SOURCE=seed`. In
- * production with no real provider, this returns null and the UI shows no
- * price — same honesty rule as the spec verification gate: never present data
- * we can't stand behind.
+ * `AXIS_PRICE_SOURCE=naver`   — Naver Shopping API (interim; available immediately).
+ * `AXIS_PRICE_SOURCE=coupang` — Coupang Partners API (requires Partners 최종승인).
+ * `AXIS_PRICE_SOURCE=seed`    — deterministic fixture for dev/demo only.
+ * unset                       — returns null; UI shows no price.
+ *
+ * Switch path: naver → coupang (env var change only, no code change needed).
  */
-export function getPriceProvider(_region: Region): PriceProvider | null {
+export function getPriceProvider(region: Region): PriceProvider | null {
   const source = process.env.AXIS_PRICE_SOURCE;
+  if (source === "naver") return region === "KR" ? naverProvider : null;
+  if (source === "coupang") return region === "KR" ? coupangProvider : null;
   if (source === "seed") return seedPriceProvider;
-  // Future: if (source === "keepa") return keepaProvider; etc.
   return null;
 }
 

@@ -31,7 +31,13 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary",
       title: `${t.siteName} — ${t.siteTagline}`,
       description: t.siteDescription
-    }
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+      other: process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION
+        ? { "naver-site-verification": process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION }
+        : undefined,
+    },
   };
 }
 
@@ -43,6 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#111111" />
+        <meta name="naver-site-verification" content="707805c4c2cdea34c31b2bcc7824e63b69c682b2" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

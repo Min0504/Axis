@@ -238,5 +238,220 @@ export const tablets: VerifiedProduct[] = [
       battery_wh: "8400mAh", stylus: "S펜 포함", weight_g: "498",
       cellular: "Wi-Fi (5G 옵션)", launch_price_krw: "99만 9천원부터"
     }
-  }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Apple iPad Pro M1 / M2 (2021–2022)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "ipad-pro-11-m1",
+    canonicalName: "아이패드 프로 11 M1",
+    nameEn: "iPad Pro 11 M1",
+    aliases: ["아이패드 프로 11 m1", "아이패드프로 11 m1", "아이패드 프로 11 2021", "ipad pro 11 m1", "ipad pro 11 2021"],
+    category: "tablet",
+    country: "KR",
+    source: "https://support.apple.com/ko-kr/111901",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPad Pro 11형 (3세대, M1)", os: "iPadOS", chipset: "Apple M1", display_inch: "11",
+      resolution: "2388×1668", refresh_hz: "120", storage_gb: "128", ram_gb: "8",
+      battery_wh: "동영상 재생 최대 10시간 (28.65Wh)", stylus: "Apple Pencil 2세대 지원", weight_g: "466",
+      cellular: "Wi-Fi (셀룰러 옵션)", launch_price_krw: "119만 9천원부터"
+    }
+  },
+  {
+    id: "ipad-pro-13-m1",
+    canonicalName: "아이패드 프로 12.9 M1",
+    nameEn: "iPad Pro 12.9 M1",
+    aliases: [
+      "아이패드 프로 12.9 m1", "아이패드프로 12.9 m1", "아이패드 프로 12.9 2021", "ipad pro 12.9 m1", "ipad pro 12.9 2021",
+      "아이패드 프로 13 m1", "아이패드프로13m1"
+    ],
+    category: "tablet",
+    country: "KR",
+    source: "https://support.apple.com/ko-kr/111901",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPad Pro 12.9형 (5세대, M1)", os: "iPadOS", chipset: "Apple M1", display_inch: "12.9",
+      resolution: "2732×2048", refresh_hz: "120", storage_gb: "128", ram_gb: "8",
+      battery_wh: "동영상 재생 최대 10시간 (40.88Wh)", stylus: "Apple Pencil 2세대 지원", weight_g: "682",
+      cellular: "Wi-Fi (셀룰러 옵션)", launch_price_krw: "149만 9천원부터"
+    }
+  },
+  {
+    id: "ipad-pro-11-m2",
+    canonicalName: "아이패드 프로 11 M2",
+    nameEn: "iPad Pro 11 M2",
+    aliases: ["아이패드 프로 11 m2", "아이패드프로 11 m2", "아이패드 프로 11 2022", "ipad pro 11 m2", "ipad pro 11 2022"],
+    category: "tablet",
+    country: "KR",
+    source: "https://support.apple.com/ko-kr/111901",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPad Pro 11형 (4세대, M2)", os: "iPadOS", chipset: "Apple M2", display_inch: "11",
+      resolution: "2388×1668", refresh_hz: "120", storage_gb: "128", ram_gb: "8",
+      battery_wh: "동영상 재생 최대 10시간 (28.65Wh)", stylus: "Apple Pencil 2세대, 호버 지원", weight_g: "466",
+      cellular: "Wi-Fi (셀룰러 옵션)", launch_price_krw: "129만 9천원부터"
+    }
+  },
+  {
+    id: "ipad-pro-13-m2",
+    canonicalName: "아이패드 프로 12.9 M2",
+    nameEn: "iPad Pro 12.9 M2",
+    aliases: [
+      "아이패드 프로 12.9 m2", "아이패드프로 12.9 m2", "아이패드 프로 12.9 2022", "ipad pro 12.9 m2", "ipad pro 12.9 2022",
+      "아이패드 프로 13 m2", "아이패드프로13m2"
+    ],
+    category: "tablet",
+    country: "KR",
+    source: "https://support.apple.com/ko-kr/111901",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPad Pro 12.9형 (6세대, M2)", os: "iPadOS", chipset: "Apple M2", display_inch: "12.9",
+      resolution: "2732×2048", refresh_hz: "120", storage_gb: "128", ram_gb: "8",
+      battery_wh: "동영상 재생 최대 10시간 (40.88Wh)", stylus: "Apple Pencil 2세대, 호버 지원", weight_g: "682",
+      cellular: "Wi-Fi (셀룰러 옵션)", launch_price_krw: "159만 9천원부터"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Apple iPad Air / iPad (일반) 추가
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "ipad-air-5-m1",
+    canonicalName: "아이패드 에어 5세대 M1",
+    nameEn: "iPad Air 5th Gen M1",
+    aliases: [
+      "아이패드 에어 5세대", "아이패드에어5세대", "아이패드 에어 m1", "아이패드에어m1",
+      "ipad air 5", "ipad air 5th gen", "ipad air m1", "아이패드 에어 2022"
+    ],
+    category: "tablet",
+    country: "KR",
+    source: "https://support.apple.com/ko-kr/111901",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPad Air 5세대 (M1)", os: "iPadOS", chipset: "Apple M1", display_inch: "10.9",
+      resolution: "2360×1640", refresh_hz: "60", storage_gb: "64", ram_gb: "8",
+      battery_wh: "동영상 재생 최대 10시간 (28.65Wh)", stylus: "Apple Pencil 2세대 지원", weight_g: "461",
+      cellular: "Wi-Fi (셀룰러 옵션)", launch_price_krw: "99만원부터"
+    }
+  },
+  {
+    id: "ipad-9",
+    canonicalName: "아이패드 9세대",
+    nameEn: "iPad (9th generation)",
+    aliases: [
+      "아이패드 9세대", "아이패드9세대", "아이패드 9", "아이패드9", "ipad 9", "ipad 9th gen",
+      "ipad 9세대", "아이패드 2021", "아이패드2021"
+    ],
+    category: "tablet",
+    country: "KR",
+    source: "https://support.apple.com/ko-kr/111901",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPad 9세대", os: "iPadOS", chipset: "Apple A13 Bionic", display_inch: "10.2",
+      resolution: "2160×1620", refresh_hz: "60", storage_gb: "64", ram_gb: "3",
+      battery_wh: "동영상 재생 최대 10시간 (32.4Wh)", stylus: "Apple Pencil 1세대 지원", weight_g: "487",
+      cellular: "Wi-Fi (셀룰러 옵션)", launch_price_krw: "49만 9천원부터"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Samsung Galaxy Tab S7 시리즈 (2020)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-tab-s7",
+    canonicalName: "갤럭시 탭 S7",
+    nameEn: "Galaxy Tab S7",
+    aliases: ["갤럭시 탭 s7", "갤럭시탭s7", "galaxy tab s7", "탭 s7", "탭s7"],
+    category: "tablet",
+    country: "KR",
+    source: "https://www.samsung.com/sec/tablets/galaxy-tab-s7/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Tab S7", os: "Android 10 (One UI 2.5)", chipset: "Snapdragon 865+", display_inch: "11",
+      resolution: "2560×1600", refresh_hz: "120", storage_gb: "128", ram_gb: "6",
+      battery_wh: "8000mAh", stylus: "S펜 포함", weight_g: "498",
+      cellular: "Wi-Fi (5G 옵션)", launch_price_krw: "89만 9천원부터"
+    }
+  },
+  {
+    id: "galaxy-tab-s7-plus",
+    canonicalName: "갤럭시 탭 S7+",
+    nameEn: "Galaxy Tab S7+",
+    aliases: ["갤럭시 탭 s7+", "갤럭시탭s7+", "galaxy tab s7+", "galaxy tab s7 plus", "탭 s7+", "탭s7+"],
+    category: "tablet",
+    country: "KR",
+    source: "https://www.samsung.com/sec/tablets/galaxy-tab-s7-plus/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Tab S7+", os: "Android 10 (One UI 2.5)", chipset: "Snapdragon 865+", display_inch: "12.4",
+      resolution: "2800×1752", refresh_hz: "120", storage_gb: "128", ram_gb: "6",
+      battery_wh: "10090mAh", stylus: "S펜 포함", weight_g: "575",
+      cellular: "Wi-Fi (5G 옵션)", launch_price_krw: "119만 9천원부터"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Samsung Galaxy Tab S8 시리즈 (2022)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-tab-s8",
+    canonicalName: "갤럭시 탭 S8",
+    nameEn: "Galaxy Tab S8",
+    aliases: ["갤럭시 탭 s8", "갤럭시탭s8", "galaxy tab s8", "탭 s8", "탭s8"],
+    category: "tablet",
+    country: "KR",
+    source: "https://www.samsung.com/sec/tablets/galaxy-tab-s8/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Tab S8", os: "Android 12 (One UI 4.1)", chipset: "Snapdragon 8 Gen 1", display_inch: "11",
+      resolution: "2560×1600", refresh_hz: "120", storage_gb: "128", ram_gb: "8",
+      battery_wh: "8000mAh", stylus: "S펜 포함", weight_g: "503",
+      cellular: "Wi-Fi (5G 옵션)", launch_price_krw: "94만 9천원부터"
+    }
+  },
+  {
+    id: "galaxy-tab-s8-plus",
+    canonicalName: "갤럭시 탭 S8+",
+    nameEn: "Galaxy Tab S8+",
+    aliases: ["갤럭시 탭 s8+", "갤럭시탭s8+", "galaxy tab s8+", "galaxy tab s8 plus", "탭 s8+", "탭s8+"],
+    category: "tablet",
+    country: "KR",
+    source: "https://www.samsung.com/sec/tablets/galaxy-tab-s8-plus/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Tab S8+", os: "Android 12 (One UI 4.1)", chipset: "Snapdragon 8 Gen 1", display_inch: "12.4",
+      resolution: "2800×1752", refresh_hz: "120", storage_gb: "128", ram_gb: "8",
+      battery_wh: "10090mAh", stylus: "S펜 포함", weight_g: "572",
+      cellular: "Wi-Fi (5G 옵션)", launch_price_krw: "119만 9천원부터"
+    }
+  },
+  {
+    id: "galaxy-tab-s8-ultra",
+    canonicalName: "갤럭시 탭 S8 울트라",
+    nameEn: "Galaxy Tab S8 Ultra",
+    aliases: ["갤럭시 탭 s8 울트라", "갤럭시탭s8울트라", "galaxy tab s8 ultra", "탭 s8 울트라", "탭s8울트라"],
+    category: "tablet",
+    country: "KR",
+    source: "https://www.samsung.com/sec/tablets/galaxy-tab-s8-ultra/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Tab S8 Ultra", os: "Android 12 (One UI 4.1)", chipset: "Snapdragon 8 Gen 1", display_inch: "14.6",
+      resolution: "2960×1848", refresh_hz: "120", storage_gb: "128", ram_gb: "8",
+      battery_wh: "11200mAh", stylus: "S펜 포함", weight_g: "726",
+      cellular: "Wi-Fi (5G 옵션)", launch_price_krw: "159만 9천원부터"
+    }
+  },
 ];

@@ -8,3 +8,7 @@ node_modules
 *.log
 *.tsbuildinfo
 .vercel
+
+# Supabase CLI local state
+supabase/.temp
+supabase/.branches
