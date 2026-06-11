@@ -11,7 +11,16 @@ const MAX_OPTION_LENGTH = 100;
 const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60_000;
 
-type Body = { query?: string; optionA?: string; optionB?: string; options?: unknown };
+type Body = {
+  query?: string;
+  optionA?: string;
+  optionB?: string;
+  options?: unknown;
+  /** Optional user situation for tailored re-analysis. */
+  context?: unknown;
+};
+
+const MAX_CONTEXT_LENGTH = 200;
 
 function collectOptions(body: Body): string[] {
   if (Array.isArray(body.options)) {
@@ -73,9 +82,14 @@ export async function POST(req: Request) {
 
   const query = buildQuery(options);
 
+  const userContext =
+    typeof body.context === "string"
+      ? body.context.trim().slice(0, MAX_CONTEXT_LENGTH)
+      : undefined;
+
   let result: ComparisonResult;
   try {
-    result = await buildDecision(query, MAX_OPTIONS, locale, country);
+    result = await buildDecision(query, MAX_OPTIONS, locale, country, userContext || undefined);
   } catch (err) {
     console.error("[buildDecision]", err);
     return NextResponse.json(

@@ -1,10 +1,10 @@
-import { Fragment } from "react";
 import type { ComparisonResult, ComparisonRow, OfficialSourceMeta } from "@/lib/types";
 import Link from "next/link";
 import ShareActions from "@/components/share-actions";
 import SettingsBar from "@/components/settings-bar";
 import UserNav from "@/components/user-nav";
-import PriceComparison from "@/components/price-comparison";
+import ContextCard from "@/components/context-card";
+import TimingSection from "@/components/timing-section";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { verificationLabel } from "@/lib/specs/source";
 import { resolveFieldByLabel } from "@/lib/specs/schema";
@@ -17,6 +17,8 @@ type Props = {
   shareToken?: string;
   locale?: Locale;
   hidePrices?: boolean;
+  slug?: string;
+  region?: string;
 };
 
 type NormalizedRow = { key: string; values: string[] };
@@ -43,12 +45,6 @@ function normalize(result: ComparisonResult, query: string) {
   return { options, rows, sources, sourceMeta, analyses };
 }
 
-/**
- * Compute spec-win percentages for each option.
- * For every numeric field with a known "better" direction, score the winner.
- * Returns an array of integers (0-100) aligned to options, or null if no
- * comparable rows exist.
- */
 function computeFitScores(
   options: string[],
   comparison: ComparisonRow[],
@@ -69,7 +65,7 @@ function computeFitScores(
     const nums = parsed as number[];
     const target = field.better === "higher" ? Math.max(...nums) : Math.min(...nums);
     const winners = nums.map((n, i) => ({ n, i })).filter(({ n }) => n === target);
-    if (winners.length !== 1) continue; // tie → skip
+    if (winners.length !== 1) continue;
 
     scores[winners[0].i]++;
     total++;
@@ -90,7 +86,8 @@ export default function ResultsView({
   comparisonId,
   shareToken,
   locale = "ko",
-  hidePrices = false,
+  slug,
+  region,
 }: Props) {
   const { options, rows, sources, sourceMeta, analyses } = normalize(result, query);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
@@ -100,14 +97,12 @@ export default function ResultsView({
     result.status === "not_found" || result.status === "verification_pending";
   const fitScores = computeFitScores(options, rows, result.category);
 
-  // Only show the verification badge for confirmed/partial data — not for unverified.
   const showVerifyBadge =
     result.verification != null &&
     (result.verification === "verified" || result.verification === "partial");
 
   return (
     <div className="container">
-      {/* ── Topbar ── */}
       <header className="topbar results-topbar">
         <Link href="/" className="brand">
           axis<span className="brand-beta">beta</span>
@@ -121,49 +116,60 @@ export default function ResultsView({
       <main className="results-body">
         <Link href="/" className="btn-back">{t.back}</Link>
 
-        {/* ── 1. Verdict ── */}
-        <section className="result-card">
-          <p className="label">{isBlockedResult ? t.specComparisonPending : t.axisChoice}</p>
-          <h1>{result.selectedOption}</h1>
-          <p className="result-conclusion">{result.oneLineConclusion ?? t.defaultConclusion}</p>
-          {options.length > 1 && (
-            <div className="result-matchup" aria-label={query}>
-              {options.map((opt, i) => (
-                <Fragment key={i}>
-                  {i > 0 && <span className="rm-vs" aria-hidden>vs</span>}
-                  <span className={`rm-item${i === selectedIndex ? " rm-win" : ""}`}>
-                    {i === selectedIndex && <span className="rm-check" aria-hidden>✓</span>}
-                    {opt}
-                  </span>
-                </Fragment>
-              ))}
-            </div>
-          )}
+        {/* ── 1. Verdict hero ── */}
+        <section className="verdict-hero">
+          <div className="vh-badge">
+            <span className="vh-badge-dot" aria-hidden />
+            {isBlockedResult ? t.specComparisonPending : t.axisChoice}
+          </div>
 
-          {/* ── Fit score bars ── */}
-          {fitScores && !isBlockedResult && (
-            <div className="fit-bars" aria-label={t.fitScoreLabel}>
+          <h1 className="vh-title">{result.selectedOption}</h1>
+          <p className="vh-conclusion">{result.oneLineConclusion ?? t.defaultConclusion}</p>
+
+          {/* 승부 막대: 각 옵션의 스펙 우위를 % 없이 막대 길이로만 표현 */}
+          {options.length > 1 && !isBlockedResult && (
+            <div className="vh-matchup" aria-label={query}>
               {options.map((opt, i) => (
-                <div key={i} className={`fit-bar-row${i === selectedIndex ? " fit-winner" : ""}`}>
-                  <span className="fit-bar-name">{opt}</span>
-                  <div className="fit-bar-track" aria-hidden>
-                    <div
-                      className="fit-bar-fill"
-                      style={{ width: `${fitScores[i]}%` }}
-                    />
+                <div
+                  key={i}
+                  className={`vh-row${i === selectedIndex ? " vh-row-win" : ""}`}
+                >
+                  <div className="vh-row-head">
+                    <span className="vh-row-name">{opt}</span>
+                    {i === selectedIndex && <span className="vh-row-tag">{t.winner}</span>}
                   </div>
-                  <span className="fit-bar-pct">{fitScores[i]}%</span>
+                  {fitScores && (
+                    <div className="vh-bar-track" aria-hidden>
+                      <div className="vh-bar-fill" style={{ width: `${Math.max(fitScores[i], 4)}%` }} />
+                    </div>
+                  )}
                 </div>
               ))}
-              <p className="fit-bar-note">{t.fitScoreNote}</p>
+              {fitScores && <p className="vh-bar-note">{t.fitScoreNote}</p>}
             </div>
           )}
         </section>
 
-        {/* ── 2. Live prices — TODO: price data feed not ready, re-enable in next update ── */}
-        {/* {!hidePrices && !isBlockedResult && <PriceComparison options={options} locale={locale} />} */}
+        {/* ── 2. Timing + Buy ── */}
+        {!isBlockedResult && (
+          <div className="buy-timing-block">
+            <TimingSection productName={result.selectedOption} locale={locale} />
+            <div className="share-actions-wrap">
+              <ShareActions
+                selectedOption={result.selectedOption}
+                category={result.category}
+                locale={locale}
+                comparisonId={comparisonId}
+                shareToken={shareToken}
+                guestPayload={!comparisonId ? { query, result } : undefined}
+                slug={slug}
+                region={region}
+              />
+            </div>
+          </div>
+        )}
 
-        {/* ── 3. Official spec comparison ── */}
+        {/* ── 3. Spec table ── */}
         <section className="detail-card spec-section">
           <div className="spec-header">
             <h2>{showVerifyBadge ? t.specComparison : t.specComparisonPending}</h2>
@@ -230,19 +236,6 @@ export default function ResultsView({
           )}
         </section>
 
-        {/* ── 3. Why chosen ── */}
-        <section className="detail-card">
-          <h2>{t.whyChosen}</h2>
-          <ul className="reason-list">
-            {result.reasons.map((reason) => (
-              <li key={reason}>
-                <span className="reason-mark" aria-hidden>✓</span>
-                <span>{reason}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
         {/* ── 4. Per-option analysis ── */}
         {analyses.some(Boolean) && (
           <section className="detail-card">
@@ -280,22 +273,30 @@ export default function ResultsView({
           </section>
         )}
 
-        {/* ── 5. Summary ── */}
+        {/* ── 5. Why chosen (추천이유 — 아래로 이동) ── */}
+        {!isBlockedResult && (
+          <section className="detail-card">
+            <h2>{t.whyChosen}</h2>
+            <ul className="reason-list">
+              {result.reasons.map((reason) => (
+                <li key={reason}>
+                  <span className="reason-mark" aria-hidden>✓</span>
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* ── 6. Summary ── */}
         <section className="detail-card results-last-card">
           <h2>{t.summary}</h2>
-          <p>{result.detail}</p>
+          <p className="summary-text">{result.detail}</p>
         </section>
 
-        {/* ── 6. Buy / Share CTA ── */}
+        {/* ── 7. Context Card ── */}
         {!isBlockedResult && (
-          <ShareActions
-            selectedOption={result.selectedOption}
-            category={result.category}
-            locale={locale}
-            comparisonId={comparisonId}
-            shareToken={shareToken}
-            guestPayload={!comparisonId ? { query, result } : undefined}
-          />
+          <ContextCard originalQuery={query} locale={locale} />
         )}
       </main>
     </div>

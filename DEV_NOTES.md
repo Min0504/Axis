@@ -152,7 +152,9 @@ npm run collect:jp   # 価格.com (JP, JPY 가격)
 |------|------|
 | `CRON_SECRET` 교체 | 현재 기본값 → `openssl rand -base64 32` → Vercel Production |
 | VAPID 키 생성·등록 | `npx web-push generate-vapid-keys` → 3개 키 → WatchButton 노출 확인 |
-| Supabase 마이그레이션 확인 | 프로덕션에 0009~0013 테이블 적용 여부 |
+| Supabase 마이그레이션 | 0014_price_history.sql 로컬 적용 완료. 프로덕션은 Vercel 배포 후 `npx supabase db push` |
+| 네이버 쇼핑 API 키 설정 | [https://developers.naver.com/apps/](https://developers.naver.com/apps/) → 앱 등록 → 쇼핑 체크 → `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` → `AXIS_PRICE_SOURCE=naver` |
+| Coupang API (대기) | 누적 15만원 매출 달성 후 파트너스 포털 최종승인 → `COUPANG_ACCESS_KEY` / `COUPANG_SECRET_KEY` → `AXIS_PRICE_SOURCE=coupang` 으로 전환 |
 
 ### 기능 비활성화 (API 키 없음)
 
@@ -165,14 +167,19 @@ npm run collect:jp   # 価格.com (JP, JPY 가격)
 - Sony 한국 URL(`sony.co.kr`) 실제 동작 여부
 - LG gram 14/16/17형 containment match 오매핑 가능성
 - WatchButton UI 미노출 (VAPID_SUBJECT 관련 가능성)
-- 가격 데이터: seed → 실가격(Keepa API / Amazon PA-API / Coupang) 교체 (P3-데이터, 현재 미착수)
+- WatchButton UI 미노출 (VAPID_SUBJECT 관련 가능성)
+- Sony 한국 URL(`sony.co.kr`) 실제 동작 여부
+- LG gram 14/16/17형 containment match 오매핑 가능성
 
 ### 다음 — 빌드 아님, 검증 먼저 (30일 사업 검증)
 
 추가 기능 빌드 전에 핵심 가정부터 싸게 검증한다. 통과 시에만 빌드 재개.
 
 **핵심 가정 (먼저 검증):**
-- A 실가격·이력을 싸게 확보 가능 — 쿠팡 현재가 + 노트북 50 SKU 자체 일별 적재 PoC
+- A 실가격·이력을 싸게 확보 가능 — 쿠팡 현재가 + 노트북 26 SKU 자체 일별 적재 PoC
+  → **[준비 완료]** `naver-provider.ts` + `coupang-provider.ts` + `price-snapshot` 크론 구현 완료 (2026-06-11).
+     ① 네이버 쇼핑 API 즉시 발급 후 `AXIS_PRICE_SOURCE=naver` 로 활성화 (가격=전국최저가, 구매링크=쿠팡 제휴).
+     ② Coupang 누적 15만원 매출 달성 → 최종승인 → `AXIS_PRICE_SOURCE=coupang` 으로 전환 (env 변경만으로 완료).
 - B SEO/커뮤니티로 유입 가능 — 노트북 추천/비교 콘텐츠 15~20편 색인
 - C 방문자가 제휴 클릭·구매 — 쿠팡 링크 클릭률 >8%, 전환 추적
 - D 알림이 재방문을 만든다 — 실알림 켜고 M2 재방문 >30%
@@ -217,10 +224,14 @@ openssl rand -base64 32               # CRON_SECRET 생성
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 설정됨 | Supabase anon 키 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 설정됨 | Supabase 서비스 키 |
 | `GROQ_API_KEY` | 설정됨 | AI 결정 엔진 |
-| `CRON_SECRET` | ⚠️ 기본값 | **즉시 교체 필요** |
+| `CRON_SECRET` | ✅ 교체 완료 | 2026-06-11 새 키로 교체 |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ✅ 설정됨 | 푸시 알림 |
+| `VAPID_PRIVATE_KEY` | ✅ 설정됨 | 푸시 알림 |
+| `VAPID_SUBJECT` | ✅ 설정됨 | 푸시 알림 |
+| `AXIS_PRICE_SOURCE` | ✅ naver | 네이버 쇼핑 최저가 활성화 |
+| `NAVER_CLIENT_ID` | ✅ 설정됨 | 네이버 쇼핑 API |
+| `NAVER_CLIENT_SECRET` | ✅ 설정됨 | 네이버 쇼핑 API |
 | `BRAVE_SEARCH_API_KEY` | ❌ 미설정 | 웹 검색 폴백 |
-| `RESEND_API_KEY` | ❌ 미설정 | 이메일 알림 |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ❌ 미설정 | 푸시 알림 |
-| `VAPID_PRIVATE_KEY` | ❌ 미설정 | 푸시 알림 |
-| `VAPID_SUBJECT` | ❌ 미설정 | 푸시 알림 |
-| `AXIS_PRICE_SOURCE` | 미설정 (정상) | `seed` 값은 **프로덕션 절대 금지** |
+| `RESEND_API_KEY` | ❌ 미설정 | 이메일 알림 (D단계) |
+| `COUPANG_ACCESS_KEY` | ❌ 대기 중 | 쿠팡 파트너스 API (최종승인 후 발급 — 15만원 매출 필요) |
+| `COUPANG_SECRET_KEY` | ❌ 대기 중 | 쿠팡 파트너스 API |

@@ -12,6 +12,8 @@ type Props = {
   comparisonId?: string;
   shareToken?: string;
   guestPayload?: { query: string; result: ComparisonResult };
+  slug?: string;
+  region?: string;
 };
 
 export default function ShareActions({
@@ -21,6 +23,8 @@ export default function ShareActions({
   comparisonId,
   shareToken,
   guestPayload,
+  slug,
+  region,
 }: Props) {
   const [token, setToken] = useState(shareToken ?? "");
   const [sharing, setSharing] = useState(false);
@@ -82,11 +86,31 @@ export default function ShareActions({
     }
   }
 
+  function trackAffiliate() {
+    void fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event_type: "affiliate",
+        product_id: selectedOption,
+        slug: slug ?? null,
+        region: region ?? locale.toUpperCase(),
+        retailer: buyLink.label,
+      }),
+    }).catch(() => null);
+  }
+
   return (
     <div className="share-actions">
-      <a className="btn-buy" href={buyLink.url} target="_blank" rel="noreferrer sponsored">
+      <a
+        className="btn-buy"
+        href={buyLink.url}
+        target="_blank"
+        rel="noreferrer sponsored"
+        onClick={trackAffiliate}
+      >
         <span className="buy-icon" aria-hidden>↗</span>
-        {t.buyOn(selectedOption)}
+        <span className="buy-text">{t.buyOn(selectedOption)}</span>
         <span className="buy-store">{buyLink.label}</span>
       </a>
 

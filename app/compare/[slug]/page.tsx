@@ -5,6 +5,7 @@ import { COMPARISONS, CATEGORY_LABELS } from "@/lib/compare-pages/comparisons";
 import { buildDecision, buildQuery } from "@/lib/decision-engine";
 import { createServiceClient } from "@/lib/supabase-server";
 import ResultsView from "@/components/results-view";
+import PageViewTracker from "@/components/page-view-tracker";
 import type { ComparisonResult } from "@/lib/types";
 
 // Re-generate at most once per day.
@@ -117,11 +118,14 @@ export default async function ComparePage({ params }: Props) {
         <span>{def.title}</span>
       </div>
 
+      <PageViewTracker slug={slug} region="KR" />
       <ResultsView
         query={query}
         result={result}
         locale={def.locale}
         hidePrices
+        slug={slug}
+        region="KR"
       />
 
       {/* Related comparisons */}
