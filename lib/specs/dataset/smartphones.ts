@@ -702,5 +702,326 @@ export const smartphones: VerifiedProduct[] = [
       ram_gb: "12", storage_gb: "256", camera_mp: "108", battery: "5000mAh",
       charging: "45W 유선, 15W 무선", water_resist: "IP68", weight_g: "222", refresh_hz: "120"
     }
-  }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // iPhone SE 3세대 / 16e
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "iphone-se-3",
+    canonicalName: "아이폰 SE 3세대",
+    nameEn: "iPhone SE (3rd generation)",
+    aliases: ["아이폰 se 3세대", "아이폰se3세대", "아이폰 se3", "아이폰se3", "iphone se 3", "iphone se3", "iphone se 3세대", "se 3세대", "se3세대", "아이폰 se"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.apple.com/kr/iphone-se/specs/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPhone SE (3세대)", release_date: "2022년 3월", launch_price_krw: "65만원부터",
+      os: "iOS 15", chipset: "A15 Bionic", display_inch: "4.7", brightness_nits: "625",
+      ram_gb: "4", storage_gb: "64", camera_mp: "12", battery: "동영상 재생 최대 15시간",
+      charging: "20W 유선, 15W MagSafe 무선", water_resist: "IP67", weight_g: "144", refresh_hz: "60"
+    }
+  },
+  {
+    id: "iphone-16e",
+    canonicalName: "아이폰 16e",
+    nameEn: "iPhone 16e",
+    aliases: ["아이폰 16e", "아이폰16e", "iphone 16e", "iphone16e", "아이폰 se 4세대", "아이폰 se4"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.apple.com/kr/iphone-16e/specs/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "iPhone 16e", release_date: "2025년 2월", launch_price_krw: "79만원부터",
+      os: "iOS 18", chipset: "A16 Bionic", display_inch: "6.1", brightness_nits: "1200",
+      ram_gb: "8", storage_gb: "128", camera_mp: "48", battery: "동영상 재생 최대 18시간",
+      charging: "20W 유선, 25W MagSafe 무선", water_resist: "IP68", weight_g: "167", refresh_hz: "60"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Galaxy S20 시리즈 추가 (2020)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-s20-plus",
+    canonicalName: "갤럭시 S20+",
+    nameEn: "Galaxy S20+",
+    aliases: ["갤럭시 s20+", "갤럭시s20+", "galaxy s20+", "galaxy s20 plus", "s20+", "s20플러스", "갤럭시 s20 플러스"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s20-plus-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S20+ 5G", release_date: "2020년 2월", launch_price_krw: "135만 3천원부터",
+      os: "Android 10 (One UI 2.1)", chipset: "Exynos 990", display_inch: "6.7", brightness_nits: "1300",
+      ram_gb: "12", storage_gb: "128", camera_mp: "64", battery: "4500mAh",
+      charging: "25W 유선, 15W 무선", water_resist: "IP68", weight_g: "186", refresh_hz: "120"
+    }
+  },
+  {
+    id: "galaxy-s20-fe",
+    canonicalName: "갤럭시 S20 FE",
+    nameEn: "Galaxy S20 FE",
+    aliases: ["갤럭시 s20 fe", "갤럭시s20fe", "galaxy s20 fe", "s20 fe", "s20fe", "갤럭시 s20 팬에디션"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s20-fe-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S20 FE 5G", release_date: "2020년 10월", launch_price_krw: "89만 9천원부터",
+      os: "Android 10 (One UI 2.5)", chipset: "Exynos 990", display_inch: "6.5", brightness_nits: "1200",
+      ram_gb: "6", storage_gb: "128", camera_mp: "12", battery: "4500mAh",
+      charging: "25W 유선, 15W 무선", water_resist: "IP68", weight_g: "190", refresh_hz: "120"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Galaxy S21 시리즈 추가 (2021)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-s21-plus",
+    canonicalName: "갤럭시 S21+",
+    nameEn: "Galaxy S21+",
+    aliases: ["갤럭시 s21+", "갤럭시s21+", "galaxy s21+", "galaxy s21 plus", "s21+", "s21플러스", "갤럭시 s21 플러스"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s21-plus-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S21+ 5G", release_date: "2021년 1월", launch_price_krw: "135만 3천원부터",
+      os: "Android 11 (One UI 3.1)", chipset: "Exynos 2100", display_inch: "6.7", brightness_nits: "1300",
+      ram_gb: "8", storage_gb: "128", camera_mp: "12", battery: "4800mAh",
+      charging: "25W 유선, 15W 무선", water_resist: "IP68", weight_g: "200", refresh_hz: "120"
+    }
+  },
+  {
+    id: "galaxy-s21-fe",
+    canonicalName: "갤럭시 S21 FE",
+    nameEn: "Galaxy S21 FE",
+    aliases: ["갤럭시 s21 fe", "갤럭시s21fe", "galaxy s21 fe", "s21 fe", "s21fe", "갤럭시 s21 팬에디션"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s21-fe-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S21 FE 5G", release_date: "2022년 1월", launch_price_krw: "89만 9천원부터",
+      os: "Android 12 (One UI 4.0)", chipset: "Snapdragon 888", display_inch: "6.4", brightness_nits: "1200",
+      ram_gb: "6", storage_gb: "128", camera_mp: "12", battery: "4500mAh",
+      charging: "25W 유선, 15W 무선", water_resist: "IP68", weight_g: "177", refresh_hz: "120"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Galaxy S22 시리즈 추가 (2022)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-s22-plus",
+    canonicalName: "갤럭시 S22+",
+    nameEn: "Galaxy S22+",
+    aliases: ["갤럭시 s22+", "갤럭시s22+", "galaxy s22+", "galaxy s22 plus", "s22+", "s22플러스", "갤럭시 s22 플러스"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s22-plus-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S22+ 5G", release_date: "2022년 2월", launch_price_krw: "135만 3천원부터",
+      os: "Android 12 (One UI 4.1)", chipset: "Exynos 2200", display_inch: "6.6", brightness_nits: "1750",
+      ram_gb: "8", storage_gb: "128", camera_mp: "50", battery: "4500mAh",
+      charging: "45W 유선, 15W 무선", water_resist: "IP68", weight_g: "196", refresh_hz: "120"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Galaxy S23 시리즈 추가 (2023)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-s23-plus",
+    canonicalName: "갤럭시 S23+",
+    nameEn: "Galaxy S23+",
+    aliases: ["갤럭시 s23+", "갤럭시s23+", "galaxy s23+", "galaxy s23 plus", "s23+", "s23플러스", "갤럭시 s23 플러스"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s23-plus-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S23+ 5G", release_date: "2023년 2월", launch_price_krw: "135만 3천원부터",
+      os: "Android 13 (One UI 5.1)", chipset: "Snapdragon 8 Gen 2", display_inch: "6.6", brightness_nits: "1750",
+      ram_gb: "8", storage_gb: "256", camera_mp: "50", battery: "4700mAh",
+      charging: "45W 유선, 15W 무선", water_resist: "IP68", weight_g: "195", refresh_hz: "120"
+    }
+  },
+  {
+    id: "galaxy-s23-fe",
+    canonicalName: "갤럭시 S23 FE",
+    nameEn: "Galaxy S23 FE",
+    aliases: ["갤럭시 s23 fe", "갤럭시s23fe", "galaxy s23 fe", "s23 fe", "s23fe", "갤럭시 s23 팬에디션"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s23-fe-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S23 FE 5G", release_date: "2023년 10월", launch_price_krw: "79만 9천원부터",
+      os: "Android 14 (One UI 6.0)", chipset: "Exynos 2200", display_inch: "6.4", brightness_nits: "1200",
+      ram_gb: "8", storage_gb: "128", camera_mp: "50", battery: "4500mAh",
+      charging: "25W 유선, 15W 무선", water_resist: "IP68", weight_g: "209", refresh_hz: "120"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Galaxy S24 FE / S25 Edge (2024–2025)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-s24-fe",
+    canonicalName: "갤럭시 S24 FE",
+    nameEn: "Galaxy S24 FE",
+    aliases: ["갤럭시 s24 fe", "갤럭시s24fe", "galaxy s24 fe", "s24 fe", "s24fe", "갤럭시 s24 팬에디션"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s24-fe-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S24 FE 5G", release_date: "2024년 10월", launch_price_krw: "89만 9천원부터",
+      os: "Android 14 (One UI 7.0)", chipset: "Exynos 2500", display_inch: "6.7", brightness_nits: "1900",
+      ram_gb: "8", storage_gb: "128", camera_mp: "50", battery: "4700mAh",
+      charging: "25W 유선, 15W 무선", water_resist: "IP68", weight_g: "213", refresh_hz: "120"
+    }
+  },
+  {
+    id: "galaxy-s25-edge",
+    canonicalName: "갤럭시 S25 엣지",
+    nameEn: "Galaxy S25 Edge",
+    aliases: ["갤럭시 s25 엣지", "갤럭시s25엣지", "galaxy s25 edge", "s25 엣지", "s25edge", "s25 edge"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-s25-edge/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy S25 Edge", release_date: "2025년 5월", launch_price_krw: "169만 4천원부터",
+      os: "Android 15 (One UI 7.0)", chipset: "Snapdragon 8 Elite", display_inch: "6.7", brightness_nits: "2600",
+      ram_gb: "12", storage_gb: "256", camera_mp: "200", battery: "3900mAh",
+      charging: "25W 유선, 15W 무선", water_resist: "IP68", weight_g: "163", refresh_hz: "120"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Galaxy Z Fold 시리즈 (2020–2022)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-z-fold2",
+    canonicalName: "갤럭시 Z 폴드2",
+    nameEn: "Galaxy Z Fold2",
+    aliases: ["갤럭시 z 폴드2", "갤럭시z폴드2", "galaxy z fold2", "galaxy z fold 2", "z폴드2", "z 폴드2"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-z-fold2-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Z Fold2 5G", release_date: "2020년 9월", launch_price_krw: "239만 8천원부터",
+      os: "Android 10 (One UI 2.5)", chipset: "Snapdragon 865+", display_inch: "7.6 (메인) / 6.23 (커버)",
+      brightness_nits: "1200", ram_gb: "12", storage_gb: "256", camera_mp: "12",
+      battery: "4500mAh", charging: "25W 유선, 11W 무선", water_resist: "IPX8", weight_g: "282", refresh_hz: "120"
+    }
+  },
+  {
+    id: "galaxy-z-fold3",
+    canonicalName: "갤럭시 Z 폴드3",
+    nameEn: "Galaxy Z Fold3",
+    aliases: ["갤럭시 z 폴드3", "갤럭시z폴드3", "galaxy z fold3", "galaxy z fold 3", "z폴드3", "z 폴드3"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-z-fold3-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Z Fold3 5G", release_date: "2021년 8월", launch_price_krw: "199만 8천원부터",
+      os: "Android 11 (One UI 3.1.1)", chipset: "Snapdragon 888", display_inch: "7.6 (메인) / 6.2 (커버)",
+      brightness_nits: "1200", ram_gb: "12", storage_gb: "256", camera_mp: "12",
+      battery: "4400mAh", charging: "25W 유선, 10W 무선", water_resist: "IPX8", weight_g: "271", refresh_hz: "120"
+    }
+  },
+  {
+    id: "galaxy-z-fold4",
+    canonicalName: "갤럭시 Z 폴드4",
+    nameEn: "Galaxy Z Fold4",
+    aliases: ["갤럭시 z 폴드4", "갤럭시z폴드4", "galaxy z fold4", "galaxy z fold 4", "z폴드4", "z 폴드4"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-z-fold4-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Z Fold4 5G", release_date: "2022년 8월", launch_price_krw: "199만 4천원부터",
+      os: "Android 12 (One UI 4.1.1)", chipset: "Snapdragon 8+ Gen 1", display_inch: "7.6 (메인) / 6.2 (커버)",
+      brightness_nits: "1200", ram_gb: "12", storage_gb: "256", camera_mp: "50",
+      battery: "4400mAh", charging: "25W 유선, 15W 무선", water_resist: "IPX8", weight_g: "263", refresh_hz: "120"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Galaxy Z Flip 시리즈 (2020–2022)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-z-flip",
+    canonicalName: "갤럭시 Z 플립",
+    nameEn: "Galaxy Z Flip",
+    aliases: ["갤럭시 z 플립", "갤럭시z플립", "galaxy z flip", "z플립", "z 플립", "갤럭시 z 플립 2020"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-z-flip/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Z Flip", release_date: "2020년 2월", launch_price_krw: "165만원부터",
+      os: "Android 10 (One UI 2.0)", chipset: "Snapdragon 855+", display_inch: "6.7 (메인) / 1.1 (커버)",
+      brightness_nits: "1100", ram_gb: "8", storage_gb: "256", camera_mp: "12",
+      battery: "3300mAh", charging: "15W 유선", water_resist: "없음", weight_g: "183", refresh_hz: "60"
+    }
+  },
+  {
+    id: "galaxy-z-flip3",
+    canonicalName: "갤럭시 Z 플립3",
+    nameEn: "Galaxy Z Flip3",
+    aliases: ["갤럭시 z 플립3", "갤럭시z플립3", "galaxy z flip3", "galaxy z flip 3", "z플립3", "z 플립3"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-z-flip3-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Z Flip3 5G", release_date: "2021년 8월", launch_price_krw: "135만 3천원부터",
+      os: "Android 11 (One UI 3.1.1)", chipset: "Snapdragon 888", display_inch: "6.7 (메인) / 1.9 (커버)",
+      brightness_nits: "1200", ram_gb: "8", storage_gb: "128", camera_mp: "12",
+      battery: "3300mAh", charging: "15W 유선, 10W 무선", water_resist: "IPX8", weight_g: "183", refresh_hz: "120"
+    }
+  },
+  {
+    id: "galaxy-z-flip4",
+    canonicalName: "갤럭시 Z 플립4",
+    nameEn: "Galaxy Z Flip4",
+    aliases: ["갤럭시 z 플립4", "갤럭시z플립4", "galaxy z flip4", "galaxy z flip 4", "z플립4", "z 플립4"],
+    category: "smartphone",
+    country: "KR",
+    source: "https://www.samsung.com/sec/smartphones/galaxy-z-flip4-5g/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Z Flip4 5G", release_date: "2022년 8월", launch_price_krw: "135만 3천원부터",
+      os: "Android 12 (One UI 4.1.1)", chipset: "Snapdragon 8+ Gen 1", display_inch: "6.7 (메인) / 1.9 (커버)",
+      brightness_nits: "1200", ram_gb: "8", storage_gb: "128", camera_mp: "12",
+      battery: "3700mAh", charging: "25W 유선, 15W 무선", water_resist: "IPX8", weight_g: "187", refresh_hz: "120"
+    }
+  },
 ];

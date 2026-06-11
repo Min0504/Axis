@@ -163,13 +163,43 @@ export function localizedProductName(entry: VerifiedProduct, locale: Locale): st
 }
 
 /**
+ * Best-effort transliteration of common Korean tech product names to English.
+ * Used as a fallback when a product isn't in the dataset — ensures that even
+ * unregistered products like "아이폰 17" display as "iPhone 17" in EN/JA locale,
+ * and the AI receives a consistent language input.
+ */
+function koToEnTechName(name: string): string {
+  return name
+    .replace(/아이패드 프로/g, "iPad Pro")
+    .replace(/아이패드 에어/g, "iPad Air")
+    .replace(/아이패드 미니/g, "iPad mini")
+    .replace(/아이패드/g, "iPad")
+    .replace(/에어팟 프로/g, "AirPods Pro")
+    .replace(/에어팟 맥스/g, "AirPods Max")
+    .replace(/에어팟/g, "AirPods")
+    .replace(/맥북 에어/g, "MacBook Air")
+    .replace(/맥북 프로/g, "MacBook Pro")
+    .replace(/맥북/g, "MacBook")
+    .replace(/아이폰/g, "iPhone")
+    .replace(/갤럭시 버즈/g, "Galaxy Buds")
+    .replace(/갤럭시 탭/g, "Galaxy Tab")
+    .replace(/갤럭시 북/g, "Galaxy Book")
+    .replace(/갤럭시/g, "Galaxy")
+    .replace(/\s*프로\s*맥스/g, " Pro Max")
+    .replace(/\s*프로/g, " Pro")
+    .replace(/\s*맥스/g, " Max")
+    .replace(/\s*울트라/g, " Ultra")
+    .replace(/\s*플러스/g, " Plus")
+    .replace(/\s*미니/g, " mini")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+/**
  * Resolve a free-text product name and return its locale-appropriate display
- * name. Falls back to the raw input when the product isn't in the catalog
- * (we can't translate an unknown product).
- *
- * Used to normalize comparison option labels + affiliate search terms so the
- * displayed names and shopping links always match the user's locale regardless
- * of the language they typed in.
+ * name. Falls back to koToEnTechName for EN/JA when the product isn't in the
+ * catalog, so "아이폰 17" → "iPhone 17" even before it's added to the dataset.
+ * This ensures the AI always receives a language-consistent comparison prompt.
  */
 export function localizeDisplayName(
   name: string,
@@ -178,7 +208,9 @@ export function localizeDisplayName(
   locale: Locale
 ): string {
   const entry = resolveVerifiedProduct(category, name, country);
-  return entry ? localizedProductName(entry, locale) : name;
+  if (entry) return localizedProductName(entry, locale);
+  if (locale === "en" || locale === "ja") return koToEnTechName(name);
+  return name;
 }
 
 /** Spec keys that only make sense in their origin market (currency-bound). */
