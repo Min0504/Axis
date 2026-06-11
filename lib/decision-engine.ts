@@ -119,11 +119,13 @@ function enrichWithDatasetFallback(
       } satisfies ExtractedSpecs;
     }
 
-    // Scraping succeeded — merge dataset to fill any missing fields
-    // Scraped values win (live official page is more authoritative); dataset fills gaps
+    // Scraping succeeded — dataset wins over scraped values.
+    // Hardcoded dataset is manually verified; live scraping can silently misparse
+    // or return stale/wrong data (e.g. Apple support pages occasionally surface
+    // unrelated product content). Dataset source URL also replaces the scraped one.
     if (!hasDataset) return spec;
-    const mergedSpecs: Record<string, string> = { ...datasetSpecs!, ...spec.specs };
-    return { ...spec, specs: mergedSpecs };
+    const mergedSpecs: Record<string, string> = { ...spec.specs, ...datasetSpecs! };
+    return { ...spec, source: entry!.source, specs: mergedSpecs };
   });
 }
 
@@ -416,11 +418,18 @@ export async function buildDecision(
   query: string,
   maxOptionsAllowed = 2,
   locale: Locale = "ko",
-  country: Country = countryForLocale(locale)
+  country: Country = countryForLocale(locale),
+  userContext?: string
 ): Promise<ComparisonResult> {
+  // Tailored re-analysis (user situation) must never read or write the shared
+  // cache — the verdict is personalized, so each request runs fresh.
+  const tailored = Boolean(userContext?.trim());
+
   // Check 24h cache before doing any network work
-  const cached = await getCachedComparison(query, locale, country);
-  if (cached) return cached;
+  if (!tailored) {
+    const cached = await getCachedComparison(query, locale, country);
+    if (cached) return cached;
+  }
 
   const parsed = parseOptions(query);
   const dict = getDictionary(locale);
@@ -495,7 +504,8 @@ export async function buildDecision(
     templateKeys: schemaFieldLabelsForLocale(category, locale),
     officialSpecs: officialSpecs.map((spec) =>
       spec ? { source: spec.source, specs: spec.specs } : null
-    )
+    ),
+    userContext
   });
 
   if (!aiPayload) {
@@ -519,7 +529,7 @@ export async function buildDecision(
       specCollectionNote,
       locale
     );
-    void setCachedComparison(query, locale, country, deterministicResult);
+    if (!tailored) void setCachedComparison(query, locale, country, deterministicResult);
     return deterministicResult;
   }
 
@@ -550,6 +560,6 @@ export async function buildDecision(
     specCollectionNote,
     verification: gradeVerification(category, comparison)
   };
-  void setCachedComparison(query, locale, country, finalResult);
+  if (!tailored) void setCachedComparison(query, locale, country, finalResult);
   return finalResult;
 }

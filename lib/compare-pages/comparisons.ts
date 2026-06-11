@@ -86,6 +86,69 @@ export const COMPARISONS: ComparisonDef[] = [
     locale: "ko",
     category: "laptop",
   },
+  {
+    slug: "macbook-air-m4-vs-galaxy-book5-pro",
+    title: "맥북 에어 M4 vs 갤럭시북5 프로",
+    options: ["맥북 에어 13 M4", "갤럭시북5 프로 14"],
+    description:
+      "2025년 최신 플래그십 노트북 대결. 삼성 갤럭시 생태계를 쓴다면 갤럭시북5 프로가, macOS가 필요하다면 맥북 에어가 답입니다. 가격·성능·배터리 상세 비교.",
+    locale: "ko",
+    category: "laptop",
+  },
+  {
+    slug: "macbook-air-m4-vs-lg-gram-pro-16",
+    title: "맥북 에어 M4 vs LG 그램 Pro 16",
+    options: ["맥북 에어 13 M4", "LG 그램 Pro 16"],
+    description:
+      "애플 실리콘 vs Intel Arc, 13인치 vs 16인치. 화면이 크면서 가벼운 노트북을 찾는다면 그램 Pro가 유리할 수 있습니다. 용도별 선택 가이드.",
+    locale: "ko",
+    category: "laptop",
+  },
+  {
+    slug: "macbook-air-m3-vs-macbook-air-m4",
+    title: "맥북 에어 M3 vs M4 — 업그레이드 가성비",
+    options: ["맥북 에어 13 M3", "맥북 에어 13 M4"],
+    description:
+      "M3에서 M4로 넘어갈 가치가 있을까요? 성능 차이, 가격 차이, 실사용 체감을 기준으로 업그레이드 여부를 판단합니다.",
+    locale: "ko",
+    category: "laptop",
+  },
+  {
+    slug: "macbook-air-m2-vs-macbook-air-m3",
+    title: "맥북 에어 M2 vs M3 — 중고 vs 신형",
+    options: ["맥북 에어 13 M2", "맥북 에어 13 M3"],
+    description:
+      "중고 M2와 신형 M3 가격 차이가 좁아졌습니다. 지금 구매한다면 어느 쪽이 더 합리적인지 스펙 차이와 수명 기준으로 비교합니다.",
+    locale: "ko",
+    category: "laptop",
+  },
+  {
+    slug: "lg-gram-pro-16-vs-galaxy-book5-pro",
+    title: "LG 그램 Pro 16 vs 갤럭시북5 프로",
+    options: ["LG 그램 Pro 16", "갤럭시북5 프로 14"],
+    description:
+      "국산 프리미엄 윈도우 노트북 2025년 양강. 화면 크기·OLED vs IPS·무게·배터리 기준으로 실업무 환경에 더 맞는 쪽을 정리합니다.",
+    locale: "ko",
+    category: "laptop",
+  },
+  {
+    slug: "lg-gram-16-vs-lg-gram-pro-16",
+    title: "LG 그램 16 vs 그램 Pro 16",
+    options: ["LG 그램 16", "LG 그램 Pro 16"],
+    description:
+      "같은 그램인데 Pro가 더 나을까요? GPU 차이, 가격 차이, 외관 디자인 차이를 비교하고 업그레이드 가치를 판단합니다.",
+    locale: "ko",
+    category: "laptop",
+  },
+  {
+    slug: "galaxy-book5-pro-vs-galaxy-book4-pro",
+    title: "갤럭시북5 프로 vs 북4 프로 — 1년 차이의 가치",
+    options: ["갤럭시북5 프로 14", "갤럭시북4 프로 14"],
+    description:
+      "신형 갤럭시북5 프로로 바꿀 이유가 있을까요? CPU 세대 업그레이드와 가격 차이를 실사용 관점으로 분석합니다.",
+    locale: "ko",
+    category: "laptop",
+  },
 
   // ── 스마트폰 ──────────────────────────────────────────────────────────────
 
