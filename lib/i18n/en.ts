@@ -40,7 +40,7 @@ export const en = {
       { title: "Official spec verified", body: "Based on manufacturer data" },
       { title: "AI purchase verdict", body: "Instant recommendation with reasoning" },
       { title: "Up to 5-way comparison", body: "N-way comparison supported" },
-      { title: "Price tracking & alerts", body: "Alert when price drops" },
+      { title: "Price tracking & alerts", body: "Alert when price drops (coming soon)" },
       { title: "Share results", body: "Share results with a single link" },
       { title: "Multilingual", body: "Korean · English · Japanese" },
     ],
