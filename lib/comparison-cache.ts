@@ -17,7 +17,7 @@ import type { Country, Locale } from "@/lib/i18n";
 const CACHE_TTL_HOURS = 24;
 
 /** Bump this when comparison output format changes to invalidate stale cached results. */
-const CACHE_VERSION = 8;  // v8: 제품명 로케일 정규화(nameEn/nameJa) + 태블릿 추가 + 2020+ 모델 확장
+const CACHE_VERSION = 9;  // v9: reasons/analyses 강화(스펙→실생활 장점) + userContext 맞춤 재분석
 
 function cacheKey(query: string, locale: Locale, country: Country): string {
   return `v${CACHE_VERSION}|${query.trim().toLowerCase()}|${locale}|${country}`;

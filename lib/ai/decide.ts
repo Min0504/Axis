@@ -136,7 +136,11 @@ async function callOpenAiConfig(cfg: Extract<ProviderConfig, { kind: "openai" }>
       ]
     })
   });
-  if (!response.ok) return null;
+  if (!response.ok) {
+    // 429(TPM rate limit) 등은 조용히 deterministic fallback으로 — 로그만 남긴다.
+    if (response.status === 429) console.warn("[ai] rate limited (429) — falling back");
+    return null;
+  }
   const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
   return parseAiJson(data.choices?.[0]?.message?.content ?? "");
 }

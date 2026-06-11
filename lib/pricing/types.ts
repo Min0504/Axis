@@ -14,7 +14,7 @@ import type { Locale } from "@/lib/i18n";
 export type Region = "US" | "KR" | "JP";
 export type Retailer = "amazon_us" | "amazon_jp" | "coupang";
 export type Currency = "USD" | "KRW" | "JPY";
-export type PriceSource = "seed" | "amazon" | "coupang" | "keepa";
+export type PriceSource = "seed" | "amazon" | "coupang" | "keepa" | "naver";
 
 /** Minimal product shape the price layer needs (VerifiedProduct satisfies it). */
 export type PriceableProduct = {

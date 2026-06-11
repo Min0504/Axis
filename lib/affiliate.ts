@@ -59,32 +59,18 @@ function coupangUrl(productName: string): string {
   const brand = detectBrand(productName);
 
   if (brand === "apple") {
-    // Apple 공식인증점 + 로켓배송 필터: "Apple 공식 {product}"
-    const q = encodeURIComponent(`Apple 공식 ${productName}`);
+    const q = encodeURIComponent(productName);
     const base = `https://www.coupang.com/np/search?q=${q}&channel=user&searchTabCode=ALL&sorter=scoreDesc&rocketAll=true&brand=Apple`;
     return COUPANG_ID ? `${base}&token=${COUPANG_ID}` : base;
   }
 
   if (brand === "samsung") {
-    // 삼성 공식 + 로켓배송
-    const q = encodeURIComponent(`삼성 공식 ${productName}`);
+    const q = encodeURIComponent(productName);
     const base = `https://www.coupang.com/np/search?q=${q}&channel=user&searchTabCode=ALL&sorter=scoreDesc&rocketAll=true&brand=Samsung`;
     return COUPANG_ID ? `${base}&token=${COUPANG_ID}` : base;
   }
 
-  if (brand === "sony") {
-    const q = encodeURIComponent(`소니 공식 ${productName}`);
-    const base = `https://www.coupang.com/np/search?q=${q}&channel=user&searchTabCode=ALL&sorter=scoreDesc&rocketAll=true`;
-    return COUPANG_ID ? `${base}&token=${COUPANG_ID}` : base;
-  }
-
-  if (brand === "lg") {
-    const q = encodeURIComponent(`LG 공식 ${productName}`);
-    const base = `https://www.coupang.com/np/search?q=${q}&channel=user&searchTabCode=ALL&sorter=scoreDesc&rocketAll=true`;
-    return COUPANG_ID ? `${base}&token=${COUPANG_ID}` : base;
-  }
-
-  // Generic: product name + rocket delivery
+  // Sony / LG / others: exact product name search
   return coupangSearchUrl(productName);
 }
 
@@ -124,13 +110,11 @@ export function primaryBuyLink(
   locale: Locale = "ko"
 ): BuyLinkResult {
   if (locale === "ko") {
-    const brand = detectBrand(productName);
-    const isOfficial = brand !== "other";
     return {
       url: coupangUrl(productName),
       store: "coupang",
-      label: isOfficial ? "쿠팡 공식몰" : "쿠팡",
-      isOfficialStore: isOfficial
+      label: "쿠팡",
+      isOfficialStore: false
     };
   }
 

@@ -252,5 +252,98 @@ export const earphones: VerifiedProduct[] = [
       charging_type: "USB-C, Qi 무선 충전", water_resist: "IPX4", weight_g: "6.2",
       launch_price_krw: "379,000원", release_date: "2023년 10월", form: "커널형", codec: "SBC, AAC, aptX Adaptive"
     }
-  }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Samsung Galaxy Buds 추가 (2020–2024)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "galaxy-buds-live",
+    canonicalName: "갤럭시 버즈 라이브",
+    nameEn: "Galaxy Buds Live",
+    aliases: ["갤럭시 버즈 라이브", "갤럭시버즈라이브", "galaxy buds live", "buds live", "버즈라이브", "버즈 라이브"],
+    category: "earphones",
+    country: "KR",
+    source: "https://www.samsung.com/sec/audio-sound/galaxy-buds-live/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Buds Live", driver: "12mm 우퍼 + 5.6mm 트위터",
+      anc: "능동형 노이즈 캔슬링 (ANC)", battery_hr: "6", battery_total_hr: "21",
+      charging_type: "USB-C, 무선 충전(Qi)", water_resist: "IPX2", weight_g: "5.6",
+      launch_price_krw: "199,000원", release_date: "2020년 8월", form: "오픈형 (빈 형태)", codec: "AAC, SBC"
+    }
+  },
+  {
+    id: "galaxy-buds-pro",
+    canonicalName: "갤럭시 버즈 프로",
+    nameEn: "Galaxy Buds Pro",
+    aliases: ["갤럭시 버즈 프로", "갤럭시버즈프로", "galaxy buds pro", "buds pro", "버즈프로", "버즈 프로"],
+    category: "earphones",
+    country: "KR",
+    source: "https://www.samsung.com/sec/audio-sound/galaxy-buds-pro/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Buds Pro", driver: "11mm 우퍼 + 6.5mm 트위터",
+      anc: "인텔리전트 ANC (최대 11dB 노이즈 캔슬링)", battery_hr: "5", battery_total_hr: "28",
+      charging_type: "USB-C, 무선 충전(Qi)", water_resist: "IPX7", weight_g: "6.3",
+      launch_price_krw: "249,000원", release_date: "2021년 1월", form: "커널형", codec: "AAC, SBC"
+    }
+  },
+  {
+    id: "galaxy-buds2",
+    canonicalName: "갤럭시 버즈2",
+    nameEn: "Galaxy Buds2",
+    aliases: ["갤럭시 버즈2", "갤럭시버즈2", "galaxy buds2", "galaxy buds 2", "buds2", "버즈2", "버즈 2"],
+    category: "earphones",
+    country: "KR",
+    source: "https://www.samsung.com/sec/audio-sound/galaxy-buds2/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Buds2", driver: "11mm 우퍼 + 6.5mm 트위터",
+      anc: "액티브 노이즈 캔슬링 (ANC)", battery_hr: "5", battery_total_hr: "20",
+      charging_type: "USB-C, 무선 충전(Qi)", water_resist: "IPX2", weight_g: "5.0",
+      launch_price_krw: "149,000원", release_date: "2021년 8월", form: "커널형", codec: "AAC, SBC"
+    }
+  },
+  {
+    id: "galaxy-buds3",
+    canonicalName: "갤럭시 버즈3",
+    nameEn: "Galaxy Buds3",
+    aliases: ["갤럭시 버즈3", "갤럭시버즈3", "galaxy buds3", "galaxy buds 3", "buds3", "버즈3", "버즈 3"],
+    category: "earphones",
+    country: "KR",
+    source: "https://www.samsung.com/sec/audio-sound/galaxy-buds3/",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "Galaxy Buds3", driver: "11mm 우퍼 + 6.5mm 트위터",
+      anc: "액티브 노이즈 캔슬링 (ANC)", battery_hr: "7", battery_total_hr: "30",
+      charging_type: "USB-C, 무선 충전(Qi)", water_resist: "IPX5", weight_g: "5.5",
+      launch_price_krw: "199,000원", release_date: "2024년 7월", form: "오픈형 (블레이드)", codec: "AAC, SBC"
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Sony WH-1000XM4 헤드폰 (2020)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: "sony-wh1000xm4",
+    canonicalName: "소니 WH-1000XM4",
+    nameEn: "Sony WH-1000XM4",
+    aliases: ["소니 wh-1000xm4", "소니wh1000xm4", "sony wh-1000xm4", "sony wh1000xm4", "wh1000xm4", "wh-1000xm4", "소니 xm4 헤드폰"],
+    category: "earphones",
+    country: "KR",
+    source: "https://www.sony.co.kr/handler/Product-Start?pid=WH1000XM4",
+    fetchedAt: "2026-06",
+    tier: 1,
+    specs: {
+      model_name: "WH-1000XM4", driver: "40mm 돔형",
+      anc: "HD 노이즈 캔슬링 프로세서 QN1, 듀얼 노이즈 센서", battery_hr: "30", battery_total_hr: "30",
+      charging_type: "USB-C (10분 충전 5시간 재생)", water_resist: "없음", weight_g: "254",
+      launch_price_krw: "379,000원", release_date: "2020년 8월", form: "오버이어 헤드폰", codec: "LDAC, AAC, SBC, aptX"
+    }
+  },
 ];

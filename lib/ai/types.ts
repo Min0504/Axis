@@ -31,4 +31,10 @@ export type AiDecisionInput = {
    * null means no official data was found for that option.
    */
   officialSpecs?: (OfficialSpecContext | null)[];
+  /**
+   * Optional user situation (use case, budget, free-text) for tailored
+   * re-analysis. When present, the AI weights the verdict toward the user's
+   * needs and explains the pick in terms of those needs.
+   */
+  userContext?: string;
 };
