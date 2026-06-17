@@ -1,5 +1,7 @@
 .next
 node_modules
+.omc/
+.claude/agent-memory/
 .env
 .env.local
 .DS_Store
