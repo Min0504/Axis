@@ -231,6 +231,86 @@ export const laptops: VerifiedProduct[] = [
       ports: "Thunderbolt 4 ×2, USB-A, HDMI 2.1, microSD", launch_price_krw: "219만 9천원부터", release_date: "2025년 1월"
     }
   },
+  {
+    id: "galaxy-book5-pro-16",
+    canonicalName: "갤럭시 북5 프로 16",
+    nameEn: "Galaxy Book5 Pro 16",
+    aliases: [
+      "갤럭시북5 프로 16", "갤럭시 북5 프로 16", "갤럭시북5프로16", "galaxy book5 pro 16",
+      "갤럭시북5 프로16", "북5 프로 16"
+    ],
+    category: "laptop",
+    country: "KR",
+    source: "https://prod.danawa.com/info/?pcode=75724442",
+    fetchedAt: "2026-06",
+    tier: 2,
+    specs: {
+      model_name: "Galaxy Book5 Pro 16", os: "Windows 11 Home", cpu: "Intel Core Ultra 5 226V",
+      gpu: "Intel Arc 130V", ram_gb: "16", storage_gb: "512", display_inch: "16.0",
+      brightness_nits: "400", panel: "OLED (Dynamic AMOLED 2X)", resolution: "2880×1800",
+      refresh_hz: "120", weight_g: "1560", battery_wh: "76",
+      ports: "Thunderbolt 4 ×2, USB-A, HDMI 2.1, microSD", release_date: "2025년 2월"
+    }
+  },
+  {
+    id: "galaxy-book4-edge-14",
+    canonicalName: "갤럭시 북4 엣지 14",
+    nameEn: "Galaxy Book4 Edge 14",
+    aliases: [
+      "갤럭시북4 엣지", "갤럭시 북4 엣지", "갤럭시북4엣지", "galaxy book4 edge",
+      "galaxy book4 edge 14", "갤럭시북4 엣지 14", "북4 엣지"
+    ],
+    category: "laptop",
+    country: "KR",
+    source: "https://prod.danawa.com/info/?pcode=57290507",
+    fetchedAt: "2026-06",
+    tier: 2,
+    specs: {
+      model_name: "Galaxy Book4 Edge 14", os: "Windows 11 Home", cpu: "Snapdragon X Elite X1E-80-100",
+      gpu: "Adreno (3.8TFLOPS)", ram_gb: "16", storage_gb: "512", display_inch: "14.0",
+      brightness_nits: "400", panel: "OLED (Dynamic AMOLED 2X)", resolution: "2880×1800",
+      refresh_hz: "120", weight_g: "1160", battery_wh: "55.9",
+      release_date: "2024년 6월"
+    }
+  },
+
+  {
+    id: "dell-xps-13",
+    canonicalName: "델 XPS 13",
+    nameEn: "Dell XPS 13",
+    aliases: ["델 xps 13", "dell xps 13", "xps 13", "xps13"],
+    category: "laptop",
+    country: "KR",
+    source: "https://prod.danawa.com/info/?pcode=69871052",
+    fetchedAt: "2026-06",
+    tier: 2,
+    specs: {
+      model_name: "Dell XPS 13 9350", os: "Windows 11 Pro", cpu: "Intel Core Ultra 7 258V",
+      gpu: "Intel Arc 140V", ram_gb: "32", storage_gb: "1024", display_inch: "13.4",
+      brightness_nits: "400", resolution: "2880×1800", refresh_hz: "60", weight_g: "1180",
+      battery_wh: "55", launch_price_krw: "359만 9천원"
+    }
+  },
+  {
+    id: "lenovo-thinkpad-x1-carbon",
+    canonicalName: "레노버 씽크패드 X1 카본",
+    nameEn: "Lenovo ThinkPad X1 Carbon",
+    aliases: [
+      "레노버 씽크패드 x1 카본", "씽크패드 x1 카본", "씽크패드 x1", "thinkpad x1 carbon",
+      "lenovo thinkpad x1 carbon", "x1 carbon"
+    ],
+    category: "laptop",
+    country: "KR",
+    source: "https://prod.danawa.com/info/?pcode=90703388",
+    fetchedAt: "2026-06",
+    tier: 2,
+    specs: {
+      model_name: "ThinkPad X1 Carbon Gen 13", os: "Windows 11 Pro", cpu: "Intel Core Ultra 7 258V",
+      gpu: "Intel Arc 140V", ram_gb: "32", storage_gb: "1024", display_inch: "14.0",
+      brightness_nits: "400", resolution: "2880×1800", refresh_hz: "120", weight_g: "986",
+      battery_wh: "57", launch_price_krw: "323만 9천원"
+    }
+  },
 
   // ══════════════════════════════════════════════════════════════════════════
   // MacBook Air M1 / M2 (2020–2023)
