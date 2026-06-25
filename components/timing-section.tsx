@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import type { PriceApiResult } from "@/app/api/price/route";
+import WatchButton from "@/components/watch-button";
+import { getDictionary, type Locale } from "@/lib/i18n";
+import { localeToRegion } from "@/lib/pricing/types";
 
 type TimingVerdict = "buy_now" | "wait_short" | "wait_model" | "collecting";
 
@@ -56,12 +59,14 @@ const VERDICT_CONFIG: Record<TimingVerdict | "collecting", {
 
 type Props = {
   productName: string;
-  locale?: string;
+  locale?: Locale;
 };
 
 export default function TimingSection({ productName, locale = "ko" }: Props) {
   const [price, setPrice] = useState<PriceApiResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const watchText = getDictionary(locale).watch;
+  const region = localeToRegion(locale);
 
   useEffect(() => {
     fetch(`/api/price?name=${encodeURIComponent(productName)}&locale=${locale}`)
@@ -128,6 +133,20 @@ export default function TimingSection({ productName, locale = "ko" }: Props) {
           {hint.label} 출시 예정: {hint.month}
         </div>
       )}
+
+      {price ? (
+        <div className="ts-watch-row">
+          <WatchButton
+            productId={price.productId}
+            name={price.name}
+            region={region}
+            label={watchText.track}
+            labelOn={watchText.tracking}
+            locale={locale}
+          />
+          <p className="ts-watch-note">{watchText.alertNote}</p>
+        </div>
+      ) : null}
     </section>
   );
 }

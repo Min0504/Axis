@@ -29,6 +29,9 @@ describe("completeJson", () => {
 
     expect(result).toBe("{\"ok\":true}");
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(String(fetchMock.mock.calls[0][0])).toBe("https://api.groq.com/openai/v1/chat/completions");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.groq.com/openai/v1/chat/completions",
+      expect.anything()
+    );
   });
 });

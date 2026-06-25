@@ -139,7 +139,9 @@ export default function WatchButton({
         aria-pressed={watched}
         onClick={() => void handleClick()}
       >
-        <span aria-hidden>{watched ? "★" : "☆"}</span>
+        <span className="watch-btn-icon" aria-hidden>
+          <span className="watch-btn-icon-core" />
+        </span>
         {watched ? labelOn : label}
       </button>
 
