@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import ResultsView from "@/components/results-view";
 import type { ComparisonResult } from "@/lib/types";
@@ -60,7 +59,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SharePage({ params }: Props) {
   const { token } = await params;
   const [data, locale] = await Promise.all([loadShared(token), getLocale()]);
-  const t = getDictionary(locale).share;
 
   if (!data) {
     notFound();
@@ -78,18 +76,8 @@ export default async function SharePage({ params }: Props) {
         result={result}
         locale={locale}
         shareToken={token}
+        sharedGuestCta={showWatermark}
       />
-
-      {showWatermark && (
-        <div className="share-watermark">
-          <p>
-            <strong>axis</strong>{t.watermarkText}
-          </p>
-          <Link className="btn-primary block" href="/" style={{ marginTop: "0.6rem", maxWidth: 300, margin: "0.6rem auto 0" }}>
-            {t.watermarkCta}
-          </Link>
-        </div>
-      )}
     </>
   );
 }
