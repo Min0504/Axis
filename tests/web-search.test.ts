@@ -23,7 +23,7 @@ describe("searchWeb", () => {
     delete process.env.GOOGLE_SEARCH_API_KEY;
     delete process.env.GOOGLE_SEARCH_CX;
 
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn(async (..._args: [string, RequestInit?]) =>
       new Response(
         JSON.stringify({
           web: {
@@ -51,7 +51,10 @@ describe("searchWeb", () => {
         snippet: "Official specifications"
       }
     ]);
-    expect(String(fetchMock.mock.calls[0][0])).toContain("api.search.brave.com");
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("api.search.brave.com"),
+      expect.anything()
+    );
   });
 
   it("uses Google Custom Search when Google keys are configured", async () => {
@@ -59,7 +62,7 @@ describe("searchWeb", () => {
     process.env.GOOGLE_SEARCH_API_KEY = "google-key";
     process.env.GOOGLE_SEARCH_CX = "cx";
 
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn(async (..._args: [string, RequestInit?]) =>
       new Response(
         JSON.stringify({
           items: [
@@ -79,6 +82,9 @@ describe("searchWeb", () => {
 
     expect(configuredSearchProvider()).toBe("google");
     expect(results[0]?.url).toBe("https://www.apple.com/macbook-air/specs/");
-    expect(String(fetchMock.mock.calls[0][0])).toContain("customsearch");
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("customsearch"),
+      undefined
+    );
   });
 });

@@ -1,10 +1,18 @@
+#:schema https://conductor.build/schemas/settings.repo.schema.json
 "$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+# Copy gitignored local env files into each new workspace.
 file_include_globs = ".env*\n"
 
 [scripts]
-setup = "mkdir -p .context && touch .context/handoff.md .context/fe-notes.md .context/be-notes.md .context/security-report.md && (npm install || true)"
+# Keep the root checkout current, seed the shared .context notes, then install deps.
+setup = "git -C \"$CONDUCTOR_ROOT_PATH\" fetch --prune origin && git -C \"$CONDUCTOR_ROOT_PATH\" pull --ff-only || true; mkdir -p .context && touch .context/handoff.md .context/fe-notes.md .context/be-notes.md .context/security-report.md .context/todos.md && npm install"
+# Next.js dev server on the workspace-assigned port (10-port range).
 run = "npm run dev -- -p $CONDUCTOR_PORT"
+# Each workspace runs on its own port; Supabase/Vercel are remote, no shared local resource.
 run_mode = "concurrent"
+# Drop the local build cache before archiving (gitignored, safe to delete).
+archive = "rm -rf .next"
 
 [prompts]
 general = "Follow AGENTS.md. Work only in this repo. FE/BE implement and summarize their own work; Security performs first-pass verification and fixes all found issues after PM says 검증 or 검증 단계로 넘겨; Lead performs second-pass verification and final synthesis after Security finishes."

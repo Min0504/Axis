@@ -19,7 +19,9 @@ describe("verified spec dataset", () => {
     it("resolves exact aliases", () => {
       expect(resolveVerifiedProduct("laptop", "맥북 에어 M3")?.canonicalName).toBe("맥북 에어 13 M3");
       expect(resolveVerifiedProduct("laptop", "갤럭시북4 프로")?.canonicalName).toBe("갤럭시 북4 프로 14");
+      expect(resolveVerifiedProduct("laptop", "갤럭시북5 프로 16")?.canonicalName).toBe("갤럭시 북5 프로 16");
       expect(resolveVerifiedProduct("laptop", "LG 그램 16")?.canonicalName).toBe("LG 그램 16");
+      expect(resolveVerifiedProduct("laptop", "씽크패드 X1 카본")?.canonicalName).toBe("레노버 씽크패드 X1 카본");
       expect(resolveVerifiedProduct("smartphone", "아이폰 16")?.canonicalName).toBe("아이폰 16");
       expect(resolveVerifiedProduct("smartphone", "갤럭시 S25")?.canonicalName).toBe("갤럭시 S25");
     });

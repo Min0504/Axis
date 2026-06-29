@@ -1,17 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { buildAxisSystemPrompt, buildAxisUserPrompt } from "@/lib/ai/axis-prompt";
+import { resolveProviderConfigs, type ProviderConfig } from "@/lib/ai/provider-config";
 import type { AiDecisionInput, AiDecisionPayload } from "@/lib/ai/types";
 
 const AI_TIMEOUT_MS = 20_000;
-
-/**
- * Resolved provider configuration — derived once per request, never mutates
- * process.env (which caused cross-request pollution in concurrent environments).
- */
-type ProviderConfig =
-  | { kind: "openai"; apiKey: string; baseUrl: string; model: string }
-  | { kind: "gemini"; apiKey: string; model: string }
-  | { kind: "anthropic"; apiKey: string; model: string };
 
 /** True if at least one provider API key is configured (regardless of call success). */
 export function isAiConfigured() {
@@ -31,42 +23,6 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
   } finally {
     clearTimeout(timer);
   }
-}
-
-function resolveProviderConfig(): ProviderConfig | null {
-  const preferred = process.env.AI_PROVIDER?.toLowerCase();
-
-  if ((preferred === "groq" || !preferred) && process.env.GROQ_API_KEY) {
-    return {
-      kind: "openai",
-      apiKey: process.env.GROQ_API_KEY,
-      baseUrl: "https://api.groq.com/openai",
-      model: process.env.OPENAI_MODEL ?? "llama-3.1-8b-instant"
-    };
-  }
-  if ((preferred === "openai" || !preferred) && process.env.OPENAI_API_KEY) {
-    return {
-      kind: "openai",
-      apiKey: process.env.OPENAI_API_KEY,
-      baseUrl: (process.env.OPENAI_BASE_URL ?? "https://api.openai.com").replace(/\/$/, ""),
-      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini"
-    };
-  }
-  if ((preferred === "gemini" || !preferred) && process.env.GEMINI_API_KEY) {
-    return {
-      kind: "gemini",
-      apiKey: process.env.GEMINI_API_KEY,
-      model: process.env.GEMINI_MODEL ?? "gemini-2.0-flash"
-    };
-  }
-  if ((preferred === "anthropic" || !preferred) && process.env.ANTHROPIC_API_KEY) {
-    return {
-      kind: "anthropic",
-      apiKey: process.env.ANTHROPIC_API_KEY,
-      model: process.env.ANTHROPIC_MODEL ?? "claude-3-5-haiku-20241022"
-    };
-  }
-  return null;
 }
 
 /** Extract the outermost {...} object from a string that may have surrounding prose. */
@@ -187,22 +143,27 @@ async function callAnthropicConfig(cfg: Extract<ProviderConfig, { kind: "anthrop
 }
 
 export async function runAiDecision(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
-  const cfg = resolveProviderConfig();
-  if (!cfg) return null;
+  const configs = resolveProviderConfigs();
+  if (configs.length === 0) return null;
 
-  let raw: AiDecisionPayload | null = null;
-  try {
-    raw =
-      cfg.kind === "openai"
-        ? await callOpenAiConfig(cfg, input)
-        : cfg.kind === "gemini"
-          ? await callGeminiConfig(cfg, input)
-          : await callAnthropicConfig(cfg, input);
-  } catch (err) {
-    console.error("[runAiDecision]", cfg.kind, err);
-    return null;
+  for (const cfg of configs) {
+    try {
+      const raw =
+        cfg.kind === "openai"
+          ? await callOpenAiConfig(cfg, input)
+          : cfg.kind === "gemini"
+            ? await callGeminiConfig(cfg, input)
+            : await callAnthropicConfig(cfg, input);
+
+      if (!raw) {
+        continue;
+      }
+
+      return { ...raw, selectedOption: normalizeSelectedOption(raw.selectedOption, input.options) };
+    } catch (error) {
+      console.error("[runAiDecision]", cfg.provider, error);
+    }
   }
 
-  if (!raw) return null;
-  return { ...raw, selectedOption: normalizeSelectedOption(raw.selectedOption, input.options) };
+  return null;
 }
