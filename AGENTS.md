@@ -92,6 +92,18 @@ Lead 최종 보고는 아래 형식을 쓴다.
 
 ## 공통 규칙
 
+- 기본은 자율 수행이다. 역할 범위 안 코드 수정, 검증 명령 실행, 문서/.context 기록, 작은 설정 수정은 PM 승인 없이 진행한다.
+- 단, 아래 항목은 반드시 PM 승인 후 진행한다:
+  - 개인정보/시크릿/env 값 생성·수정·노출
+  - DB schema/rules/migration 실제 적용
+  - 인증 방식 변경
+  - 결제/웹훅/권한 구조 변경
+  - package.json/lockfile 변경
+  - 새 유료 서비스/API 도입
+  - 배포 실행
+  - git push/merge/delete branch
+  - 대량 삭제
+  - 프로젝트 밖 파일 수정
 - package.json/lockfile 변경은 PM 승인 후.
 - DB schema/migration 변경은 PM 승인 후.
 - 인증 방식 변경은 PM 승인 후.
