@@ -56,11 +56,8 @@ export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?
   const [isLoading, setIsLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState<string[]>([]);
   const [error, setError] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => { setIsMounted(true); }, []);
 
   const canAdd = options.length < Math.min(maxOptions, LETTERS.length);
 
@@ -194,7 +191,7 @@ export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?
     );
   }
 
-  const overlay = isLoading && isMounted
+  const overlay = isLoading && typeof document !== "undefined"
     ? createPortal(
         <div className="analyze-overlay" role="status" aria-label="분석 중">
           <div className="analyze-modal">
