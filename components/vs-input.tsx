@@ -56,11 +56,9 @@ export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?
   const [isLoading, setIsLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState<string[]>([]);
   const [error, setError] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = typeof document !== "undefined";
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => { setIsMounted(true); }, []);
 
   const canAdd = options.length < Math.min(maxOptions, LETTERS.length);
 

@@ -19,6 +19,7 @@ type Props = {
   hidePrices?: boolean;
   slug?: string;
   region?: string;
+  sharedGuestCta?: boolean;
 };
 
 type NormalizedRow = { key: string; values: string[] };
@@ -88,11 +89,14 @@ export default function ResultsView({
   locale = "ko",
   slug,
   region,
+  sharedGuestCta = false,
 }: Props) {
   const { options, rows, sources, sourceMeta, analyses } = normalize(result, query);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
   const cols = options.length;
-  const t = getDictionary(locale).results;
+  const dictionary = getDictionary(locale);
+  const t = dictionary.results;
+  const share = dictionary.share;
   const isBlockedResult =
     result.status === "not_found" || result.status === "verification_pending";
   const fitScores = computeFitScores(options, rows, result.category);
@@ -115,6 +119,19 @@ export default function ResultsView({
 
       <main className="results-body">
         <Link href="/" className="btn-back">{t.back}</Link>
+
+        {sharedGuestCta ? (
+          <section className="shared-entry-card">
+            <div className="shared-entry-copy">
+              <p className="shared-entry-kicker">{share.sharedKicker}</p>
+              <h2 className="shared-entry-title">{query}</h2>
+              <p className="shared-entry-sub">{share.sharedLead(result.selectedOption)}</p>
+            </div>
+            <Link className="btn-primary shared-entry-cta" href="/">
+              {share.watermarkCta}
+            </Link>
+          </section>
+        ) : null}
 
         {/* ── 1. Verdict hero ── */}
         <section className="verdict-hero">
@@ -164,6 +181,8 @@ export default function ResultsView({
                 guestPayload={!comparisonId ? { query, result } : undefined}
                 slug={slug}
                 region={region}
+                query={query}
+                summary={result.oneLineConclusion ?? t.defaultConclusion}
               />
             </div>
           </div>
