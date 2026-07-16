@@ -33,40 +33,59 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
   }
 }
 
-function resolveProviderConfig(): ProviderConfig | null {
-  const preferred = process.env.AI_PROVIDER?.toLowerCase();
+function configuredProviders(): ProviderConfig[] {
+  const providers: ProviderConfig[] = [];
 
-  if ((preferred === "groq" || !preferred) && process.env.GROQ_API_KEY) {
-    return {
+  if (process.env.GROQ_API_KEY) {
+    providers.push({
       kind: "openai",
       apiKey: process.env.GROQ_API_KEY,
       baseUrl: "https://api.groq.com/openai",
-      model: process.env.OPENAI_MODEL ?? "llama-3.1-8b-instant"
-    };
+      model: process.env.GROQ_MODEL ?? process.env.OPENAI_MODEL ?? "llama-3.1-8b-instant"
+    });
   }
-  if ((preferred === "openai" || !preferred) && process.env.OPENAI_API_KEY) {
-    return {
+  if (process.env.OPENAI_API_KEY) {
+    providers.push({
       kind: "openai",
       apiKey: process.env.OPENAI_API_KEY,
       baseUrl: (process.env.OPENAI_BASE_URL ?? "https://api.openai.com").replace(/\/$/, ""),
       model: process.env.OPENAI_MODEL ?? "gpt-4o-mini"
-    };
+    });
   }
-  if ((preferred === "gemini" || !preferred) && process.env.GEMINI_API_KEY) {
-    return {
+  if (process.env.GEMINI_API_KEY) {
+    providers.push({
       kind: "gemini",
       apiKey: process.env.GEMINI_API_KEY,
       model: process.env.GEMINI_MODEL ?? "gemini-2.0-flash"
-    };
+    });
   }
-  if ((preferred === "anthropic" || !preferred) && process.env.ANTHROPIC_API_KEY) {
-    return {
+  if (process.env.ANTHROPIC_API_KEY) {
+    providers.push({
       kind: "anthropic",
       apiKey: process.env.ANTHROPIC_API_KEY,
       model: process.env.ANTHROPIC_MODEL ?? "claude-3-5-haiku-20241022"
-    };
+    });
   }
-  return null;
+
+  return providers;
+}
+
+function resolveProviderConfigs(): ProviderConfig[] {
+  const preferred = process.env.AI_PROVIDER?.toLowerCase();
+  const providers = configuredProviders();
+  if (!preferred) return providers;
+
+  const preferredProviders = providers.filter((provider) => {
+    if (preferred === "groq") {
+      return provider.kind === "openai" && provider.baseUrl === "https://api.groq.com/openai";
+    }
+    if (preferred === "openai") {
+      return provider.kind === "openai" && provider.baseUrl !== "https://api.groq.com/openai";
+    }
+    return provider.kind === preferred;
+  });
+  const fallbackProviders = providers.filter((provider) => !preferredProviders.includes(provider));
+  return [...preferredProviders, ...fallbackProviders];
 }
 
 /** Extract the outermost {...} object from a string that may have surrounding prose. */
@@ -187,22 +206,26 @@ async function callAnthropicConfig(cfg: Extract<ProviderConfig, { kind: "anthrop
 }
 
 export async function runAiDecision(input: AiDecisionInput): Promise<AiDecisionPayload | null> {
-  const cfg = resolveProviderConfig();
-  if (!cfg) return null;
+  const configs = resolveProviderConfigs();
 
-  let raw: AiDecisionPayload | null = null;
-  try {
-    raw =
-      cfg.kind === "openai"
-        ? await callOpenAiConfig(cfg, input)
-        : cfg.kind === "gemini"
-          ? await callGeminiConfig(cfg, input)
-          : await callAnthropicConfig(cfg, input);
-  } catch (err) {
-    console.error("[runAiDecision]", cfg.kind, err);
-    return null;
+  for (const cfg of configs) {
+    try {
+      const raw =
+        cfg.kind === "openai"
+          ? await callOpenAiConfig(cfg, input)
+          : cfg.kind === "gemini"
+            ? await callGeminiConfig(cfg, input)
+            : await callAnthropicConfig(cfg, input);
+
+      if (raw) return { ...raw, selectedOption: normalizeSelectedOption(raw.selectedOption, input.options) };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("[runAiDecision]", cfg.kind, error.message);
+      } else {
+        console.error("[runAiDecision]", cfg.kind, "unknown provider error");
+      }
+    }
   }
 
-  if (!raw) return null;
-  return { ...raw, selectedOption: normalizeSelectedOption(raw.selectedOption, input.options) };
+  return null;
 }

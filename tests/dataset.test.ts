@@ -30,6 +30,12 @@ describe("verified spec dataset", () => {
       expect(resolveVerifiedProduct("laptop", "맥북 에어")?.canonicalName).toBe("맥북 에어 13 M4");
     });
 
+    it("resolves Galaxy Book6 Pro laptop aliases", () => {
+      expect(resolveVerifiedProduct("laptop", "갤럭시북6 프로")?.canonicalName).toBe("갤럭시 북6 프로 14");
+      expect(resolveVerifiedProduct("laptop", "갤럭시 북6 프로 16")?.canonicalName).toBe("갤럭시 북6 프로 16");
+      expect(resolveVerifiedAny("galaxy book6 pro 16")?.id).toBe("galaxy-book6-pro-16");
+    });
+
     it("returns null for unknown products or wrong category", () => {
       expect(resolveVerifiedProduct("laptop", "존재하지않는노트북")).toBeNull();
       expect(resolveVerifiedProduct("smartphone", "맥북 에어 M3")).toBeNull();
@@ -96,6 +102,13 @@ describe("verified spec dataset", () => {
     it("a fully-seeded verified pair grades as 'verified' (→ indexable)", () => {
       const a = resolveVerifiedProduct("laptop", "맥북 에어 M3");
       const b = resolveVerifiedProduct("laptop", "갤럭시북4 프로");
+      const rows = buildVerifiedComparison("laptop", [a, b]);
+      expect(gradeVerification("laptop", rows)).toBe("verified");
+    });
+
+    it("a newly-seeded Galaxy Book6 pair grades as 'verified'", () => {
+      const a = resolveVerifiedProduct("laptop", "갤럭시북6 프로");
+      const b = resolveVerifiedProduct("laptop", "갤럭시 북6 프로 16");
       const rows = buildVerifiedComparison("laptop", [a, b]);
       expect(gradeVerification("laptop", rows)).toBe("verified");
     });

@@ -50,12 +50,13 @@ function buildAuthHeader(
   urlWithQuery: string
 ): string {
   const datetime = coupangDatetime();
-  const message = `${datetime}\nGET\n${urlWithQuery}`;
+  const [path, query = ""] = urlWithQuery.split("?");
+  const message = `${datetime}GET${path}${query}`;
   const signature = crypto
     .createHmac("sha256", secretKey)
     .update(message)
     .digest("hex");
-  return `CEA algorithm=HmacSHA256, access-key=${accessKey}, signed-date=${datetime}, url=${urlWithQuery}, signature=${signature}`;
+  return `CEA algorithm=HmacSHA256, access-key=${accessKey}, signed-date=${datetime}, signature=${signature}`;
 }
 
 // ── API types ─────────────────────────────────────────────────────────────
@@ -105,7 +106,12 @@ async function searchCoupang(keyword: string): Promise<CoupangProduct | null> {
     const products = json.data.productData;
     // Prefer Rocket Delivery items (faster, more authentic) → else first result
     return products.find((p) => p.isRocket) ?? products[0];
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      console.warn("[coupangProvider]", error.message);
+    } else {
+      console.warn("[coupangProvider]", "unknown search error");
+    }
     return null;
   }
 }

@@ -1,20 +1,20 @@
 # handoff.md — Axis
 
-마지막 갱신: 2026-06-18
+마지막 갱신: 2026-06-18 (conductor 종합)
 
 ## 현재 상태
 
-베타 배포 완료 (https://axis-app-beta.vercel.app). 사업성 검증 단계 — 한국·노트북·제휴 우선. 핵심 파이프라인(AI 결정·가격추적·알림) 완료. 쿠팡 파트너스 연동·커뮤니티 홍보 미완.
+베타 배포 완료. 공유 카드 UI + 갤럭시 북6 데이터셋 완료. lint 블로커(`vs-input.tsx:63`)로 현재 배포 불가. 보안 이슈 2건(watches 소유권, 집계 익명화) 미수정.
 
 ## 주요 제약
 
-- 결과/추천 로직 직접 수정 금지 — 프롬프트로만 조정
-- 스펙은 `lib/specs/dataset/`에서만 (DB에서 꺼내지 않음)
+- 결과/추천 로직 수정 금지 (프롬프트로만)
+- 스펙은 `lib/specs/dataset/`에서만
 - `CACHE_VERSION` 변경 시 `lib/comparison-cache.ts` 버전 올리기
-- `CRON_SECRET` 등 시크릿 하드코딩 절대 금지
+- 시크릿 하드코딩 절대 금지
 
 ## 역할별 다음 과제
 
-- frontend: 커뮤니티 홍보용 공유 카드 UI 개선; 쿠팡 파트너스 연동 후 제휴 링크 버튼 업데이트
-- backend: 노트북 데이터셋 확장 (`lib/specs/dataset/laptops.ts`); Groq 폴백 체인 구현 (트래픽 증가 대비); 쿠팡 파트너스 API 연동 준비
-- security: `CRON_SECRET` 환경변수 설정 확인; AI 프로바이더 키 서버 전용 유지 확인; Supabase RLS 권한 범위 검토 → "배포 가능/불가" 판정
+- frontend (Task #26): `vs-input.tsx:63` lint 수정 (배포 블로커); 쿠팡 파트너스 제휴 링크 버튼 실연동
+- backend (Task #27): `/api/watches` 소유권 검증 (signed token); 인기 집계 익명화; Groq 폴백 체인
+- security (Task #28): frontend/backend 완료 후 재검수 → 배포 가능/불가 최종 판정

@@ -23,7 +23,7 @@ describe("searchWeb", () => {
     delete process.env.GOOGLE_SEARCH_API_KEY;
     delete process.env.GOOGLE_SEARCH_CX;
 
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
           web: {
@@ -59,7 +59,7 @@ describe("searchWeb", () => {
     process.env.GOOGLE_SEARCH_API_KEY = "google-key";
     process.env.GOOGLE_SEARCH_CX = "cx";
 
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       new Response(
         JSON.stringify({
           items: [
