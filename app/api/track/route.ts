@@ -1,9 +1,20 @@
 import { NextResponse } from "next/server";
 import { createServiceClientSafe } from "@/lib/supabase-server";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const limit = rateLimit(`track:${ip}`, 60, 60_000);
+  if (!limit.allowed) {
+    const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const { event_type, product_id, slug, region, retailer, session_id } = body;

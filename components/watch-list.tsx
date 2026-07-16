@@ -8,15 +8,10 @@ import { formatPrice } from "@/lib/pricing/types";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 const ENDPOINT_KEY = "axis:push:endpoint";
-const EMAIL_KEY = "axis:watch:email";
 
 function getStoredEndpoint() {
   if (typeof window === "undefined") return "";
   return localStorage.getItem(ENDPOINT_KEY) ?? "";
-}
-function getStoredEmail() {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(EMAIL_KEY) ?? "";
 }
 
 const EMPTY_WATCHES: Watch[] = [];
@@ -34,14 +29,12 @@ async function syncRemove(productId: string, region: Watch["region"]) {
       body: JSON.stringify({ endpoint, productId, region }),
     }).catch(() => null);
   }
-  const email = getStoredEmail();
-  if (email) {
-    fetch("/api/watches", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, productId, region }),
-    }).catch(() => null);
-  }
+  // Server sync requires an authenticated session; email query-param ownership was removed.
+  fetch("/api/watches", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, region }),
+  }).catch(() => null);
 }
 
 export default function WatchList({ locale = "ko" }: { locale?: Locale }) {

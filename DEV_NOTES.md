@@ -1,7 +1,7 @@
 # Axis — 개발 노트
 
-> 마지막 업데이트: 2026-06-11
-> 테스트: `npm test` 통과 기준 유지 · 캐시 버전: **v8**
+> 마지막 업데이트: 2026-07-16
+> 테스트: `npm test` 통과 기준 유지 · 캐시 버전: **v9**
 > 프로덕션: https://axis-app-beta.vercel.app
 >
 > 이 문서는 개발 단일 참조점이다. 제품 방향·진행 현황·아키텍처·남은 작업을 모두 담는다.
@@ -46,7 +46,7 @@
 ```
 사용자 쿼리 ("에어팟 프로 vs 버즈")
   ↓
-[1] 캐시 확인 (Supabase comparison_cache, v8|query|locale|country)
+[1] 캐시 확인 (Supabase comparison_cache, v9|query|locale|country)
   ↓ 미스
 [2] expandComparisonOptions() — 브랜드명 → 최신 모델 확장
 [3] detectCategory() — 카테고리 분류
@@ -88,7 +88,7 @@
 |---------|------|------|
 | 스마트폰 | `smartphones.ts` | 55 |
 | 이어폰 | `earphones.ts` | 18 |
-| 노트북 | `laptops.ts` | 26 |
+| 노트북 | `laptops.ts` | 28 (+ Book6 Pro 14/16) |
 | 태블릿 | `tablets.ts` | 23 |
 | **합계** | | **122** |
 

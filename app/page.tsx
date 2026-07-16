@@ -9,35 +9,28 @@ import PopularRankList from "@/components/popular-rank-list";
 import { getLocale } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 import { COMPARISONS } from "@/lib/compare-pages/comparisons";
-import { createServiceClient } from "@/lib/supabase-server";
+import { createServiceClientSafe } from "@/lib/supabase-server";
+import { aggregatePopularQueries } from "@/lib/popular-queries";
 
 type PopularQuery = { query: string; count: number };
 
-/** 실제 사용자 비교 쿼리 기반 인기 순위. 데이터 없으면 빈 배열. */
+/** KR·노트북 검증 우선: 홈 정적 랭킹은 노트북 비교만. */
+const HOME_COMPARISONS = COMPARISONS.filter((c) => c.category === "laptop");
+
+/** 실제 사용자 비교 쿼리 기반 인기 순위. 민감·비비교 문구는 제외. */
 async function getPopularQueries(limit = 8): Promise<PopularQuery[]> {
   try {
-    const db = createServiceClient();
+    const db = createServiceClientSafe();
+    if (!db) return [];
     const { data } = await db
       .from("comparisons")
       .select("query")
       .not("query", "is", null)
       .order("created_at", { ascending: false })
-      .limit(500); // 최근 500건에서 집계
+      .limit(500);
 
     if (!data?.length) return [];
-
-    // 클라이언트 측 집계 (쿼리 정규화 후 카운트)
-    const counts = new Map<string, number>();
-    for (const row of data) {
-      const q = (row.query as string).trim().toLowerCase();
-      if (q.length < 3) continue;
-      counts.set(q, (counts.get(q) ?? 0) + 1);
-    }
-
-    return Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, limit)
-      .map(([query, count]) => ({ query, count }));
+    return aggregatePopularQueries(data, limit);
   } catch {
     return [];
   }
@@ -128,7 +121,7 @@ export default async function Home() {
           ) : (
             // Static curated comparisons → direct result page (no loading needed)
             <ul className="home-rank-list">
-              {COMPARISONS.slice(0, 10).map((c, i) => (
+              {HOME_COMPARISONS.slice(0, 10).map((c, i) => (
                 <li key={c.slug} className="home-rank-item">
                   <Link href={`/compare/${c.slug}`} className="home-rank-link">
                     <span className="home-rank-num">{i + 1}</span>
@@ -143,7 +136,7 @@ export default async function Home() {
         </div>
 
         <div className="home-compare-more">
-          <Link href="/compare">{t.home.compareViewAll(COMPARISONS.length)}</Link>
+          <Link href="/compare">{t.home.compareViewAll(HOME_COMPARISONS.length)}</Link>
         </div>
       </section>
 
