@@ -18,19 +18,19 @@ export const ja = {
     tryThis: "比較する →",
     examples: [
       {
-        category: "スマートフォン",
-        query: "iPhone 16 vs Galaxy S25",
-        note: "カメラ、バッテリー、重さ、リセール"
-      },
-      {
         category: "ノートPC",
-        query: "MacBook Air vs Galaxy Book",
+        query: "MacBook Air M4 vs Galaxy Book5 Pro",
         note: "携帯性、性能、学業・仕事への適性"
       },
       {
-        category: "イヤホン",
-        query: "AirPods Pro vs Galaxy Buds",
-        note: "ノイズキャンセル、通話、エコシステム"
+        category: "ノートPC",
+        query: "LG gram 16 vs MacBook Air 15",
+        note: "重量、バッテリー、OS適性"
+      },
+      {
+        category: "ノートPC",
+        query: "Galaxy Book6 Pro vs MacBook Pro M4",
+        note: "ディスプレイ、性能、価格帯"
       }
     ],
     methodTitle: "Axisの判断方法",

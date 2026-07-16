@@ -10,6 +10,8 @@
 
 **프로덕션:** https://axis-app-beta.vercel.app · **상태:** 베타, 사업성 검증 단계 (한국 · 노트북 · 제휴)
 
+> SEO: `verified`만 색인 (`partial`/`unverified`는 noindex). 캐시 버전: **v9**.
+
 ---
 
 ## 주요 기능
@@ -45,7 +47,7 @@
 | 가격 이력 적재 (일별 크론) | ✅ 완료 |
 | 이메일 가격 알림 (Resend) | ✅ 완료 |
 | 웹 푸시 알림 (VAPID) | ✅ 완료 |
-| 검증 데이터셋 | ✅ 122개 제품 (스마트폰·이어폰·노트북·태블릿) |
+| 검증 데이터셋 | ✅ 수동 122+ (+KR 자동수집 병합, 북6 프로 포함) |
 | 다국어 KR/US/JP | ✅ 완료 |
 | 쿠팡 파트너스 연동 | ⏳ 누적 매출 15만원 후 발급 |
 | Groq 폴백 체인 | ⏳ 트래픽 증가 후 |
@@ -205,7 +207,7 @@ tier 2: 검증된 리뷰/언론 (GSMArena, Notebookcheck …)
 tier 3: AI 추정값
 
 verified   = tier 1~2로 primary 스펙 확인됨  → 색인 허용
-partial    = 일부 스펙만 검증됨               → 색인 허용 (배지 표시)
+partial    = 일부 스펙만 검증됨               → noindex (배지 표시)
 unverified = AI 추정값만                       → noindex
 ```
 

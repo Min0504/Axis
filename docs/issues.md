@@ -1,30 +1,21 @@
 # issues.md — Axis
 
-마지막 갱신: 2026-06-19 (conductor 종합)
+마지막 갱신: 2026-07-16 (restore + fixes)
 
-## 🔴 배포 블로커
+## ✅ 이번 브랜치에서 해결
 
-### [audit] npm audit 9 취약점 — critical 1, high 2, moderate 6
-- `undici`(high), `esbuild`/`vite`/`vitest`, `postcss`/`next`, `js-yaml` 관련
-- **배정: conductor** — 의존성 업데이트 범위 결정 후 backend 실행. lockfile 변경은 conductor 승인 필수.
+- [파손] e71f624 dataset/extract/cron/push/admin/collect 복구
+- [보안] `/api/watches` 세션 이메일 소유권
+- [보안] 인기 비교 집계 익명화 (`lib/popular-queries.ts`)
+- [동작] fallback 가짜 승자 제거
+- [lint] vs-input setState-in-effect
+- [운영] CI, rate limit, guest share 토큰, seed 프로덕션 가드
 
-### [lint] components/vs-input.tsx:63 — react-hooks/set-state-in-effect
-- 기존 오류, 이번 스프린트에서 미수정
-- 해결 전 배포 불가 (security 판정)
-- **배정: frontend (Task #26)** → 수정 후 security 재검수
+## 🟠 남은 것
 
-## 🟠 보안 이슈 (배포 전 해결 권장)
+### [audit] npm audit 취약점
+- lockfile 변경은 PM 승인 필수
+- **배정: BE**
 
-### [보안-중] /api/watches 소유권 미검증
-- 이메일만 알면 타인의 watch 목록 조회 가능 — 개인정보성 데이터 노출 위험
-- **배정: backend (Task #27)** — magic token / Supabase auth / signed token 중 하나로 전환
-
-### [보안-검토] 인기 비교 집계 개인정보 노출 가능성
-- 홈 화면 집계가 service_role로 `comparisons.query` 읽어 공개 노출
-- 쿼리에 개인/민감 정보 포함 가능성
-- **배정: backend (Task #27)** — normalized query만 저장/집계 또는 민감어 필터
-
-## ✅ 해결됨
-
-- tsc fetch mock 튜플 타입 오류 (backend 06-18 수정)
-- CRON_SECRET 미설정 위험 (security 06-18 확인, 설정됨)
+### [기능] 쿠팡 파트너스 최종승인 대기
+- 누적 매출 15만원 후 env 전환

@@ -34,7 +34,7 @@
 - 이메일 가격 알림 (Resend) + 웹 푸시 알림 (VAPID, PWA)
 - 검증 데이터셋 122개 (스마트폰 55 · 이어폰 18 · 노트북 26 · 태블릿 23)
 - 다국어 KR/US/JP (제품명 로케일 정규화: canonicalName / nameEn / nameJa)
-- SEO 정적 비교 페이지 (`/compare/[slug]`), 비교 결과 캐시 (v8), 클릭 트래킹
+- SEO 정적 비교 페이지 (`/compare/[slug]`), 비교 결과 캐시 (v9), 클릭 트래킹
 
 ### 운영 환경 (설정 완료)
 - `CRON_SECRET` 교체 완료, VAPID 3종 설정, `AXIS_PRICE_SOURCE=naver` 활성
@@ -87,7 +87,7 @@
 - **결과/추천 로직은 요청 없이 건드리지 않음.** `selectedOption`, `reasons`, `oneLineConclusion`, per-option 분석은 사용자가 프롬프트로 직접 작업.
 - **스펙은 DB에서 꺼내지 않음.** 공식 페이지 AI 검증 또는 `lib/specs/dataset/` 수동 데이터에서만. Supabase는 계정·히스토리·가격추적·알림 전용.
 - **검증 게이트 준수.** primary 스펙이 공식 소스(tier 1~2)로 뒷받침될 때만 `verified`. 뻥스펙·하드코딩 fallback 추천 금지. 없는 제품은 "찾을 수 없음"으로 떨어뜨림.
-- 스키마·결과 포맷 변경 시 `lib/comparison-cache.ts`의 `CACHE_VERSION`을 올려 구버전 캐시 무효화 (현재 v8).
+- 스키마·결과 포맷 변경 시 `lib/comparison-cache.ts`의 `CACHE_VERSION`을 올려 구버전 캐시 무효화 (현재 v9).
 - `CRON_SECRET` 등 시크릿을 코드·문서에 하드코딩하지 않음.
 - 변경 후 반드시 `npm test` (특히 레지스트리·데이터셋·파이프라인 변경 시) + `npx tsc --noEmit`.
 
@@ -115,7 +115,7 @@ lib/
   ai/                  AI 프로바이더 추상화 + 프롬프트
   specs/dataset/       수동 검증 스펙 122개
   pricing/             가격 프로바이더 (naver · coupang · seed)
-  comparison-cache.ts  캐시 레이어 (v8)
+  comparison-cache.ts  캐시 레이어 (v9)
   affiliate.ts         제휴 링크 생성 (Amazon/Coupang/Naver)
 scripts/collect-specs/ 반자동 스펙 수집 (danawa/gsmarena/kakaku)
 ```

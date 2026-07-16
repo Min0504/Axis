@@ -18,19 +18,19 @@ export const en = {
     tryThis: "Compare →",
     examples: [
       {
-        category: "Phones",
-        query: "iPhone 16 vs Galaxy S25",
-        note: "Camera, battery, weight, resale value"
-      },
-      {
         category: "Laptops",
-        query: "MacBook Air vs Galaxy Book",
+        query: "MacBook Air M4 vs Galaxy Book5 Pro",
         note: "Portability, performance, school/work fit"
       },
       {
-        category: "Earbuds",
-        query: "AirPods Pro vs Galaxy Buds",
-        note: "ANC, calls, ecosystem fit"
+        category: "Laptops",
+        query: "LG gram 16 vs MacBook Air 15",
+        note: "Weight, battery, Windows/macOS fit"
+      },
+      {
+        category: "Laptops",
+        query: "Galaxy Book6 Pro vs MacBook Pro M4",
+        note: "Display, performance, price band"
       }
     ],
     methodTitle: "How Axis decides",
