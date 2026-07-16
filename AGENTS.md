@@ -111,3 +111,14 @@ Lead 최종 보고는 아래 형식을 쓴다.
 - 시크릿/앱키를 클라이언트 번들에 넣지 않는다.
 - 실패한 명령은 숨기지 않고 역할 노트에 기록한다.
 - 긴 전체 파일 출력 금지. diff, 테스트 결과, 수정 파일 목록 중심으로 보고한다.
+
+## Cursor Cloud specific instructions
+
+- Runtime: Node 22 (`.nvmrc` = 22, `engines` = `>=20 <23`). Package manager는 npm (`package-lock.json`). 의존성 갱신은 `npm install`.
+- 표준 명령은 `package.json` scripts 참고: `npm run dev`(webpack) / `npm run dev:turbo`, `npm test`(vitest), `npm run lint`(eslint), `npm run build`, 타입 체크는 `npx tsc --noEmit`.
+- 로컬 env: `.env.local` 없어도 홈/공개 UI는 뜬다. Supabase/AI 키 미설정 시 클라이언트는 graceful하게 null로 폴백(`lib/supabase*.ts`의 `hasSupabaseEnv`/`hasServiceEnv`), 홈페이지 인기목록은 큐레이션 fallback으로 렌더된다. 비교(결정) 흐름을 실제로 돌리려면 `GROQ_API_KEY`(또는 다른 AI provider 키)와 Supabase 키가 필요하다.
+- 알려진 blocker (2026-07 기준): 최근 커밋 `e71f624`가 불완전 sync라서 다음 파일이 git에 없다 → build/`/api/compare`/`/compare/[slug]`/`/api/price` 및 일부 테스트가 `Module not found`로 실패한다:
+  - `lib/specs/dataset/index.ts`, `lib/specs/dataset/laptops-samsung.ts`, `lib/specs/dataset/laptops-apple-air.ts`, `lib/specs/dataset/laptops-apple-pro.ts`, `lib/specs/dataset/{smartphones,earphones,tablets}.ts`
+  - `lib/specs/extract/index.ts`, `lib/specs/extract/rules.ts`
+  - `scripts/collect-specs/sources/*`, `scripts/collect-specs/models/*.json`
+  이 파일들은 원저작자 로컬에만 존재한다(일부는 어떤 커밋에도 없음). 스펙 데이터는 날조 금지(검증 게이트)이므로 재작성하지 말고, 원본을 커밋/푸시해서 복구해야 정상 build/test가 된다.
