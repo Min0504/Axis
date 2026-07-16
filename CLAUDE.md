@@ -23,11 +23,13 @@ Axis 코드베이스에서 작업할 때 따라야 할 규칙. 프로젝트 개�
 - 타입 체크: `npx tsc --noEmit`.
 - 데이터셋 변경 시 `dataset.test.ts` 무결성 검사 통과 확인.
 - 스키마·결과 포맷을 바꾸면 `lib/comparison-cache.ts`의 `CACHE_VERSION`을 올려
-  구버전 캐시를 무효화한다 (현재 v8).
+  구버전 캐시를 무효화한다 (현재 코드 **v9**).
+- 트리 파손·문서 불일치 현황은 `docs/status-audit-2026-07-16.md` 참고.
 
 ## 데이터셋 작업
 
-- 수동 검증 데이터: `lib/specs/dataset/{smartphones,earphones,laptops,tablets}.ts`
+- 수동 검증 데이터: `lib/specs/dataset/` (`index.ts` + 카테고리/제조사 파일).
+  `e71f624` 이후 코어가 깨져 있으면 복구 후 작업한다.
 - 제품명은 로케일 정규화됨 — `canonicalName`(한국어) + `nameEn` + `nameJa`.
   EN/JA 로케일에서 어필리에이트 검색어·표시명이 이 필드로 결정된다.
 - 새 제품 추가 시: `id`는 lowercase-kebab, spec 키는 카테고리 스키마에 존재해야 함.
