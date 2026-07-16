@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { parseAiJson, normalizeSelectedOption } from "@/lib/ai/decide";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { parseAiJson, normalizeSelectedOption, runAiDecision } from "@/lib/ai/decide";
+
+const originalEnv = { ...process.env };
 
 const validPayload = JSON.stringify({
   selectedOption: "A",
@@ -7,6 +9,11 @@ const validPayload = JSON.stringify({
   reasons: ["r1"],
   comparison: [{ key: "k", values: ["1", "2"] }],
   detail: "d"
+});
+
+afterEach(() => {
+  process.env = { ...originalEnv };
+  vi.restoreAllMocks();
 });
 
 describe("parseAiJson", () => {
@@ -52,5 +59,38 @@ describe("normalizeSelectedOption", () => {
 
   it("returns the raw answer when it matches none", () => {
     expect(normalizeSelectedOption("모두", ["A옵션", "B옵션"])).toBe("모두");
+  });
+});
+
+describe("runAiDecision", () => {
+  it("falls back from Groq to OpenAI when Groq fails", async () => {
+    process.env.AI_PROVIDER = "groq";
+    process.env.GROQ_API_KEY = "test-groq-key";
+    process.env.OPENAI_API_KEY = "test-openai-key";
+    delete process.env.OPENAI_BASE_URL;
+
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response("rate limited", { status: 429 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: validPayload } }]
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runAiDecision({
+      options: ["A", "B"],
+      category: "laptop",
+      templateKeys: ["model_name"]
+    });
+
+    expect(result?.selectedOption).toBe("A");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[0][0])).toBe("https://api.groq.com/openai/v1/chat/completions");
+    expect(String(fetchMock.mock.calls[1][0])).toBe("https://api.openai.com/v1/chat/completions");
   });
 });
