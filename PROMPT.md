@@ -1,6 +1,9 @@
 # Axis — AI 작업 프롬프트
 
 > 배포 목표: 2026-08-15 (베타 → 정식) | 현재: 프로덕션 베타 배포 완료, 사업성 검증 단계
+>
+> ⚠️ 2026-07-16: HEAD 코어 파손·문서 수치(122개/v8) 불일치. 작업 전 [docs/status-audit-2026-07-16.md](docs/status-audit-2026-07-16.md) 확인.
+> Conductor 세션제 폐지 → FE/BE/SEC/LEAD 스킬 이관 예정 ([AGENTS.md](AGENTS.md)).
 
 ---
 
