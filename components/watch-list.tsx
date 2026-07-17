@@ -7,43 +7,13 @@ import type { PriceApiResult } from "@/app/api/price/route";
 import { formatPrice } from "@/lib/pricing/types";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
-const ENDPOINT_KEY = "axis:push:endpoint";
-const EMAIL_KEY = "axis:watch:email";
-
-function getStoredEndpoint() {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(ENDPOINT_KEY) ?? "";
-}
-function getStoredEmail() {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(EMAIL_KEY) ?? "";
-}
-
 const EMPTY_WATCHES: Watch[] = [];
 
 function useWatches(): Watch[] {
   return useSyncExternalStore(subscribeWatches, listWatches, () => EMPTY_WATCHES);
 }
 
-async function syncRemove(productId: string, region: Watch["region"]) {
-  const endpoint = getStoredEndpoint();
-  if (endpoint) {
-    fetch("/api/push/subscribe", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ endpoint, productId, region }),
-    }).catch(() => null);
-  }
-  const email = getStoredEmail();
-  if (email) {
-    fetch("/api/watches", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, productId, region }),
-    }).catch(() => null);
-  }
-}
-
+/** Local watch list + optional live price. No server sync. */
 export default function WatchList({ locale = "ko" }: { locale?: Locale }) {
   const t = getDictionary(locale).watch;
   const watches = useWatches();
@@ -69,7 +39,9 @@ export default function WatchList({ locale = "ko" }: { locale?: Locale }) {
       for (const e of entries) if (e) map[e[0]] = e[1];
       setPrices(map);
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [watches, locale]);
 
   if (watches.length === 0) return null;
@@ -95,10 +67,7 @@ export default function WatchList({ locale = "ko" }: { locale?: Locale }) {
                 <button
                   type="button"
                   className="watch-remove"
-                  onClick={() => {
-                    removeWatch(w.productId);
-                    void syncRemove(w.productId, w.region);
-                  }}
+                  onClick={() => removeWatch(w.productId)}
                   aria-label={t.remove}
                 >
                   ×
@@ -108,7 +77,7 @@ export default function WatchList({ locale = "ko" }: { locale?: Locale }) {
           );
         })}
       </ul>
-      <p className="watch-note">{t.alertNote}</p>
+      <p className="watch-note">이 기기 브라우저에만 저장됩니다.</p>
     </section>
   );
 }

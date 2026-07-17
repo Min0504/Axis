@@ -6,7 +6,7 @@ import type { Watch } from "./types";
  * localStorage wrapper + pub/sub drive the UI via useSyncExternalStore.
  */
 
-export const WATCH_KEY = "optio:watches";
+export const WATCH_KEY = "axis:watches";
 
 // ── Pure core (testable without a browser) ────────────────────────────────
 

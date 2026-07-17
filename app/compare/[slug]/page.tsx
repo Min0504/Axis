@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { COMPARISONS, CATEGORY_LABELS } from "@/lib/compare-pages/comparisons";
 import { buildDecision, buildQuery } from "@/lib/decision-engine";
-import { createServiceClient } from "@/lib/supabase-server";
+import { createServiceClientSafe } from "@/lib/supabase-server";
 import ResultsView from "@/components/results-view";
 import PageViewTracker from "@/components/page-view-tracker";
 import type { ComparisonResult } from "@/lib/types";
@@ -29,10 +29,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${def.title} — Axis의 선택은?`;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://axis.so";
+  const result = await getOrGenerate(slug, def.options);
+  const indexable = Boolean(result && result.verification === "verified");
 
   return {
     title,
     description: def.description,
+    robots: indexable ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description: def.description,
@@ -45,32 +48,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function getOrGenerate(slug: string, options: string[]): Promise<ComparisonResult | null> {
-  const db = createServiceClient();
+  const db = createServiceClientSafe();
 
-  // 1. Try cache
-  const { data } = await db
-    .from("seo_comparisons")
-    .select("result")
-    .eq("slug", slug)
-    .maybeSingle();
+  if (db) {
+    const { data } = await db
+      .from("seo_comparisons")
+      .select("result")
+      .eq("slug", slug)
+      .maybeSingle();
 
-  if (data?.result && isSafeCachedResult(data.result as ComparisonResult)) {
-    return data.result as ComparisonResult;
+    if (data?.result && isSafeCachedResult(data.result as ComparisonResult)) {
+      return data.result as ComparisonResult;
+    }
   }
 
-  // 2. Generate with AI
   const query = buildQuery(options);
   let result: ComparisonResult;
   try {
-    result = await buildDecision(query, 6);
+    result = await buildDecision(query, 2);
   } catch {
     return null;
   }
 
-  if (result.verification === "verified") {
-    db.from("seo_comparisons")
+  if (db && result.verification === "verified") {
+    void db
+      .from("seo_comparisons")
       .upsert({ slug, query, result, generated_at: new Date().toISOString() })
-      .then(({ error }) => { if (error) console.error("[seo_comparisons.upsert]", error.message); });
+      .then(({ error }) => {
+        if (error) console.error("[seo_comparisons.upsert]", error.message);
+      });
   }
 
   return result;
@@ -146,13 +152,10 @@ export default async function ComparePage({ params }: Props) {
         </section>
       )}
 
-      {/* CTA */}
       <section className="compare-cta">
-        <p className="compare-cta-copy">
-          내 상황(예산·용도·기존 기기)을 더해서 맞춤 분석을 받고 싶다면?
-        </p>
-        <Link href={`/?q=${encodeURIComponent(def.options.join(" vs "))}`} className="btn-primary compare-cta-btn">
-          내 상황 맞춤 비교 받기 →
+        <p className="compare-cta-copy">다른 노트북도 비교해 보세요.</p>
+        <Link href="/" className="btn-primary compare-cta-btn">
+          새 비교 시작 →
         </Link>
       </section>
     </>

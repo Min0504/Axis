@@ -7,7 +7,7 @@
  * killing the "what do I even type?" cold start.
  */
 
-export const PREFILL_EVENT = "optio:prefill";
+export const PREFILL_EVENT = "axis:prefill";
 
 export type PrefillDetail = { options: string[] };
 

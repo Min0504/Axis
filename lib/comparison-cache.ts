@@ -17,7 +17,7 @@ import type { Country, Locale } from "@/lib/i18n";
 const CACHE_TTL_HOURS = 24;
 
 /** Bump this when comparison output format changes to invalidate stale cached results. */
-const CACHE_VERSION = 9;  // v9: reasons/analyses 강화(스펙→실생활 장점) + userContext 맞춤 재분석
+const CACHE_VERSION = 10; // v10: AI 제거 · 스펙표 deterministic · 노트북 전용
 
 function cacheKey(query: string, locale: Locale, country: Country): string {
   return `v${CACHE_VERSION}|${query.trim().toLowerCase()}|${locale}|${country}`;

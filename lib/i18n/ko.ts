@@ -20,19 +20,19 @@ export const ko = {
     tryThis: "비교하기 →",
     examples: [
       {
-        category: "스마트폰",
-        query: "아이폰 16 vs 갤럭시 S25",
-        note: "카메라, 배터리, 무게, 가격 방어까지"
-      },
-      {
         category: "노트북",
-        query: "맥북 에어 vs 갤럭시북",
+        query: "맥북 에어 M4 vs 갤럭시 북5 프로",
         note: "휴대성, 성능, 과제/업무 용도 기준"
       },
       {
-        category: "이어폰",
-        query: "에어팟 프로 vs 버즈",
-        note: "노이즈캔슬링, 통화, 생태계 적합도"
+        category: "노트북",
+        query: "LG 그램 16 vs 맥북 에어 15",
+        note: "무게, 배터리, Windows/macOS 적합도"
+      },
+      {
+        category: "노트북",
+        query: "갤럭시 북6 프로 vs 맥북 프로 M4",
+        note: "디스플레이, 성능, 가격대 비교"
       }
     ],
     methodTitle: "Axis가 판단하는 방식",
@@ -76,7 +76,7 @@ export const ko = {
   // Input
   input: {
     ordinals: ["첫 번째", "두 번째", "세 번째", "네 번째", "다섯 번째"],
-    placeholders: ["예: 아이폰 16", "예: 갤럭시 S25", "예: 픽셀 9", "예: 샤오미 15", "예: 원플러스 13"],
+    placeholders: ["예: 맥북 에어 M4", "예: 갤럭시 북5 프로", "예: LG 그램 16", "예: 맥북 프로 14", "예: 씽크패드 X1"],
     addOption: "＋ 선택지 추가",
     submit: "Axis에게 맡기기 →",
     submitting: "분석 중...",

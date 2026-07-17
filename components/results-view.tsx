@@ -1,9 +1,8 @@
 import type { ComparisonResult, ComparisonRow, OfficialSourceMeta } from "@/lib/types";
 import Link from "next/link";
-import ShareActions from "@/components/share-actions";
+import BuyActions from "@/components/buy-actions";
 import SettingsBar from "@/components/settings-bar";
 import UserNav from "@/components/user-nav";
-import ContextCard from "@/components/context-card";
 import TimingSection from "@/components/timing-section";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { verificationLabel } from "@/lib/specs/source";
@@ -40,9 +39,8 @@ function normalize(result: ComparisonResult, query: string) {
 
   const sources = Array.isArray(result.officialSources) ? result.officialSources : undefined;
   const sourceMeta = Array.isArray(result.officialSourceMeta) ? result.officialSourceMeta : undefined;
-  const analyses = Array.isArray(result.analyses) ? result.analyses : [];
 
-  return { options, rows, sources, sourceMeta, analyses };
+  return { options, rows, sources, sourceMeta };
 }
 
 function computeFitScores(
@@ -83,13 +81,11 @@ function sourceLabel(source: OfficialSourceMeta | undefined, t: ReturnType<typeo
 export default function ResultsView({
   query,
   result,
-  comparisonId,
-  shareToken,
   locale = "ko",
   slug,
   region,
 }: Props) {
-  const { options, rows, sources, sourceMeta, analyses } = normalize(result, query);
+  const { options, rows, sources, sourceMeta } = normalize(result, query);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
   const cols = options.length;
   const t = getDictionary(locale).results;
@@ -116,7 +112,6 @@ export default function ResultsView({
       <main className="results-body">
         <Link href="/" className="btn-back">{t.back}</Link>
 
-        {/* ── 1. Verdict hero ── */}
         <section className="verdict-hero">
           <div className="vh-badge">
             <span className="vh-badge-dot" aria-hidden />
@@ -126,7 +121,6 @@ export default function ResultsView({
           <h1 className="vh-title">{result.selectedOption}</h1>
           <p className="vh-conclusion">{result.oneLineConclusion ?? t.defaultConclusion}</p>
 
-          {/* 승부 막대: 각 옵션의 스펙 우위를 % 없이 막대 길이로만 표현 */}
           {options.length > 1 && !isBlockedResult && (
             <div className="vh-matchup" aria-label={query}>
               {options.map((opt, i) => (
@@ -150,18 +144,14 @@ export default function ResultsView({
           )}
         </section>
 
-        {/* ── 2. Timing + Buy ── */}
         {!isBlockedResult && (
           <div className="buy-timing-block">
             <TimingSection productName={result.selectedOption} locale={locale} />
             <div className="share-actions-wrap">
-              <ShareActions
+              <BuyActions
                 selectedOption={result.selectedOption}
                 category={result.category}
                 locale={locale}
-                comparisonId={comparisonId}
-                shareToken={shareToken}
-                guestPayload={!comparisonId ? { query, result } : undefined}
                 slug={slug}
                 region={region}
               />
@@ -169,7 +159,6 @@ export default function ResultsView({
           </div>
         )}
 
-        {/* ── 3. Spec table ── */}
         <section className="detail-card spec-section">
           <div className="spec-header">
             <h2>{showVerifyBadge ? t.specComparison : t.specComparisonPending}</h2>
@@ -221,61 +210,12 @@ export default function ResultsView({
           ) : (
             <div className="spec-empty">
               <p>{isBlockedResult ? result.detail : t.specEmptyNote}</p>
-              {sources?.some(Boolean) && (
-                <div className="spec-empty-links">
-                  {sources.map((src, i) =>
-                    src ? (
-                      <a key={i} href={src} target="_blank" rel="noreferrer">
-                        {sourceLabel(sourceMeta?.[i], t)} · {options[i]} →
-                      </a>
-                    ) : null
-                  )}
-                </div>
-              )}
             </div>
           )}
         </section>
 
-        {/* ── 4. Per-option analysis ── */}
-        {analyses.some(Boolean) && (
-          <section className="detail-card">
-            <h2>{t.perItemAnalysis}</h2>
-            <div className="analysis-list">
-              {options.map((opt, i) =>
-                analyses[i] ? (
-                  <div
-                    className={`analysis-item${i === selectedIndex ? " winner-item" : ""}`}
-                    id={`analysis-${i}`}
-                    key={i}
-                  >
-                    <div className="analysis-head">
-                      <span className="analysis-letter">{String.fromCharCode(65 + i)}</span>
-                      <span className="analysis-name">{opt}</span>
-                      {i === selectedIndex && (
-                        <span className="analysis-pick">{t.winner}</span>
-                      )}
-                      {sources?.[i] && (
-                        <a
-                          className="analysis-official"
-                          href={sources[i]}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {sourceLabel(sourceMeta?.[i], t)} ↗
-                        </a>
-                      )}
-                    </div>
-                    <p>{analyses[i]}</p>
-                  </div>
-                ) : null
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* ── 5. Why chosen (추천이유 — 아래로 이동) ── */}
-        {!isBlockedResult && (
-          <section className="detail-card">
+        {!isBlockedResult && result.reasons.length > 0 && (
+          <section className="detail-card results-last-card">
             <h2>{t.whyChosen}</h2>
             <ul className="reason-list">
               {result.reasons.map((reason) => (
@@ -286,17 +226,6 @@ export default function ResultsView({
               ))}
             </ul>
           </section>
-        )}
-
-        {/* ── 6. Summary ── */}
-        <section className="detail-card results-last-card">
-          <h2>{t.summary}</h2>
-          <p className="summary-text">{result.detail}</p>
-        </section>
-
-        {/* ── 7. Context Card ── */}
-        {!isBlockedResult && (
-          <ContextCard originalQuery={query} locale={locale} />
         )}
       </main>
     </div>
