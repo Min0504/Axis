@@ -8,9 +8,9 @@
 
 한국(한국어) · 미국(English) · 일본(日本語) 3개 시장을 동시 지원합니다.
 
-**프로덕션:** https://axis-app-beta.vercel.app · **상태:** 베타, 사업성 검증 단계 (한국 · 노트북 · 제휴)
+**프로덕션:** https://axis-app-beta.vercel.app · **상태:** 베타 (한국 · 노트북 · 검증 스펙 · 쿠팡 제휴)
 
-> SEO: `verified`만 색인 (`partial`/`unverified`는 noindex). 캐시 버전: **v9**.
+> 캐시 **v10**. AI 채팅 답변·푸시·공유·비노트북 SEO 제거. `verified`만 색인.
 
 ---
 

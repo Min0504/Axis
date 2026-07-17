@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { buildDecision, buildQuery, parseOptions } from "@/lib/decision-engine";
-import { createSupabaseRouteClient } from "@/lib/supabase-route";
-import { ensureUserProfile } from "@/lib/users/ensure-profile";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { COUNTRY_COOKIE, LOCALE_COOKIE, countryForLocale, isCountry, isLocale } from "@/lib/i18n";
 import type { ComparisonResult } from "@/lib/types";
 
-const MAX_OPTIONS = 6;
+const MAX_OPTIONS = 2;
 const MAX_OPTION_LENGTH = 100;
 const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60_000;
@@ -16,11 +14,7 @@ type Body = {
   optionA?: string;
   optionB?: string;
   options?: unknown;
-  /** Optional user situation for tailored re-analysis. */
-  context?: unknown;
 };
-
-const MAX_CONTEXT_LENGTH = 200;
 
 function collectOptions(body: Body): string[] {
   if (Array.isArray(body.options)) {
@@ -63,15 +57,6 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = await createSupabaseRouteClient(req);
-  const { data: { user } } = supabase
-    ? await supabase.auth.getUser()
-    : { data: { user: null } };
-
-  if (supabase && user) {
-    await ensureUserProfile(supabase, user);
-  }
-
   const cookieHeader = req.headers.get("cookie") ?? "";
   const localeCookieMatch = cookieHeader.match(new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE}=([^;]*)`));
   const countryCookieMatch = cookieHeader.match(new RegExp(`(?:^|;\\s*)${COUNTRY_COOKIE}=([^;]*)`));
@@ -82,14 +67,9 @@ export async function POST(req: Request) {
 
   const query = buildQuery(options);
 
-  const userContext =
-    typeof body.context === "string"
-      ? body.context.trim().slice(0, MAX_CONTEXT_LENGTH)
-      : undefined;
-
   let result: ComparisonResult;
   try {
-    result = await buildDecision(query, MAX_OPTIONS, locale, country, userContext || undefined);
+    result = await buildDecision(query, MAX_OPTIONS, locale, country);
   } catch (err) {
     console.error("[buildDecision]", err);
     return NextResponse.json(
@@ -98,27 +78,5 @@ export async function POST(req: Request) {
     );
   }
 
-  let comparisonId: string | undefined;
-
-  if (supabase && user) {
-    const { data, error } = await supabase
-      .from("comparisons")
-      .insert({
-        user_id: user.id,
-        query,
-        category: result.category,
-        selected_option: result.selectedOption,
-        analysis_result: result,
-      })
-      .select("id")
-      .single();
-
-    if (error) {
-      console.error("[comparisons.insert]", error.message);
-    } else {
-      comparisonId = data.id;
-    }
-  }
-
-  return NextResponse.json({ result, comparisonId });
+  return NextResponse.json({ result });
 }

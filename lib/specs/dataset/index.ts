@@ -3,13 +3,7 @@ import type { Locale } from "@/lib/i18n";
 import { getCategorySchema, getField } from "@/lib/specs/schema";
 // ── 수동 검증 데이터셋 (tier-1, 공식 소스) ─────────────────────────────────
 import { laptops } from "./laptops";
-import { smartphones } from "./smartphones";
-import { earphones } from "./earphones";
-import { tablets } from "./tablets";
-// ── 다나와 자동 수집 데이터셋 (KR 시장, 2026-06) ───────────────────────────
 import { laptops as krLaptops } from "./kr/laptops";
-import { smartphones as krSmartphones } from "./kr/smartphones";
-import { earphones as krEarphones } from "./kr/earphones";
 import type { VerifiedProduct, DatasetCountry } from "./types";
 
 export type { VerifiedProduct } from "./types";
@@ -34,8 +28,8 @@ function mergeDatasets(...pools: VerifiedProduct[][]): VerifiedProduct[] {
 
 /** All verified products — hardcoded (official) first, KR batch second. */
 const ALL: VerifiedProduct[] = mergeDatasets(
-  [...laptops, ...smartphones, ...earphones, ...tablets],  // 수동 검증 데이터 (우선)
-  [...krSmartphones, ...krLaptops, ...krEarphones]  // 다나와 자동 수집 (신모델 추가)
+  laptops,
+  krLaptops
 );
 
 /**

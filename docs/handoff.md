@@ -1,27 +1,18 @@
 # handoff.md — Axis
 
-마지막 갱신: 2026-07-16 (restore + fixes)
+마지막 갱신: 2026-07-17 (strip essentials)
 
 ## 현재 상태
 
-`e71f624` 코어 파손 복구 + P0~P2 수정 진행 브랜치: `cursor/restore-core-and-fixes-646a`
+**Decide-lite:** 노트북 2제품 → 검증 스펙표 → 점수 승자 1줄 → 쿠팡 CTA  
+**Track-lite:** localStorage 관심상품 + (선택) 네이버 가격  
+**제거됨:** AI 답변, 푸시/이메일, 게스트·로그인 공유, admin, history API, watches API, 비노트북 데이터셋/SEO, Conductor, collect-specs
 
-- dataset/extract/cron/push/admin/collect 복구
-- Galaxy Book6 Pro 14/16 데이터셋 추가
-- watches 세션 소유권, 인기쿼리 익명화, fallback 가짜 승자 제거
-- CI · rate limit · guest share 토큰 강화 · 홈 노트북 집중
+## 검증
 
-## 주요 제약
+lint ✅ type ✅ test ✅ (115) build ✅ · CACHE v10
 
-- 결과/추천 로직 수정 금지 (프롬프트로만) — fallback은 “결론 보류”만 허용
-- 스펙은 `lib/specs/dataset/`에서만
-- `CACHE_VERSION` = **v9**
-- 시크릿 하드코딩 절대 금지
-- 프로덕션 `AXIS_PRICE_SOURCE=seed` 금지
+## 남은 것
 
-## 역할별 다음
-
-- FE: 쿠팡 제휴 CTA 실연동 확인
-- BE: npm audit 취약점 (lockfile은 PM 승인)
-- SEC: 배포 전 watches/cron/share 재검수
-- LEAD: merge 판정
+- npm audit (devDeps 위주, PM 승인 후)
+- 쿠팡 파트너스 ID / 네이버 키 운영 설정
