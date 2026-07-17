@@ -1,11 +1,13 @@
 # Axis — 개발 노트
 
-> 마지막 업데이트: 2026-07-16
-> 테스트: `npm test` 통과 기준 유지 · 캐시 버전: **v9**
+> 마지막 업데이트: 2026-07-17 (essentials strip)
+> 캐시 버전: **v10** · 범위: KR · 노트북 · 검증 스펙표 · 쿠팡 제휴
 > 프로덕션: https://axis-app-beta.vercel.app
 >
-> 이 문서는 개발 단일 참조점이다. 제품 방향·진행 현황·아키텍처·남은 작업을 모두 담는다.
-> 작업 규칙은 [CLAUDE.md](CLAUDE.md), 공개 소개는 [README.md](README.md).
+> AI 채팅/푸시/공유/admin/비노트북 SEO 제거. 본문 일부(구 122개·다국가)는 구버전 서술일 수 있음.
+>
+> 작업 규칙 [CLAUDE.md](CLAUDE.md) · 공개 소개 [README.md](README.md).
+
 
 ---
 
