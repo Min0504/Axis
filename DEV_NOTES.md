@@ -1,6 +1,6 @@
 # Axis — 개발 노트
 
-> 마지막 업데이트: 2026-07-16
+> 마지막 업데이트: 2026-07-21
 > 테스트: `npm test` 통과 기준 유지 · 캐시 버전: **v9**
 > 프로덕션: https://axis-app-beta.vercel.app
 >
@@ -88,9 +88,9 @@
 |---------|------|------|
 | 스마트폰 | `smartphones.ts` | 55 |
 | 이어폰 | `earphones.ts` | 18 |
-| 노트북 | `laptops.ts` | 28 (+ Book6 Pro 14/16) |
+| 노트북 | `laptops.ts` | 28 |
 | 태블릿 | `tablets.ts` | 23 |
-| **합계** | | **122** |
+| **합계** | | **124** |
 
 추가로 다나와 자동 수집 데이터(`dataset/kr/`)가 수동 데이터 뒤에 병합됨 (ID 중복 시 수동 우선).
 
@@ -139,7 +139,7 @@ npm run collect:jp   # 価格.com (JP, JPY 가격)
 - 스펙 정확도 수정: 아이폰16 프로 주사율(60→120Hz), `enrichWithDatasetFallback` merge 방식
 - 한/미/일 전체 점검: US/JP 데이터셋 fallback, ja 라벨 중앙화(JA_FIELD_LABELS),
   danawa URL 공식소스 유출 차단
-- 제품명 로케일 정규화 + 데이터셋 122개 확장, 태블릿 카테고리 신설
+- 제품명 로케일 정규화 + 데이터셋 124개 확장(수동), 태블릿 카테고리 신설
 - UI: 결과 카드 화이트 리디자인, fit score 바, 어필리에이트 "공식" 제거 + 다이렉트 링크
 
 ---
@@ -151,23 +151,22 @@ npm run collect:jp   # 価格.com (JP, JPY 가격)
 | 항목 | 내용 |
 |------|------|
 | `CRON_SECRET` 교체 | 현재 기본값 → `openssl rand -base64 32` → Vercel Production |
-| VAPID 키 생성·등록 | `npx web-push generate-vapid-keys` → 3개 키 → WatchButton 노출 확인 |
+| VAPID 키 생성·등록 | 로컬 3종 SET. WatchButton은 PriceComparison remount로 노출 경로 복구됨 |
 | Supabase 마이그레이션 | 0014_price_history.sql 로컬 적용 완료. 프로덕션은 Vercel 배포 후 `npx supabase db push` |
 | 네이버 쇼핑 API 키 설정 | [https://developers.naver.com/apps/](https://developers.naver.com/apps/) → 앱 등록 → 쇼핑 체크 → `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` → `AXIS_PRICE_SOURCE=naver` |
 | Coupang API (대기) | 누적 15만원 매출 달성 후 파트너스 포털 최종승인 → `COUPANG_ACCESS_KEY` / `COUPANG_SECRET_KEY` → `AXIS_PRICE_SOURCE=coupang` 으로 전환 |
 
 ### 기능 비활성화 (API 키 없음)
 
-- `BRAVE_SEARCH_API_KEY` 미설정 → 미등록 제품 웹 검색 폴백 안 됨
-- `RESEND_API_KEY` 미설정 → 이메일 가격 알림 안 됨
-- `VAPID_*` 미설정 → 푸시 알림 안 됨
+- `BRAVE_SEARCH_API_KEY` 의도적 미설정 → 웹 검색 폴백은 검증 보류
+- `RESEND_API_KEY` 로컬 SET. 프로덕션 패리티·실발송 QA는 별도 확인
+- `VAPID_*` 로컬 SET. 푸시 실동작 QA는 별도 확인
 
 ### 미확인
 
 - Sony 한국 URL(`sony.co.kr`) 실제 동작 여부
 - LG gram 14/16/17형 containment match 오매핑 가능성
-- WatchButton UI 미노출 (VAPID_SUBJECT 관련 가능성)
-- WatchButton UI 미노출 (VAPID_SUBJECT 관련 가능성)
+- ~~WatchButton UI 미노출~~ → 원인: ResultsView에서 PriceComparison orphan. remount 완료. VAPID 가설 폐기
 - Sony 한국 URL(`sony.co.kr`) 실제 동작 여부
 - LG gram 14/16/17형 containment match 오매핑 가능성
 
@@ -176,7 +175,7 @@ npm run collect:jp   # 価格.com (JP, JPY 가격)
 추가 기능 빌드 전에 핵심 가정부터 싸게 검증한다. 통과 시에만 빌드 재개.
 
 **핵심 가정 (먼저 검증):**
-- A 실가격·이력을 싸게 확보 가능 — 쿠팡 현재가 + 노트북 26 SKU 자체 일별 적재 PoC
+- A 실가격·이력을 싸게 확보 가능 — 쿠팡 현재가 + 노트북 28 SKU 자체 일별 적재 PoC
   → **[준비 완료]** `naver-provider.ts` + `coupang-provider.ts` + `price-snapshot` 크론 구현 완료 (2026-06-11).
      ① 네이버 쇼핑 API 즉시 발급 후 `AXIS_PRICE_SOURCE=naver` 로 활성화 (가격=전국최저가, 구매링크=쿠팡 제휴).
      ② Coupang 누적 15만원 매출 달성 → 최종승인 → `AXIS_PRICE_SOURCE=coupang` 으로 전환 (env 변경만으로 완료).
@@ -225,13 +224,14 @@ openssl rand -base64 32               # CRON_SECRET 생성
 | `SUPABASE_SERVICE_ROLE_KEY` | 설정됨 | Supabase 서비스 키 |
 | `GROQ_API_KEY` | 설정됨 | AI 결정 엔진 |
 | `CRON_SECRET` | ✅ 교체 완료 | 2026-06-11 새 키로 교체 |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ✅ 설정됨 | 푸시 알림 |
-| `VAPID_PRIVATE_KEY` | ✅ 설정됨 | 푸시 알림 |
-| `VAPID_SUBJECT` | ✅ 설정됨 | 푸시 알림 |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ✅ 로컬 SET | 푸시 알림 |
+| `VAPID_PRIVATE_KEY` | ✅ 로컬 SET | 푸시 알림 |
+| `VAPID_SUBJECT` | ✅ 로컬 SET | 푸시 알림 |
 | `AXIS_PRICE_SOURCE` | ✅ naver | 네이버 쇼핑 최저가 활성화 |
 | `NAVER_CLIENT_ID` | ✅ 설정됨 | 네이버 쇼핑 API |
 | `NAVER_CLIENT_SECRET` | ✅ 설정됨 | 네이버 쇼핑 API |
-| `BRAVE_SEARCH_API_KEY` | ❌ 미설정 | 웹 검색 폴백 |
-| `RESEND_API_KEY` | ❌ 미설정 | 이메일 알림 (D단계) |
+| `BRAVE_SEARCH_API_KEY` | ❌ 미설정(보류) | 웹 검색 폴백 |
+| `RESEND_API_KEY` | ✅ 로컬 SET / 프로덕션 패리티 미확인 | 이메일 알림 (D단계) |
+| `NEXT_PUBLIC_SITE_URL` | ⚠️ 미설정 시 fallback | public=`https://axis-app-beta.vercel.app` · layout local=`http://localhost:3000` |
 | `COUPANG_ACCESS_KEY` | ❌ 대기 중 | 쿠팡 파트너스 API (최종승인 후 발급 — 15만원 매출 필요) |
 | `COUPANG_SECRET_KEY` | ❌ 대기 중 | 쿠팡 파트너스 API |

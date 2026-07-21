@@ -11,6 +11,7 @@ import { getDictionary } from "@/lib/i18n";
 import { COMPARISONS } from "@/lib/compare-pages/comparisons";
 import { createServiceClientSafe } from "@/lib/supabase-server";
 import { aggregatePopularQueries } from "@/lib/popular-queries";
+import { coverageNoteYear } from "@/lib/specs/coverage";
 
 type PopularQuery = { query: string; count: number };
 
@@ -75,6 +76,7 @@ export default async function Home() {
       </section>
 
       <VsInput maxOptions={6} locale={locale} />
+      <p className="coverage-note coverage-note-home">{t.home.coverageNote(coverageNoteYear())}</p>
 
       <section className="home-section home-examples">
         <div className="section-copy center">

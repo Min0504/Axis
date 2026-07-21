@@ -62,6 +62,7 @@ export const ja = {
     compareSub: "公式スペックをもとに事前に分析した人気比較です。",
     compareRealData: "ユーザーが最も多く検索した比較です。",
     compareViewAll: (n: number) => `比較をすべて見る (${n}件) →`,
+    coverageNote: (year: number) => `${year}年以降に発売された製品から比較できます`,
     categoryLabels: {
       laptop: "ノートPC",
       smartphone: "スマートフォン",
@@ -98,6 +99,10 @@ export const ja = {
     ],
     fitScoreLabel: "スペック優位比率",
     fitScoreNote: "数値比較可能な公式スペック項目を基準",
+    specGraphs: "スペックグラフ",
+    specGraphSelect: "スペックを選択",
+    specGraphNumericOnly: "数値で比較できるスペックだけを棒グラフで表示します",
+    coverageNote: (year: number) => `${year}年以降に発売された製品から比較できます`,
     whyChosen: "おすすめの理由",
     specComparison: "公式スペック比較",
     specComparisonPending: "スペック比較",
