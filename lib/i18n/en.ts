@@ -34,6 +34,7 @@ export const en = {
       }
     ],
     methodTitle: "How Axis decides",
+    methodKicker: "Decision method",
     methodSubEm: "Not marketing copy —",
     methodSub: "Axis starts with verifiable information and your real-world situation.",
     features: [
@@ -68,6 +69,15 @@ export const en = {
       smartphone: "Smartphones",
       earphones: "Earphones & Headphones",
       tablet: "Tablets",
+    },
+    compareIndex: {
+      title: "Product comparisons",
+      metaTitle: "Product comparisons — Axis",
+      metaDescription:
+        "Popular laptop, smartphone, earphone, and tablet comparisons. Official specs and real-world fit help you decide what to buy.",
+      sub: "Official specs + AI analysis so you can decide what to buy.",
+      ctaCopy: "Looking for something not listed? Compare it yourself.",
+      cta: "Compare now →",
     },
   },
 
