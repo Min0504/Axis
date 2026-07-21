@@ -5,9 +5,11 @@ import SettingsBar from "@/components/settings-bar";
 import UserNav from "@/components/user-nav";
 import ContextCard from "@/components/context-card";
 import TimingSection from "@/components/timing-section";
+import PriceComparison from "@/components/price-comparison";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { verificationLabel } from "@/lib/specs/source";
 import { resolveFieldByLabel } from "@/lib/specs/schema";
+import { coverageNoteYear } from "@/lib/specs/coverage";
+import SpecGraphs, { type SpecGraph } from "@/components/spec-graphs";
 import type { Category } from "@/lib/types";
 
 type Props = {
@@ -75,6 +77,43 @@ function computeFitScores(
   return scores.map((s) => Math.round((s / total) * 100));
 }
 
+
+
+
+function parseNumericValue(value: string): number | null {
+  const m = (value ?? "").replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+  return m ? Number(m[0]) : null;
+}
+
+function buildSpecGraphs(
+  options: string[],
+  comparison: NormalizedRow[],
+  category: Category
+): SpecGraph[] {
+  const graphs: SpecGraph[] = [];
+
+  for (const row of comparison) {
+    const field = resolveFieldByLabel(category, row.key);
+    if (!field || field.better === "none") continue;
+
+    const nums = row.values.map((v) => parseNumericValue(v ?? ""));
+    if (nums.some((v) => v === null)) continue;
+    const values = nums as number[];
+    if (values.length < 2) continue;
+
+    graphs.push({
+      key: row.key,
+      values: values.map((num, i) => ({
+        label: options[i] ?? `Option ${i + 1}`,
+        raw: row.values[i] ?? "—",
+        num,
+      })),
+    });
+  }
+
+  return graphs;
+}
+
 function sourceLabel(source: OfficialSourceMeta | undefined, t: ReturnType<typeof getDictionary>["results"]) {
   if (!source) return t.officialShort;
   return source.kind === "authorized_importer" ? t.sourceImporter : t.sourceManufacturer;
@@ -86,6 +125,7 @@ export default function ResultsView({
   comparisonId,
   shareToken,
   locale = "ko",
+  hidePrices = false,
   slug,
   region,
 }: Props) {
@@ -96,6 +136,10 @@ export default function ResultsView({
   const isBlockedResult =
     result.status === "not_found" || result.status === "verification_pending";
   const fitScores = computeFitScores(options, rows, result.category);
+  const specGraphs = isBlockedResult
+    ? []
+    : buildSpecGraphs(options, rows, result.category);
+  const coverageYear = coverageNoteYear();
 
   const showVerifyBadge =
     result.verification != null &&
@@ -169,6 +213,23 @@ export default function ResultsView({
           </div>
         )}
 
+        {!isBlockedResult && !hidePrices && (
+          <PriceComparison options={options} locale={locale} />
+        )}
+
+        
+        {specGraphs.length > 0 && (
+          <SpecGraphs
+            key={specGraphs.map((g) => g.key).join("|")}
+            graphs={specGraphs}
+            labels={{
+              title: t.specGraphs,
+              select: t.specGraphSelect,
+              numericOnly: t.specGraphNumericOnly,
+            }}
+          />
+        )}
+
         {/* ── 3. Spec table ── */}
         <section className="detail-card spec-section">
           <div className="spec-header">
@@ -176,10 +237,15 @@ export default function ResultsView({
             {showVerifyBadge && result.verification && (
               <span className={`verify-badge verify-${result.verification}`}>
                 <span className="verify-dot" aria-hidden />
-                {verificationLabel(result.verification)}
+                {result.verification === "verified"
+                  ? t.verifyVerified
+                  : result.verification === "partial"
+                    ? t.verifyPartial
+                    : t.verifyUnverified}
               </span>
             )}
           </div>
+          <p className="coverage-note coverage-note-inline">{t.coverageNote(coverageYear)}</p>
 
           {rows.length > 0 ? (
             <div className="spec-table-scroll">
@@ -235,6 +301,10 @@ export default function ResultsView({
             </div>
           )}
         </section>
+
+
+        {/* ── 3b. Spec graphs ── */}
+        
 
         {/* ── 4. Per-option analysis ── */}
         {analyses.some(Boolean) && (

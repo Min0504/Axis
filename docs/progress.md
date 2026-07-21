@@ -1,37 +1,35 @@
 # progress.md — Axis
 
-마지막 갱신: 2026-06-18 (conductor 종합)
+마지막 갱신: 2026-07-16 (restore + fixes)
 
-## 이번 스프린트 완료 (06-18)
+## 이번 작업 (`cursor/restore-core-and-fixes-646a`)
 
-### frontend (Codex)
-- `components/share-actions.tsx`: 공유 카드 프리뷰, 로케일별 공유/구매 보조 문구, 제휴 링크 안내 구조 개선
-- `app/globals.css`: 공유 카드·구매 CTA·공유 버튼·제휴 안내 모바일 레이아웃 + 다크모드 스타일
+### P0 복구
+- `5acb9fc`에서 dataset/extract/cron/push/admin/collect 복구
+- 깨진 laptops 분리 파일 제거 → 단일 `laptops.ts` 복원
+- Galaxy Book6 Pro 14/16 추가 (Samsung US 공식 스펙)
 
-### backend (Codex)
-- `lib/specs/dataset/laptops*.ts`: 갤럭시 북6 Pro 14/16 추가, 파일 분리(제조사별)
-- `tests/complete.test.ts`, `tests/web-search.test.ts`: fetch mock strict tuple 타입 수정 → tsc 통과
-- 갤럭시 북6 alias/검증 등급 회귀 테스트 추가
+### P0 보안
+- `/api/watches` 세션 소유권 (클라이언트 email 무시)
+- 인기 비교 `aggregatePopularQueries` 필터
 
-### security (Codex)
-- CRON_SECRET: `.env.local` 설정됨(len=64), 크론 라우트 2개 Bearer 검증 확인
-- AI 프로바이더 키: `NEXT_PUBLIC_` 없음, 서버 전용 확인
-- Supabase RLS: 주요 사용자 테이블 활성화, 공개 읽기 정책 의도된 데이터 제한 확인
-- **배포 판정: 불가** (lint 실패)
+### P1
+- fallback 가짜 승자 제거 → 결론 보류
+- vs-input lint 수정
+- README partial 색인 / CACHE v9 / seed 문서 정합
+- `.env.example` seed 기본값 제거, 프로덕션 seed 가드
+
+### P2
+- GitHub Actions CI
+- track/price/watches/share rate limit
+- guest share 토큰 강화
+- 홈 예시·랭킹 노트북 집중
 
 ## 명령 결과
 
 | 명령 | 결과 |
 |---|---|
-| `npm test` | ✅ 170 tests 통과 |
-| `npx tsc --noEmit` | ✅ 통과 (backend 06-18 수정 후) |
-| `npm run build` | ✅ 통과 |
-| `npm run lint` | ❌ 실패 — `components/vs-input.tsx:63` react-hooks/set-state-in-effect |
-
-## 남은 작업
-
-- lint 블로커 수정 → security 재검수
-- /api/watches 소유권 검증
-- 인기 비교 집계 익명화
-- Groq 폴백 체인
-- 쿠팡 파트너스 제휴 링크 실연동
+| `npm test` | ✅ 177 tests |
+| `npx tsc --noEmit` | ✅ |
+| `npm run lint` | ✅ |
+| `npm run build` | ✅ |

@@ -86,7 +86,8 @@ export default function WatchButton({
   labelOn: string;
   locale?: Locale;
 }) {
-  const tw = getDictionary(locale).watch;
+  const dict = getDictionary(locale);
+  const tw = dict.watch;
   const watched = useIsWatched(productId);
   const [prompt, setPrompt] = useState<PromptState>("idle");
   const [pushSupported] = useState(supportsPush);
@@ -145,12 +146,12 @@ export default function WatchButton({
 
       {prompt === "asking" && (
         <div className="watch-push-prompt" role="dialog" aria-modal="true">
-          <button
-            type="button"
-            className="watch-email-close"
-            aria-label="닫기"
-            onClick={() => setPrompt("idle")}
-          >
+            <button
+              type="button"
+              className="watch-email-close"
+              aria-label={dict.context.closeAria}
+              onClick={() => setPrompt("idle")}
+            >
             ×
           </button>
           <p className="watch-email-label">{tw.pushPrompt}</p>

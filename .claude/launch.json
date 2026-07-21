@@ -9,7 +9,9 @@
       "autoPort": true,
       "env": {
         "AXIS_PRICE_SOURCE": "seed"
-      }
+      },
+      "_comment": "seed는 로컬 데모 전용. 프로덕션/Vercel에는 넣지 말 것."
+
     }
   ]
 }
