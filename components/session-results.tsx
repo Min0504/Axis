@@ -112,12 +112,10 @@ export default function SessionResults({ locale: localeProp }: { locale?: Locale
       <main className="container narrow results-empty-state">
         <div className="results-empty-inner">
           <span className="results-empty-icon" aria-hidden>⚡</span>
-          <h2 className="results-empty-title">비교를 시작해볼까요?</h2>
-          <p className="results-empty-sub">
-            두 제품을 입력하면 Axis가 공식 스펙을 분석해 최적의 선택을 골라드립니다.
-          </p>
+          <h2 className="results-empty-title">{t.emptyTitle}</h2>
+          <p className="results-empty-sub">{t.emptySub}</p>
           <Link href="/" className="btn-primary results-empty-cta">
-            비교 시작하기 →
+            {t.emptyCta}
           </Link>
         </div>
       </main>

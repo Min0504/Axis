@@ -7,7 +7,6 @@ import ContextCard from "@/components/context-card";
 import TimingSection from "@/components/timing-section";
 import PriceComparison from "@/components/price-comparison";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { verificationLabel } from "@/lib/specs/source";
 import { resolveFieldByLabel } from "@/lib/specs/schema";
 import { coverageNoteYear } from "@/lib/specs/coverage";
 import SpecGraphs, { type SpecGraph } from "@/components/spec-graphs";
@@ -238,7 +237,11 @@ export default function ResultsView({
             {showVerifyBadge && result.verification && (
               <span className={`verify-badge verify-${result.verification}`}>
                 <span className="verify-dot" aria-hidden />
-                {verificationLabel(result.verification)}
+                {result.verification === "verified"
+                  ? t.verifyVerified
+                  : result.verification === "partial"
+                    ? t.verifyPartial
+                    : t.verifyUnverified}
               </span>
             )}
           </div>
