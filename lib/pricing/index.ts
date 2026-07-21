@@ -19,7 +19,15 @@ export function getPriceProvider(region: Region): PriceProvider | null {
   const source = process.env.AXIS_PRICE_SOURCE;
   if (source === "naver") return region === "KR" ? naverProvider : null;
   if (source === "coupang") return region === "KR" ? coupangProvider : null;
-  if (source === "seed") return seedPriceProvider;
+  if (source === "seed") {
+    // Never serve fixture prices on Vercel production (VERCEL_ENV=production).
+    // NODE_ENV=production alone is not enough — local/`next build` also sets it.
+    if (process.env.VERCEL_ENV === "production") {
+      console.error("[pricing] AXIS_PRICE_SOURCE=seed is forbidden in production");
+      return null;
+    }
+    return seedPriceProvider;
+  }
   return null;
 }
 

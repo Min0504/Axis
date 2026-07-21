@@ -7,6 +7,8 @@ import { createServiceClient } from "@/lib/supabase-server";
 import ResultsView from "@/components/results-view";
 import PageViewTracker from "@/components/page-view-tracker";
 import type { ComparisonResult } from "@/lib/types";
+import { getSiteUrl } from "@/lib/site-url";
+import { isIndexable } from "@/lib/specs/source";
 
 // Re-generate at most once per day.
 export const revalidate = 86400;
@@ -28,11 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!def) return { title: "비교" };
 
   const title = `${def.title} — Axis의 선택은?`;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://axis.so";
+  const siteUrl = getSiteUrl();
+  const result = await getOrGenerate(slug, def.options);
+  const indexable = result ? isIndexable(result.verification ?? "unverified") : false;
 
   return {
     title,
     description: def.description,
+    robots: indexable ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description: def.description,
@@ -89,7 +94,7 @@ export default async function ComparePage({ params }: Props) {
     (c) => c.category === def.category && c.slug !== slug
   ).slice(0, 4);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://axis.so";
+  const siteUrl = getSiteUrl();
 
   // JSON-LD structured data
   const jsonLd = {

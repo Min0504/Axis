@@ -67,11 +67,14 @@ export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?
       const incoming = detail?.options?.map((o) => o.trim()).filter(Boolean) ?? [];
       if (incoming.length < 2) return;
       const next = incoming.slice(0, Math.max(2, maxOptions));
-      setOptions(next.length < 2 ? [...next, ""] : next);
-      setError("");
-      requestAnimationFrame(() => {
-        formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        formRef.current?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+      // Defer setState out of the effect body (event handler / microtask).
+      queueMicrotask(() => {
+        setOptions(next.length < 2 ? [...next, ""] : next);
+        setError("");
+        requestAnimationFrame(() => {
+          formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          formRef.current?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+        });
       });
     }
     window.addEventListener(PREFILL_EVENT, onPrefill);
@@ -193,7 +196,7 @@ export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?
 
   const overlay = isLoading
     ? createPortal(
-        <div className="analyze-overlay" role="status" aria-label="분석 중">
+        <div className="analyze-overlay" role="status" aria-label={t.submitting}>
           <div className="analyze-modal">
             <div className="analyze-logo">axis</div>
             <div className="analyze-comparing">

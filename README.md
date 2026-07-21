@@ -6,9 +6,11 @@
 
 "아이폰 16 vs 갤럭시 S25" 같은 자연어 쿼리를 입력하면 공식 스펙을 검증해 AI가 비교 테이블과 결론을 만들고, 가격을 추적해 최적 구매 타이밍을 알려줍니다.
 
-한국(한국어) · 미국(English) · 일본(日本語) 3개 시장을 동시 지원합니다.
+한국(한국어) 우선 운영. 미국·일본 코드 자산은 유지하되 사업성 검증 중에는 KR 집중입니다.
 
 **프로덕션:** https://axis-app-beta.vercel.app · **상태:** 베타, 사업성 검증 단계 (한국 · 노트북 · 제휴)
+
+> SEO: `verified`만 색인 (`partial`/`unverified`는 noindex). 캐시 버전: **v9**.
 
 ---
 
@@ -23,7 +25,7 @@
 | **구매 타이밍** | 가격 이력 기반 "지금 살까 / 기다릴까" 판정 + 다음 모델 출시 주기 힌트 |
 | **가격 알림** | 관심 상품 등록 → 목표가·역대최저·급락 시 이메일/푸시 알림 (일일 크론) |
 | **클릭 트래킹** | 제휴 클릭·페이지뷰 이벤트 적재 (`click_events`) |
-| **다국어** | KR/US/JP 동시 운영, 제품명 로케일 정규화 (`nameEn` / `nameJa`) |
+| **다국어** | KR/US/JP 코드 지원 · 운영은 KR 우선, 제품명 로케일 정규화 (`nameEn` / `nameJa`) |
 
 ## 핵심 차별점
 
@@ -34,21 +36,22 @@
 
 ---
 
-## 현재 상태 (2026-06-17)
+## 현재 상태 (2026-07-21)
 
 | 항목 | 상태 |
 |------|------|
-| 프로덕션 배포 | ✅ 베타 완료 |
+| 프로덕션 배포 | ⏳ 베타 라이브 · seed-only SHA `3b54e0a` — HEAD 재배포 필요 (PM) |
 | AI 구매 결정 엔진 | ✅ 검증 게이트 포함 |
 | 맞춤 재분석 (userContext) | ✅ 완료 |
 | 네이버 쇼핑 실시간 최저가 | ✅ 완료 |
 | 가격 이력 적재 (일별 크론) | ✅ 완료 |
-| 이메일 가격 알림 (Resend) | ✅ 완료 |
-| 웹 푸시 알림 (VAPID) | ✅ 완료 |
-| 검증 데이터셋 | ✅ 122개 제품 (스마트폰·이어폰·노트북·태블릿) |
-| 다국어 KR/US/JP | ✅ 완료 |
+| 이메일 가격 알림 (Resend) | 🟡 코드 완료 · 로컬 env SET · 프로덕션 패리티 대기 |
+| 웹 푸시 알림 (VAPID) | 🟡 코드 완료 · 로컬 VAPID SET · Watch UI는 PriceComparison remount로 복구 |
+| 검증 데이터셋 | ✅ 수동 124 (스마트폰 55 · 이어폰 18 · 노트북 28 · 태블릿 23) |
+| 다국어 KR/US/JP | ✅ 코드 완료 · 운영은 KR 우선 |
+| 사이트 URL 헬퍼 | ✅ `lib/site-url.ts` — env 우선, public fallback=`axis-app-beta.vercel.app` |
 | 쿠팡 파트너스 연동 | ⏳ 누적 매출 15만원 후 발급 |
-| Groq 폴백 체인 | ⏳ 트래픽 증가 후 |
+| Groq 폴백 체인 | ⏳ 트래픽 증가 후 · 보류 |
 | 커뮤니티 홍보 | ⏳ 예정 |
 
 ---
@@ -142,9 +145,9 @@ npm test
 | `AXIS_PRICE_SOURCE` | `naver` / `coupang` / `seed` | **프로덕션에서 `seed` 금지** |
 | `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` | 네이버 쇼핑 실시간 최저가 | 무료·즉시 발급 |
 | `COUPANG_ACCESS_KEY` / `COUPANG_SECRET_KEY` | 쿠팡 파트너스 API | 누적 매출 15만원 후 발급 |
-| `RESEND_API_KEY` | 이메일 가격 알림 | |
+| `RESEND_API_KEY` | 이메일 가격 알림 | 로컬 SET · 프로덕션 패리티 확인 필요 |
 | `RESEND_FROM_EMAIL` | 발신 주소 | 미인증 시 `onboarding@resend.dev` |
-| `BRAVE_SEARCH_API_KEY` | 미등록 제품 웹 검색 폴백 | |
+| `BRAVE_SEARCH_API_KEY` | 미등록 제품 웹 검색 폴백 | 검증 범위 밖 — 보류 |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | 푸시 알림 (클라이언트) | |
 | `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | 푸시 알림 (서버) | |
 | `CRON_SECRET` | 가격 점검·스냅샷 크론 보호 | |
@@ -187,7 +190,7 @@ components/
 lib/
 ├── decision-engine.ts   비교 파이프라인 오케스트레이터
 ├── ai/                  AI 프로바이더 추상화 + 프롬프트
-├── specs/dataset/       수동 검증 스펙 122개
+├── specs/dataset/       수동 검증 스펙 124개
 ├── pricing/             가격 프로바이더 (naver · coupang · seed)
 ├── comparison-cache.ts  캐시 레이어
 └── affiliate.ts         제휴 링크 생성 (Amazon/Coupang/Naver)
@@ -205,7 +208,7 @@ tier 2: 검증된 리뷰/언론 (GSMArena, Notebookcheck …)
 tier 3: AI 추정값
 
 verified   = tier 1~2로 primary 스펙 확인됨  → 색인 허용
-partial    = 일부 스펙만 검증됨               → 색인 허용 (배지 표시)
+partial    = 일부 스펙만 검증됨               → noindex (배지 표시)
 unverified = AI 추정값만                       → noindex
 ```
 

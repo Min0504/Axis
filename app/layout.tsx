@@ -4,8 +4,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { getLocale } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n";
 import ServiceWorkerRegistrar from "@/components/service-worker-registrar";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = getSiteUrl("local");
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();

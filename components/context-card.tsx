@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SESSION_RESULT_KEY } from "@/components/session-results";
 import type { ComparisonResult } from "@/lib/types";
-import type { Locale } from "@/lib/i18n";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 type Props = {
   originalQuery: string;
@@ -16,23 +16,22 @@ type CompareResponse = {
   comparisonId?: string;
 };
 
-const USE_CASES = [
-  { value: "daily", label: "일상 사용" },
-  { value: "work", label: "업무 · 생산성" },
-  { value: "creator", label: "영상 · 편집" },
-  { value: "game", label: "게임" },
-  { value: "student", label: "학교 · 공부" },
-];
-
-const BUDGETS = [
-  { value: "under50", label: "50만 미만" },
-  { value: "50to100", label: "50–100만" },
-  { value: "100to200", label: "100–200만" },
-  { value: "over200", label: "200만 이상" },
-];
-
 export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
   const router = useRouter();
+  const t = getDictionary(locale).context;
+  const useCases = [
+    { value: "daily", label: t.useCaseDaily },
+    { value: "work", label: t.useCaseWork },
+    { value: "creator", label: t.useCaseCreator },
+    { value: "game", label: t.useCaseGame },
+    { value: "student", label: t.useCaseStudent },
+  ] as const;
+  const budgets = [
+    { value: "under50", label: t.budgetUnder50 },
+    { value: "50to100", label: t.budget50to100 },
+    { value: "100to200", label: t.budget100to200 },
+    { value: "over200", label: t.budgetOver200 },
+  ] as const;
   const [open, setOpen] = useState(false);
   const [useCase, setUseCase] = useState("");
   const [budget, setBudget] = useState("");
@@ -42,8 +41,12 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
 
   function buildContext(): string {
     const parts: string[] = [];
-    if (useCase) parts.push(`용도: ${USE_CASES.find((u) => u.value === useCase)?.label}`);
-    if (budget) parts.push(`예산: ${BUDGETS.find((b) => b.value === budget)?.label}`);
+    if (useCase) {
+      parts.push(`${t.useCasePrefix}: ${useCases.find((u) => u.value === useCase)?.label}`);
+    }
+    if (budget) {
+      parts.push(`${t.budgetPrefix}: ${budgets.find((b) => b.value === budget)?.label}`);
+    }
     if (extra.trim()) parts.push(extra.trim());
     return parts.join(", ");
   }
@@ -54,7 +57,7 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
 
     const context = buildContext();
     if (!context) {
-      setError("용도·예산 중 하나 이상 선택하거나 메모를 입력해주세요.");
+      setError(t.errorNeedInput);
       return;
     }
 
@@ -70,7 +73,7 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
 
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(body.error ?? "재분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        setError(body.error ?? t.errorRetry);
         setLoading(false);
         return;
       }
@@ -93,7 +96,7 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
       }
       router.push("/results");
     } catch {
-      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      setError(t.errorNetwork);
       setLoading(false);
     }
   }
@@ -102,8 +105,8 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
     return (
       <button type="button" className="cc-trigger" onClick={() => setOpen(true)}>
         <span className="cc-trigger-text">
-          <span className="cc-trigger-title">내 상황에 맞게 다시 분석받기</span>
-          <span className="cc-trigger-hint">용도 · 예산을 알려주면 더 정확한 추천을 드려요</span>
+          <span className="cc-trigger-title">{t.triggerTitle}</span>
+          <span className="cc-trigger-hint">{t.triggerHint}</span>
         </span>
         <svg className="cc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -116,14 +119,14 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
     <div className="cc-card">
       <div className="cc-head">
         <div>
-          <p className="cc-head-title">내 상황에 맞게 재분석</p>
-          <p className="cc-head-sub">선택한 조건을 반영해 추천을 다시 계산합니다</p>
+          <p className="cc-head-title">{t.headTitle}</p>
+          <p className="cc-head-sub">{t.headSub}</p>
         </div>
         <button
           type="button"
           className="cc-close"
           onClick={() => setOpen(false)}
-          aria-label="닫기"
+          aria-label={t.closeAria}
           disabled={loading}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -134,9 +137,9 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
 
       <form onSubmit={handleSubmit} className="cc-form">
         <div className="cc-field">
-          <p className="cc-field-label">주요 용도</p>
+          <p className="cc-field-label">{t.useCaseLabel}</p>
           <div className="cc-chips">
-            {USE_CASES.map((u) => (
+            {useCases.map((u) => (
               <button
                 key={u.value}
                 type="button"
@@ -150,9 +153,9 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
         </div>
 
         <div className="cc-field">
-          <p className="cc-field-label">예산</p>
+          <p className="cc-field-label">{t.budgetLabel}</p>
           <div className="cc-chips">
-            {BUDGETS.map((b) => (
+            {budgets.map((b) => (
               <button
                 key={b.value}
                 type="button"
@@ -167,12 +170,12 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
 
         <div className="cc-field">
           <p className="cc-field-label">
-            추가 메모 <span className="cc-optional">(선택)</span>
+            {t.memoLabel} <span className="cc-optional">{t.memoOptional}</span>
           </p>
           <input
             type="text"
             className="cc-input"
-            placeholder="예: 배터리가 제일 중요해, 아이폰에서 갈아타려고"
+            placeholder={t.memoPlaceholder}
             value={extra}
             onChange={(e) => setExtra(e.target.value)}
             maxLength={80}
@@ -185,11 +188,11 @@ export default function ContextCard({ originalQuery, locale = "ko" }: Props) {
           {loading ? (
             <>
               <span className="cc-spinner" aria-hidden />
-              다시 분석하는 중…
+              {t.submitting}
             </>
           ) : (
             <>
-              이 상황으로 다시 분석
+              {t.submit}
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
                 <path d="M2.5 7.5h10M8.5 3.5l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

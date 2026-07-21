@@ -20,19 +20,19 @@ export const ko = {
     tryThis: "비교하기 →",
     examples: [
       {
-        category: "스마트폰",
-        query: "아이폰 16 vs 갤럭시 S25",
-        note: "카메라, 배터리, 무게, 가격 방어까지"
-      },
-      {
         category: "노트북",
-        query: "맥북 에어 vs 갤럭시북",
+        query: "맥북 에어 M4 vs 갤럭시 북5 프로",
         note: "휴대성, 성능, 과제/업무 용도 기준"
       },
       {
-        category: "이어폰",
-        query: "에어팟 프로 vs 버즈",
-        note: "노이즈캔슬링, 통화, 생태계 적합도"
+        category: "노트북",
+        query: "LG 그램 16 vs 맥북 에어 15",
+        note: "무게, 배터리, Windows/macOS 적합도"
+      },
+      {
+        category: "노트북",
+        query: "갤럭시 북6 프로 vs 맥북 프로 M4",
+        note: "디스플레이, 성능, 가격대 비교"
       }
     ],
     methodTitle: "Axis가 판단하는 방식",
@@ -65,6 +65,7 @@ export const ko = {
     compareSub: "공식 스펙 기반으로 미리 분석해둔 인기 비교입니다.",
     compareRealData: "사용자들이 가장 많이 찾은 비교입니다.",
     compareViewAll: (n: number) => `비교 전체 보기 (${n}개) →`,
+    coverageNote: (year: number) => `${year}년 이후 출시 제품부터 비교 가능합니다`,
     categoryLabels: {
       laptop: "노트북",
       smartphone: "스마트폰",
@@ -76,7 +77,7 @@ export const ko = {
   // Input
   input: {
     ordinals: ["첫 번째", "두 번째", "세 번째", "네 번째", "다섯 번째"],
-    placeholders: ["예: 아이폰 16", "예: 갤럭시 S25", "예: 픽셀 9", "예: 샤오미 15", "예: 원플러스 13"],
+    placeholders: ["예: 맥북 에어 M4", "예: 갤럭시 북5 프로", "예: LG 그램 16", "예: 맥북 프로 14", "예: 씽크패드 X1"],
     addOption: "＋ 선택지 추가",
     submit: "Axis에게 맡기기 →",
     submitting: "분석 중...",
@@ -103,6 +104,10 @@ export const ko = {
     ],
     fitScoreLabel: "스펙 우위 비율",
     fitScoreNote: "공식 스펙 중 수치 비교 가능 항목 기준",
+    specGraphs: "스펙 그래프",
+    specGraphSelect: "스펙 선택",
+    specGraphNumericOnly: "숫자로 비교 가능한 스펙만 막대그래프로 표시합니다",
+    coverageNote: (year: number) => `${year}년 이후 출시 제품부터 비교 가능합니다`,
     whyChosen: "추천 이유",
     specComparison: "공식 스펙 비교",
     specComparisonPending: "스펙 비교",
@@ -125,6 +130,71 @@ export const ko = {
     verificationPendingConclusion: "공식 제품은 확인됐지만 스펙 표를 만들 만큼 충분한 공식 항목을 아직 수집하지 못했습니다.",
     verificationPendingReason: "확실하지 않은 스펙으로 추천하지 않기 위해 결과 생성을 중단했습니다.",
     verificationPendingDetail: "공식 페이지 연결 또는 추출 규칙을 보강한 뒤 다시 비교하면 검증된 표로 표시됩니다.",
+    verifyVerified: "공식 스펙 검증됨",
+    verifyPartial: "일부 공식 스펙 검증",
+    verifyUnverified: "AI 정리 (검증 전)",
+    emptyTitle: "비교를 시작해볼까요?",
+    emptySub: "두 제품을 입력하면 Axis가 공식 스펙을 분석해 최적의 선택을 골라드립니다.",
+    emptyCta: "비교 시작하기 →",
+  },
+
+  timing: {
+    label: "구매 타이밍",
+    lowest: "최저",
+    current: "현재",
+    average: "평균",
+    releaseHint: (label: string, month: string) => `${label} 출시 예정: ${month}`,
+    buyNowText: "지금 사기 좋습니다",
+    buyNowSub: "최근 최저가에 가깝습니다. 더 기다려도 크게 내려가기 어렵습니다.",
+    waitShortText: "지금 사도 크게 손해 없습니다",
+    waitShortSub: "평균 가격대입니다. 할인 시즌(블프·11번가 등)을 노린다면 조금 더 기다릴 수 있습니다.",
+    waitModelText: "잠깐, 기다려보세요",
+    waitModelSub: "현재 가격이 최저가보다 많이 높습니다. 할인이나 신모델 출시 전 재고 정리를 노려보세요.",
+    collectingText: "가격 이력 수집 중입니다",
+    collectingSub: "매일 가격을 수집하고 있습니다. 며칠 후 정확한 타이밍 판정을 드릴게요.",
+    iphoneLabel: "아이폰 신모델",
+    iphoneMonth: "매년 9월",
+    galaxySLabel: "갤럭시 S 신모델",
+    galaxySMonth: "매년 1월",
+    galaxyZLabel: "갤럭시 Z 신모델",
+    galaxyZMonth: "매년 7월",
+    macbookAirLabel: "맥북 에어 신모델",
+    macbookAirMonth: "봄 (3~4월)",
+    macbookProLabel: "맥북 프로 신모델",
+    macbookProMonth: "가을 (10~11월)",
+    galaxyBookLabel: "갤럭시 북 신모델",
+    galaxyBookMonth: "봄 (3~5월)",
+    lgGramLabel: "LG 그램 신모델",
+    lgGramMonth: "봄 (1~3월)",
+  },
+
+  context: {
+    triggerTitle: "내 상황에 맞게 다시 분석받기",
+    triggerHint: "용도 · 예산을 알려주면 더 정확한 추천을 드려요",
+    headTitle: "내 상황에 맞게 재분석",
+    headSub: "선택한 조건을 반영해 추천을 다시 계산합니다",
+    closeAria: "닫기",
+    useCaseLabel: "주요 용도",
+    budgetLabel: "예산",
+    memoLabel: "추가 메모",
+    memoOptional: "(선택)",
+    memoPlaceholder: "예: 배터리가 제일 중요해, 아이폰에서 갈아타려고",
+    submit: "이 상황으로 다시 분석",
+    submitting: "다시 분석하는 중…",
+    errorNeedInput: "용도·예산 중 하나 이상 선택하거나 메모를 입력해주세요.",
+    errorRetry: "재분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+    errorNetwork: "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+    useCasePrefix: "용도",
+    budgetPrefix: "예산",
+    useCaseDaily: "일상 사용",
+    useCaseWork: "업무 · 생산성",
+    useCaseCreator: "영상 · 편집",
+    useCaseGame: "게임",
+    useCaseStudent: "학교 · 공부",
+    budgetUnder50: "50만 미만",
+    budget50to100: "50–100만",
+    budget100to200: "100–200만",
+    budgetOver200: "200만 이상",
   },
 
   // Price

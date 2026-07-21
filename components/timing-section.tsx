@@ -2,22 +2,25 @@
 
 import { useEffect, useState } from "react";
 import type { PriceApiResult } from "@/app/api/price/route";
+import { getDictionary, isLocale, type Locale } from "@/lib/i18n";
 
 type TimingVerdict = "buy_now" | "wait_short" | "wait_model" | "collecting";
 
-type NextModelHint = { label: string; month: string } | null;
+type NextModelHint = { readonly label: string; readonly month: string } | null;
 
-function getNextModelHint(productName: string): NextModelHint {
+function getNextModelHint(productName: string, timing: ReturnType<typeof getDictionary>["timing"]): NextModelHint {
   const n = productName.toLowerCase();
-  if (n.includes("iphone")) return { label: "아이폰 신모델", month: "매년 9월" };
-  if (n.includes("galaxy s") && !n.includes("fold") && !n.includes("flip"))
-    return { label: "갤럭시 S 신모델", month: "매년 1월" };
-  if (n.includes("galaxy z fold") || n.includes("galaxy z flip"))
-    return { label: "갤럭시 Z 신모델", month: "매년 7월" };
-  if (n.includes("macbook air")) return { label: "맥북 에어 신모델", month: "봄 (3~4월)" };
-  if (n.includes("macbook pro")) return { label: "맥북 프로 신모델", month: "가을 (10~11월)" };
-  if (n.includes("galaxy book")) return { label: "갤럭시 북 신모델", month: "봄 (3~5월)" };
-  if (n.includes("lg gram")) return { label: "LG 그램 신모델", month: "봄 (1~3월)" };
+  if (n.includes("iphone")) return { label: timing.iphoneLabel, month: timing.iphoneMonth };
+  if (n.includes("galaxy s") && !n.includes("fold") && !n.includes("flip")) {
+    return { label: timing.galaxySLabel, month: timing.galaxySMonth };
+  }
+  if (n.includes("galaxy z fold") || n.includes("galaxy z flip")) {
+    return { label: timing.galaxyZLabel, month: timing.galaxyZMonth };
+  }
+  if (n.includes("macbook air")) return { label: timing.macbookAirLabel, month: timing.macbookAirMonth };
+  if (n.includes("macbook pro")) return { label: timing.macbookProLabel, month: timing.macbookProMonth };
+  if (n.includes("galaxy book")) return { label: timing.galaxyBookLabel, month: timing.galaxyBookMonth };
+  if (n.includes("lg gram")) return { label: timing.lgGramLabel, month: timing.lgGramMonth };
   return null;
 }
 
@@ -27,53 +30,53 @@ function getVerdict(price: PriceApiResult): TimingVerdict {
   return "wait_model";
 }
 
-const VERDICT_CONFIG: Record<TimingVerdict | "collecting", {
-  signal: string;
-  text: string;
-  sub: string;
-}> = {
-  buy_now: {
-    signal: "ts-green",
-    text: "지금 사기 좋습니다",
-    sub: "최근 최저가에 가깝습니다. 더 기다려도 크게 내려가기 어렵습니다.",
-  },
-  wait_short: {
-    signal: "ts-amber",
-    text: "지금 사도 크게 손해 없습니다",
-    sub: "평균 가격대입니다. 할인 시즌(블프·11번가 등)을 노린다면 조금 더 기다릴 수 있습니다.",
-  },
-  wait_model: {
-    signal: "ts-red",
-    text: "잠깐, 기다려보세요",
-    sub: "현재 가격이 최저가보다 많이 높습니다. 할인이나 신모델 출시 전 재고 정리를 노려보세요.",
-  },
-  collecting: {
-    signal: "ts-gray",
-    text: "가격 이력 수집 중입니다",
-    sub: "매일 가격을 수집하고 있습니다. 며칠 후 정확한 타이밍 판정을 드릴게요.",
-  },
-};
+function verdictConfig(timing: ReturnType<typeof getDictionary>["timing"]) {
+  return {
+    buy_now: {
+      signal: "ts-green",
+      text: timing.buyNowText,
+      sub: timing.buyNowSub,
+    },
+    wait_short: {
+      signal: "ts-amber",
+      text: timing.waitShortText,
+      sub: timing.waitShortSub,
+    },
+    wait_model: {
+      signal: "ts-red",
+      text: timing.waitModelText,
+      sub: timing.waitModelSub,
+    },
+    collecting: {
+      signal: "ts-gray",
+      text: timing.collectingText,
+      sub: timing.collectingSub,
+    },
+  } as const;
+}
 
 type Props = {
   productName: string;
-  locale?: string;
+  locale?: Locale | string;
 };
 
 export default function TimingSection({ productName, locale = "ko" }: Props) {
+  const resolvedLocale: Locale = isLocale(locale) ? locale : "ko";
+  const timing = getDictionary(resolvedLocale).timing;
   const [price, setPrice] = useState<PriceApiResult | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/price?name=${encodeURIComponent(productName)}&locale=${locale}`)
+    fetch(`/api/price?name=${encodeURIComponent(productName)}&locale=${resolvedLocale}`)
       .then((r) => r.json())
       .then((data: { result: PriceApiResult | null }) => setPrice(data.result ?? null))
       .catch(() => setPrice(null))
       .finally(() => setLoading(false));
-  }, [productName, locale]);
+  }, [productName, resolvedLocale]);
 
   const verdict: TimingVerdict | "collecting" = price ? getVerdict(price) : "collecting";
-  const cfg = VERDICT_CONFIG[verdict];
-  const hint = getNextModelHint(productName);
+  const cfg = verdictConfig(timing)[verdict];
+  const hint = getNextModelHint(productName, timing);
 
   if (loading) return null;
 
@@ -94,7 +97,7 @@ export default function TimingSection({ productName, locale = "ko" }: Props) {
   return (
     <section className="timing-section">
       <div className="ts-header">
-        <span className="ts-label">구매 타이밍</span>
+        <span className="ts-label">{timing.label}</span>
         <span className={`ts-signal ${cfg.signal}`} />
       </div>
 
@@ -111,9 +114,9 @@ export default function TimingSection({ productName, locale = "ko" }: Props) {
             <div className="ts-gauge-cursor" style={{ left: `${markerPct}%` }} />
           </div>
           <div className="ts-price-row">
-            <span>최저 {price.lowest.toLocaleString()}</span>
-            <span className="ts-price-current">현재 {price.current.toLocaleString()}</span>
-            <span>평균 {price.average.toLocaleString()}</span>
+            <span>{timing.lowest} {price.lowest.toLocaleString()}</span>
+            <span className="ts-price-current">{timing.current} {price.current.toLocaleString()}</span>
+            <span>{timing.average} {price.average.toLocaleString()}</span>
           </div>
         </div>
       )}
@@ -125,7 +128,7 @@ export default function TimingSection({ productName, locale = "ko" }: Props) {
             <path d="M4 1v2M8 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
             <path d="M1 6h10" stroke="currentColor" strokeWidth="1.2"/>
           </svg>
-          {hint.label} 출시 예정: {hint.month}
+          {timing.releaseHint(hint.label, hint.month)}
         </div>
       )}
     </section>

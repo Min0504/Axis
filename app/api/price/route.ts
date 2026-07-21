@@ -8,6 +8,7 @@ import {
   type Region
 } from "@/lib/pricing";
 import { isLocale, type Locale } from "@/lib/i18n";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export type PriceApiResult = {
   productId: string;
@@ -32,6 +33,16 @@ export type PriceApiResult = {
  * configured. Never invents prices — same honesty rule as the spec gate.
  */
 export async function GET(req: Request) {
+  const ip = getClientIp(req);
+  const limit = rateLimit(`price:${ip}`, 60, 60_000);
+  if (!limit.allowed) {
+    const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id")?.trim();
   const name = searchParams.get("name")?.trim();

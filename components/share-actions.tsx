@@ -4,6 +4,7 @@ import { useState } from "react";
 import { primaryBuyLink } from "@/lib/affiliate";
 import type { Category, ComparisonResult } from "@/lib/types";
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { localeToRegion } from "@/lib/pricing/types";
 
 type Props = {
   selectedOption: string;
@@ -139,7 +140,7 @@ export default function ShareActions({
         event_type: "affiliate",
         product_id: selectedOption,
         slug: slug ?? null,
-        region: region ?? locale.toUpperCase(),
+        region: region ?? localeToRegion(locale),
         retailer: buyLink.label,
       }),
     }).catch(() => null);
