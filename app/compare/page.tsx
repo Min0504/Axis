@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { COMPARISONS, CATEGORY_LABELS } from "@/lib/compare-pages/comparisons";
+import { COMPARISONS } from "@/lib/compare-pages/comparisons";
 import type { ComparisonDef } from "@/lib/compare-pages/comparisons";
-
-export const metadata: Metadata = {
-  title: "제품 비교 모음 — Axis",
-  description:
-    "노트북·스마트폰·이어폰·태블릿 인기 비교 모음. 공식 스펙과 실사용 기준으로 어떤 걸 살지 바로 알려드립니다.",
-};
+import { localizedComparisonTitle } from "@/lib/compare-pages/localized-title";
+import { getDictionary } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n/server";
 
 const CATEGORIES: ComparisonDef["category"][] = ["laptop", "smartphone", "earphones", "tablet"];
 
-export default function ComparePage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getDictionary(locale);
+  return {
+    title: t.home.compareIndex.metaTitle,
+    description: t.home.compareIndex.metaDescription,
+  };
+}
+
+export default async function ComparePage() {
+  const locale = await getLocale();
+  const t = getDictionary(locale);
   const byCategory = Object.fromEntries(
     CATEGORIES.map((cat) => [cat, COMPARISONS.filter((c) => c.category === cat)])
   ) as Record<ComparisonDef["category"], ComparisonDef[]>;
@@ -25,21 +33,21 @@ export default function ComparePage() {
       </header>
 
       <section className="hero compact">
-        <h1>제품 비교 모음</h1>
-        <p className="sub">
-          공식 스펙 + AI 분석으로 뭘 살지 바로 결론 내드립니다.
-        </p>
+        <h1>{t.home.compareIndex.title}</h1>
+        <p className="sub">{t.home.compareIndex.sub}</p>
       </section>
 
       {CATEGORIES.map((cat) => (
         <section key={cat} className="compare-index-section">
-          <h2 className="compare-index-category">{CATEGORY_LABELS[cat]}</h2>
+          <h2 className="compare-index-category">{t.home.categoryLabels[cat]}</h2>
           <ul className="compare-index-list">
             {byCategory[cat].map((c) => (
               <li key={c.slug} className="compare-index-item">
                 <Link href={`/compare/${c.slug}`} className="compare-index-link">
-                  <span className="compare-index-title">{c.title}</span>
-                  <p className="compare-index-desc">{c.description.slice(0, 72)}...</p>
+                  <span className="compare-index-title">{localizedComparisonTitle(c, locale)}</span>
+                  {locale === "ko" ? (
+                    <p className="compare-index-desc">{c.description.slice(0, 72)}...</p>
+                  ) : null}
                 </Link>
               </li>
             ))}
@@ -48,9 +56,9 @@ export default function ComparePage() {
       ))}
 
       <section className="compare-cta">
-        <p className="compare-cta-copy">목록에 없는 제품? 직접 비교해보세요.</p>
+        <p className="compare-cta-copy">{t.home.compareIndex.ctaCopy}</p>
         <Link href="/" className="btn-primary compare-cta-btn">
-          직접 비교하기 →
+          {t.home.compareIndex.cta}
         </Link>
       </section>
     </main>
