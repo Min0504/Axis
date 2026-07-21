@@ -196,7 +196,7 @@ export default function VsInput({ maxOptions = 2, locale = "ko" }: { maxOptions?
 
   const overlay = isLoading
     ? createPortal(
-        <div className="analyze-overlay" role="status" aria-label="분석 중">
+        <div className="analyze-overlay" role="status" aria-label={t.submitting}>
           <div className="analyze-modal">
             <div className="analyze-logo">axis</div>
             <div className="analyze-comparing">
