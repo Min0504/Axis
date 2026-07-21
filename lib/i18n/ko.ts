@@ -36,6 +36,7 @@ export const ko = {
       }
     ],
     methodTitle: "Axis가 판단하는 방식",
+    methodKicker: "결정 방식",
     methodSubEm: "광고 문구가 아니라,",
     methodSub: "확인 가능한 정보와 사용자의 상황을 먼저 봅니다.",
     features: [
@@ -71,6 +72,15 @@ export const ko = {
       smartphone: "스마트폰",
       earphones: "이어폰·헤드폰",
       tablet: "태블릿",
+    },
+    compareIndex: {
+      title: "제품 비교 모음",
+      metaTitle: "제품 비교 모음 — Axis",
+      metaDescription:
+        "노트북·스마트폰·이어폰·태블릿 인기 비교 모음. 공식 스펙과 실사용 기준으로 어떤 걸 살지 바로 알려드립니다.",
+      sub: "공식 스펙 + AI 분석으로 뭘 살지 바로 결론 내드립니다.",
+      ctaCopy: "목록에 없는 제품? 직접 비교해보세요.",
+      cta: "직접 비교하기 →",
     },
   },
 
