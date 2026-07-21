@@ -65,6 +65,7 @@ export const ko = {
     compareSub: "공식 스펙 기반으로 미리 분석해둔 인기 비교입니다.",
     compareRealData: "사용자들이 가장 많이 찾은 비교입니다.",
     compareViewAll: (n: number) => `비교 전체 보기 (${n}개) →`,
+    coverageNote: (year: number) => `${year}년 이후 출시 제품부터 비교 가능합니다`,
     categoryLabels: {
       laptop: "노트북",
       smartphone: "스마트폰",
@@ -103,6 +104,10 @@ export const ko = {
     ],
     fitScoreLabel: "스펙 우위 비율",
     fitScoreNote: "공식 스펙 중 수치 비교 가능 항목 기준",
+    specGraphs: "스펙 그래프",
+    specGraphSelect: "스펙 선택",
+    specGraphNumericOnly: "숫자로 비교 가능한 스펙만 막대그래프로 표시합니다",
+    coverageNote: (year: number) => `${year}년 이후 출시 제품부터 비교 가능합니다`,
     whyChosen: "추천 이유",
     specComparison: "공식 스펙 비교",
     specComparisonPending: "스펙 비교",

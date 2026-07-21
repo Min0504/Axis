@@ -1,6 +1,7 @@
 # Axis — AI 작업 프롬프트
 
 > 배포 목표: 2026-08-15 (베타 → 정식) | 현재: 프로덕션 베타 배포 완료, 사업성 검증 단계
+> 문서 기준일: 2026-07-21 · 로컬 브랜치 `local-fix` · 프로덕션 HEAD 재배포 필요
 
 ---
 
@@ -8,7 +9,7 @@
 
 너는 **Axis** (전자제품 구매 결정 도구)를 베타에서 정식 배포로 끌어올리는 시니어 엔지니어다.
 
-**프로젝트 위치:** `/Users/minseokchae/Documents/Personal_Project/Axis/`
+**프로젝트 위치:** `/Users/minseokchae/Dev/deployed/Axis/`
 
 **프로덕션 URL:** https://axis-app-beta.vercel.app
 **상태:** 베타 · 사업성 검증 단계 (한국 · 노트북 · 제휴 집중)
@@ -25,24 +26,28 @@
 
 ---
 
-## 현재 완료 상태 (2026-06-17 기준)
+## 현재 완료 상태 (2026-07-21 기준)
 
 ### 기능 (완료)
 - AI 구매 결정 엔진 + 검증 게이트 (verified / partial / unverified)
 - 맞춤 재분석 (userContext — 용도·예산·상황 가중치로 결론 재계산, 캐시 우회)
 - 네이버 쇼핑 실시간 최저가 + 자체 일별 가격 이력 적재 (크론)
-- 이메일 가격 알림 (Resend) + 웹 푸시 알림 (VAPID, PWA)
-- 검증 데이터셋 122개 (스마트폰 55 · 이어폰 18 · 노트북 26 · 태블릿 23)
+- 이메일 가격 알림 (Resend) + 웹 푸시 알림 (VAPID, PWA) — **코드 완료**
+- 검증 데이터셋 수동 124개 (스마트폰 55 · 이어폰 18 · 노트북 28 · 태블릿 23)
 - 다국어 KR/US/JP (제품명 로케일 정규화: canonicalName / nameEn / nameJa)
 - SEO 정적 비교 페이지 (`/compare/[slug]`), 비교 결과 캐시 (v9), 클릭 트래킹
+- ResultsView `PriceComparison`/`WatchButton` 재마운트 (2026-07-21, `hidePrices`일 때만 숨김)
+- `lib/site-url.ts` 공용 사이트 URL 헬퍼 (공개 fallback = beta 호스트)
 
-### 운영 환경 (설정 완료)
+### 운영 환경 (로컬 기준 설정 완료)
 - `CRON_SECRET` 교체 완료, VAPID 3종 설정, `AXIS_PRICE_SOURCE=naver` 활성
 - `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` 설정 완료
+- `RESEND_API_KEY` 로컬 SET (프로덕션 패리티는 PM 확인 필요)
 
-### 대기 중
+### 대기 중 / 프로덕션 갭
 - 쿠팡 파트너스 API: 누적 매출 15만원 달성 후 발급 (`AXIS_PRICE_SOURCE=coupang` env 전환만으로 완료)
-- `BRAVE_SEARCH_API_KEY`(웹 검색 폴백), `RESEND_API_KEY`(이메일 알림) 미설정
+- `BRAVE_SEARCH_API_KEY`(웹 검색 폴백) 미설정 — **보류** (30일 검증 범위 밖)
+- 프로덕션 배포가 seed-only SHA `3b54e0a`에 고정 → **로컬 HEAD 재배포 필요 (PM)**
 
 ---
 
@@ -54,7 +59,7 @@
 
 - 노트북 추천/비교 콘텐츠 15~20편 색인 (SEO/커뮤니티 유입 검증)
 - `/compare/[slug]` 정적 페이지가 verified 등급으로 색인되는지 확인
-- 데이터셋: 노트북 26 SKU 우선 정확도 점검 (LG gram 14/16/17형 containment match 오매핑 가능성 확인)
+- 데이터셋: 노트북 28 SKU 우선 정확도 점검 (LG gram 14/16/17형 containment match 오매핑 가능성 확인)
 
 ### Phase 2: 제휴 전환 추적 (검증 가정 C)
 
@@ -64,9 +69,9 @@
 
 ### Phase 3: 알림 재방문 검증 (검증 가정 D)
 
-- `RESEND_API_KEY` 설정 후 실알림 활성화
+- 로컬 `RESEND_API_KEY` SET 확인됨 → 프로덕션 패리티 확인 후 실알림 활성화
 - M2 재방문 >30% 측정
-- WatchButton UI 미노출 이슈 확인 (VAPID_SUBJECT 관련 가능성)
+- WatchButton: 과거 "VAPID_SUBJECT" 가설 폐기. 실제 원인은 ResultsView에서 `PriceComparison` 미마운트였고, 2026-07-21 재마운트로 로컬 수정 완료. 프로덕션 반영은 HEAD 재배포 후 확인.
 
 ### Phase 4: 검증 배지 A/B (검증 가정 E)
 
@@ -113,7 +118,7 @@ components/
 lib/
   decision-engine.ts   비교 파이프라인 오케스트레이터
   ai/                  AI 프로바이더 추상화 + 프롬프트
-  specs/dataset/       수동 검증 스펙 122개
+  specs/dataset/       수동 검증 스펙 124개
   pricing/             가격 프로바이더 (naver · coupang · seed)
   comparison-cache.ts  캐시 레이어 (v9)
   affiliate.ts         제휴 링크 생성 (Amazon/Coupang/Naver)

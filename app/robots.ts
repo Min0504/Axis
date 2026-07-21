@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://axis.so";
+const siteUrl = getSiteUrl("public");
 
 export default function robots(): MetadataRoute.Robots {
   return {

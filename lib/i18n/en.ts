@@ -62,6 +62,7 @@ export const en = {
     compareSub: "Pre-analyzed comparisons based on official specs.",
     compareRealData: "The most searched comparisons by users.",
     compareViewAll: (n: number) => `View all comparisons (${n}) →`,
+    coverageNote: (year: number) => `Comparisons are available for products released from ${year} onward`,
     categoryLabels: {
       laptop: "Laptops",
       smartphone: "Smartphones",
@@ -98,6 +99,10 @@ export const en = {
     ],
     fitScoreLabel: "Spec advantage ratio",
     fitScoreNote: "Based on numerically comparable official spec fields",
+    specGraphs: "Spec graphs",
+    specGraphSelect: "Choose a spec",
+    specGraphNumericOnly: "Only numeric comparable specs appear as bar graphs",
+    coverageNote: (year: number) => `Comparisons are available for products released from ${year} onward`,
     whyChosen: "Why this pick?",
     specComparison: "Official spec comparison",
     specComparisonPending: "Spec comparison",

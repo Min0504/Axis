@@ -7,6 +7,7 @@ import { getProductById, resolveVerifiedAny } from "@/lib/specs/dataset";
 import { sendPriceAlert } from "@/lib/email/send";
 import { sendPricePush } from "@/lib/push/send";
 import type { Watch } from "@/lib/watch/types";
+import { getSiteUrl } from "@/lib/site-url";
 
 /**
  * GET /api/cron/price-check
@@ -52,7 +53,7 @@ async function runPriceCheck(req: Request) {
     if (!decision.fire || !decision.reason) return;
 
     const ok = await send(
-      quote?.url ?? "https://axis.so",
+      quote?.url ?? getSiteUrl("public"),
       decision.price,
       history.currency,
       decision.reason
