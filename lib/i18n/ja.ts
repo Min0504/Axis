@@ -34,6 +34,7 @@ export const ja = {
       }
     ],
     methodTitle: "Axisの判断方法",
+    methodKicker: "判断の方法",
     methodSubEm: "広告文ではなく、",
     methodSub: "確認できる情報とあなたの状況を先に見ます。",
     features: [
@@ -68,6 +69,15 @@ export const ja = {
       smartphone: "スマートフォン",
       earphones: "イヤホン・ヘッドホン",
       tablet: "タブレット",
+    },
+    compareIndex: {
+      title: "製品比較まとめ",
+      metaTitle: "製品比較まとめ — Axis",
+      metaDescription:
+        "ノートPC・スマホ・イヤホン・タブレットの人気比較まとめ。公式スペックと実用基準で買うものをすぐ判断できます。",
+      sub: "公式スペックとAI分析で、買うものをすぐ結論づけます。",
+      ctaCopy: "一覧にない製品？ 自分で比較してみてください。",
+      cta: "自分で比較する →",
     },
   },
 

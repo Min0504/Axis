@@ -12,6 +12,7 @@ import { COMPARISONS } from "@/lib/compare-pages/comparisons";
 import { createServiceClientSafe } from "@/lib/supabase-server";
 import { aggregatePopularQueries } from "@/lib/popular-queries";
 import { coverageNoteYear } from "@/lib/specs/coverage";
+import { localizedComparisonTitle } from "@/lib/compare-pages/localized-title";
 
 type PopularQuery = { query: string; count: number };
 
@@ -41,9 +42,9 @@ export default async function Home() {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
-  // 인기 비교: DB 기반 + 부족하면 하드코딩 페이지로 채움
-  const popularQueries = await getPopularQueries(10);
-  const hasRealData = popularQueries.length >= 3;
+  // 인기 비교: KO만 DB 실데이터를 쓰고, en/ja는 로케일 타이틀 정적 목록을 쓴다.
+  const popularQueries = locale === "ko" ? await getPopularQueries(10) : [];
+  const hasRealData = locale === "ko" && popularQueries.length >= 3;
 
   return (
     <main className="container">
@@ -88,7 +89,7 @@ export default async function Home() {
 
       <section className="home-section home-method">
         <div className="section-copy">
-          <p className="section-kicker">Decision method</p>
+          <p className="section-kicker">{t.home.methodKicker}</p>
           <h2>{t.home.methodTitle}</h2>
           <p>
             <strong className="method-em">{t.home.methodSubEm}</strong>{" "}
@@ -127,7 +128,7 @@ export default async function Home() {
                 <li key={c.slug} className="home-rank-item">
                   <Link href={`/compare/${c.slug}`} className="home-rank-link">
                     <span className="home-rank-num">{i + 1}</span>
-                    <span className="home-rank-text">{c.title}</span>
+                    <span className="home-rank-text">{localizedComparisonTitle(c, locale)}</span>
                     <span className="home-rank-arrow" aria-hidden>→</span>
                   </Link>
                 </li>
