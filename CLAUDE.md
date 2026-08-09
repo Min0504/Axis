@@ -1,7 +1,6 @@
 # CLAUDE.md
 
-Axis 코드베이스에서 작업할 때 따라야 할 규칙. 프로젝트 개요·아키텍처는
-[README.md](README.md), 상세 개발 노트는 [DEV_NOTES.md](DEV_NOTES.md) 참고.
+Axis 코드베이스에서 작업할 때 따라야 할 규칙. 제품 개요는 [README.md](README.md) 참고.
 
 ## 절대 규칙
 
@@ -23,7 +22,7 @@ Axis 코드베이스에서 작업할 때 따라야 할 규칙. 프로젝트 개�
 - 타입 체크: `npx tsc --noEmit`.
 - 데이터셋 변경 시 `dataset.test.ts` 무결성 검사 통과 확인.
 - 스키마·결과 포맷을 바꾸면 `lib/comparison-cache.ts`의 `CACHE_VERSION`을 올려
-  구버전 캐시를 무효화한다 (현재 **v9**).
+  구버전 캐시를 무효화한다.
 
 ## 데이터셋 작업
 
