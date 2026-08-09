@@ -2,20 +2,28 @@
 node_modules
 .env
 .env.local
+.env*
 .DS_Store
-.context/
-.omc/
 .idea
-.claude/settings.local.json
 *.log
 *.tsbuildinfo
+
+# Vercel / local link
 .vercel
 
 # Supabase CLI local state
 supabase/.temp
 supabase/.branches
-.env*
 
-# Local agent tooling (never upload to Vercel)
+# Agent / local tooling (not for public GitHub)
+.claude/
+.conductor/
+.context/
+.omc/
 .omo/
+.repowise/
 .codegraph
+.codebase-memory/
+
+# Internal working notes (local only)
+docs/inbox/
