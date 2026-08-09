@@ -19,3 +19,12 @@ supabase/.branches
 # Local agent tooling (never upload to Vercel)
 .omo/
 .codegraph
+.conductor/
+.cursor/
+.claude/
+.idea/
+__pycache__/
+*.pyc
+config/codex/memories_*.sqlite
+config/zed/prompts/
+config/ssh/
