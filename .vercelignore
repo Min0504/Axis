@@ -1,2 +1,13 @@
 .codegraph
 .omo/
+.omc/
+.repowise/
+.claude/
+.conductor/
+.context/
+docs/
+DEV_NOTES.md
+PROMPT.md
+DESIGN.md
+AGENTS.md
+CLAUDE.md

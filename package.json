@@ -2,7 +2,7 @@
   "name": "axis",
   "version": "1.0.0",
   "private": true,
-  "description": "Axis — 간결, 완벽, 검증, 선택",
+  "description": "Axis — AI that decides which electronics to buy, then tracks price timing",
   "engines": {
     "node": ">=20 <23"
   },
