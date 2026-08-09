@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAdminRequest } from "@/lib/admin-auth";
 import { isAiConfigured } from "@/lib/ai/decide";
 import { getProductById, allVerifiedProducts } from "@/lib/specs/dataset";
 import { discoverOfficialUrl } from "@/lib/specs/extract/discover";
@@ -15,16 +16,17 @@ import type { ProductSourceCandidate } from "@/lib/specs/types";
  * they're committed to the verified store.
  *
  * Safety:
- *  - Gated behind AXIS_ADMIN=1 (off in production by default).
+ *  - Gated behind AXIS_ADMIN=1 + AXIS_ADMIN_TOKEN (Bearer) in production.
  *  - SSRF-safe: only fetches the `source` URL already stored in our catalog;
  *    the caller supplies an `id`, never a URL.
  *  - Returns { result: null } when no AI key is configured (honest no-op).
  *
  * Usage: GET /api/admin/extract?id=macbook-air-13-m3
  *        GET /api/admin/extract            → lists available ids
+ * Header: Authorization: Bearer <AXIS_ADMIN_TOKEN>
  */
 export async function GET(req: Request) {
-  if (process.env.AXIS_ADMIN !== "1") {
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 

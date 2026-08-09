@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { upsertWatch, deleteWatch, listWatchesByEmail } from "@/lib/watch/db";
 import { createSupabaseRouteClient } from "@/lib/supabase-route";
-import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import type { Region } from "@/lib/pricing/types";
 
 function isValidEmail(email: string): boolean {
@@ -33,9 +33,9 @@ async function requireSessionEmail(req: Request): Promise<
   return { email };
 }
 
-function rateLimitOrReject(req: Request, action: string): NextResponse | null {
+async function rateLimitOrReject(req: Request, action: string): Promise<NextResponse | null> {
   const ip = getClientIp(req);
-  const limit = rateLimit(`watches:${action}:${ip}`, 30, 60_000);
+  const limit = await checkRateLimit(`watches:${action}:${ip}`, 30, 60_000);
   if (!limit.allowed) {
     const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
     return NextResponse.json(
@@ -51,7 +51,7 @@ function rateLimitOrReject(req: Request, action: string): NextResponse | null {
  * Returns the watch list for the authenticated user only.
  */
 export async function GET(req: Request) {
-  const limited = rateLimitOrReject(req, "get");
+  const limited = await rateLimitOrReject(req, "get");
   if (limited) return limited;
 
   const auth = await requireSessionEmail(req);
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
  * Optional `email` in body is ignored (session email wins).
  */
 export async function POST(req: Request) {
-  const limited = rateLimitOrReject(req, "post");
+  const limited = await rateLimitOrReject(req, "post");
   if (limited) return limited;
 
   const auth = await requireSessionEmail(req);
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
  * Body: { productId, region }
  */
 export async function DELETE(req: Request) {
-  const limited = rateLimitOrReject(req, "delete");
+  const limited = await rateLimitOrReject(req, "delete");
   if (limited) return limited;
 
   const auth = await requireSessionEmail(req);

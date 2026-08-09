@@ -6,7 +6,8 @@ import { localizedComparisonTitle } from "@/lib/compare-pages/localized-title";
 import { getDictionary } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n/server";
 
-const CATEGORIES: ComparisonDef["category"][] = ["laptop", "smartphone", "earphones", "tablet"];
+/** Ops focus: KR + laptop first. Other category assets remain in COMPARISONS. */
+const FOCUS_CATEGORIES: ComparisonDef["category"][] = ["laptop"];
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -21,7 +22,7 @@ export default async function ComparePage() {
   const locale = await getLocale();
   const t = getDictionary(locale);
   const byCategory = Object.fromEntries(
-    CATEGORIES.map((cat) => [cat, COMPARISONS.filter((c) => c.category === cat)])
+    FOCUS_CATEGORIES.map((cat) => [cat, COMPARISONS.filter((c) => c.category === cat)])
   ) as Record<ComparisonDef["category"], ComparisonDef[]>;
 
   return (
@@ -37,7 +38,7 @@ export default async function ComparePage() {
         <p className="sub">{t.home.compareIndex.sub}</p>
       </section>
 
-      {CATEGORIES.map((cat) => (
+      {FOCUS_CATEGORIES.map((cat) => (
         <section key={cat} className="compare-index-section">
           <h2 className="compare-index-category">{t.home.categoryLabels[cat]}</h2>
           <ul className="compare-index-list">

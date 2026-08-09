@@ -165,10 +165,10 @@ export const laptops: VerifiedProduct[] = [
     id: "lg-gram-16",
     canonicalName: "LG 그램 16",
     nameEn: "LG gram 16",
-    aliases: ["lg 그램 16", "그램 16", "그램16", "lg그램16", "lg 그램16", "lg gram 16", "gram 16", "lg 그램", "그램", "lg gram"],
+    aliases: ["lg 그램 16", "그램 16", "그램16", "lg그램16", "lg 그램16", "lg gram 16", "gram 16"],
     category: "laptop",
     country: "KR",
-    source: "https://www.lge.co.kr/notebooks",
+    source: "https://www.lge.co.kr/notebook",
     fetchedAt: "2026-06",
     tier: 1,
     specs: {
@@ -185,7 +185,7 @@ export const laptops: VerifiedProduct[] = [
     aliases: ["lg 그램 14", "그램 14", "그램14", "lg그램14", "lg 그램14", "lg gram 14", "gram 14"],
     category: "laptop",
     country: "KR",
-    source: "https://www.lge.co.kr/notebooks",
+    source: "https://www.lge.co.kr/notebook",
     fetchedAt: "2026-06",
     tier: 1,
     specs: {
@@ -525,7 +525,7 @@ export const laptops: VerifiedProduct[] = [
     aliases: ["lg 그램 프로 16", "lg그램프로16", "lg gram pro 16", "그램 프로 16", "그램프로16", "gram pro 16"],
     category: "laptop",
     country: "KR",
-    source: "https://www.lg.com/kr/laptops/lg-gram/",
+    source: "https://www.lge.co.kr/notebook",
     fetchedAt: "2026-06",
     tier: 1,
     specs: {
@@ -542,7 +542,7 @@ export const laptops: VerifiedProduct[] = [
     aliases: ["lg 그램 프로 14", "lg그램프로14", "lg gram pro 14", "그램 프로 14", "그램프로14", "gram pro 14"],
     category: "laptop",
     country: "KR",
-    source: "https://www.lg.com/kr/laptops/lg-gram/",
+    source: "https://www.lge.co.kr/notebook",
     fetchedAt: "2026-06",
     tier: 1,
     specs: {

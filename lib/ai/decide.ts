@@ -150,7 +150,7 @@ async function callOpenAiConfig(cfg: Extract<ProviderConfig, { kind: "openai" }>
       temperature: 0.4,
       response_format: { type: "json_object" },
       messages: [
-        { role: "system", content: buildAxisSystemPrompt() },
+        { role: "system", content: buildAxisSystemPrompt(input.locale ?? "ko") },
         { role: "user", content: buildAxisUserPrompt(input) }
       ]
     })
@@ -168,7 +168,7 @@ async function callGeminiConfig(cfg: Extract<ProviderConfig, { kind: "gemini" }>
   const genAI = new GoogleGenerativeAI(cfg.apiKey);
   const model = genAI.getGenerativeModel({
     model: cfg.model,
-    systemInstruction: buildAxisSystemPrompt(),
+    systemInstruction: buildAxisSystemPrompt(input.locale ?? "ko"),
     generationConfig: { temperature: 0.4, responseMimeType: "application/json" }
   });
 
@@ -196,7 +196,7 @@ async function callAnthropicConfig(cfg: Extract<ProviderConfig, { kind: "anthrop
       model: cfg.model,
       max_tokens: 1200,
       temperature: 0.4,
-      system: buildAxisSystemPrompt(),
+      system: buildAxisSystemPrompt(input.locale ?? "ko"),
       messages: [{ role: "user", content: buildAxisUserPrompt(input) }]
     })
   });

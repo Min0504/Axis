@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { buildDecision, buildQuery, parseOptions } from "@/lib/decision-engine";
 import { createSupabaseRouteClient } from "@/lib/supabase-route";
 import { ensureUserProfile } from "@/lib/users/ensure-profile";
-import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { COUNTRY_COOKIE, LOCALE_COOKIE, countryForLocale, isCountry, isLocale } from "@/lib/i18n";
 import type { ComparisonResult } from "@/lib/types";
 
@@ -34,7 +34,7 @@ function collectOptions(body: Body): string[] {
 
 export async function POST(req: Request) {
   const ip = getClientIp(req);
-  const limit = rateLimit(`compare:${ip}`, RATE_LIMIT, RATE_WINDOW_MS);
+  const limit = await checkRateLimit(`compare:${ip}`, RATE_LIMIT, RATE_WINDOW_MS);
   if (!limit.allowed) {
     const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
     return NextResponse.json(
