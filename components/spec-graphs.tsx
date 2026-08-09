@@ -4,13 +4,13 @@ import { useMemo, useState } from "react";
 
 export type SpecGraph = {
   key: string;
+  better: "higher" | "lower" | "none";
   values: { label: string; raw: string; num: number }[];
 };
 
 type Labels = {
   title: string;
   select: string;
-  numericOnly: string;
 };
 
 type Props = {
@@ -25,6 +25,9 @@ function barPct(values: number[], num: number): number {
 
 function SpecBarChart({ graph }: { graph: SpecGraph }) {
   const nums = graph.values.map((v) => v.num);
+  const best =
+    graph.better === "lower" ? Math.min(...nums) : Math.max(...nums);
+
   return (
     <div className="spec-bar-card">
       <div className="spec-graph-label-row">
@@ -37,11 +40,15 @@ function SpecBarChart({ graph }: { graph: SpecGraph }) {
       >
         {graph.values.map((v, i) => {
           const pct = barPct(nums, v.num);
+          const isBest = graph.better !== "none" && v.num === best;
           return (
             <div key={`${graph.key}-${i}`} className="spec-bar-col">
               <div className="spec-bar-value">{v.raw}</div>
               <div className="spec-bar-track" aria-hidden>
-                <div className="spec-bar-fill" style={{ height: `${pct}%` }} />
+                <div
+                  className={`spec-bar-fill${isBest ? " is-best" : ""}`}
+                  style={{ height: `${pct}%` }}
+                />
               </div>
               <div className="spec-bar-name" title={v.label}>
                 {v.label.length > 18 ? `${v.label.slice(0, 17)}…` : v.label}
@@ -68,7 +75,6 @@ export default function SpecGraphs({ graphs, labels }: Props) {
       <div className="spec-header">
         <h2>{labels.title}</h2>
       </div>
-      <p className="coverage-note coverage-note-inline">{labels.numericOnly}</p>
 
       {showSelector && (
         <div className="spec-graph-selector" role="radiogroup" aria-label={labels.select}>

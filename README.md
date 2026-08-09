@@ -1,130 +1,123 @@
 # Axis
 
-> 사기 전에 결정해주고, 산 뒤 최적 타이밍까지 알려주는 전자제품 구매 결정 도구.
+**전자제품, 사기 전에 결론을 내려주는 AI 구매 결정 도구**
 
-![Deploy](https://img.shields.io/badge/deploy-Vercel-black) ![Stack](https://img.shields.io/badge/Next.js%2019-React%2019-white) ![DB](https://img.shields.io/badge/Supabase-PostgreSQL-green) ![AI](https://img.shields.io/badge/AI-Groq%20Llama%203.1-orange)
+[![Live Demo](https://img.shields.io/badge/Live-axis--app--beta.vercel.app-3454e8?style=flat-square)](https://axis-app-beta.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square)](https://nextjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=flat-square)](https://supabase.com/)
+[![AI](https://img.shields.io/badge/AI-Groq%20Llama-f55036?style=flat-square)](https://groq.com/)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=flat-square)](https://github.com/Min0504/Axis/actions)
 
-**프로덕션:** https://axis-app-beta.vercel.app · **상태:** 베타 (사업성 검증 단계)
+> “아이폰 16 vs 갤럭시 S25”처럼 입력하면, 공식 스펙을 검증한 뒤 **한 가지 추천**과 비교표를 만들고, 가격 추적으로 살 타이밍까지 알려줍니다.
 
-"아이폰 16 vs 갤럭시 S25" 같은 자연어 쿼리를 입력하면 공식 스펙을 검증해 AI가 비교 테이블과 결론을 만들고, 가격을 추적해 최적 구매 타이밍을 알려준다. 한국(한국어) 우선 운영.
-
-**결정(Decide) → 추적(Track) → 알림(Alert)**
+**Live:** https://axis-app-beta.vercel.app · KR 우선 · ko / en / ja
 
 ---
 
-## 주요 기능
+## 문제
 
-| 기능 | 설명 |
+전자제품 구매는 스펙·가격·타이밍이 한꺼번에 얽혀 있습니다.  
+ChatGPT류는 실시간 가격·추적이 없고, 다나와·Keepa류는 표와 차트만 있어 **무엇을 살지**를 대신 결정해 주지 않습니다.
+
+## 해결
+
+Axis는 **Decide → Track → Alert** 한 줄로 이어집니다.
+
+| 단계 | 하는 일 |
+|------|---------|
+| **Decide** | 자연어 비교 → 공식 스펙 검증 → 단일 결론 + 표 + 선택지별 분석 |
+| **Track** | 네이버 쇼핑 기반 현재가 · 일별 가격 이력 |
+| **Alert** | 목표가·급락 시 이메일 / 웹 푸시 (크론) |
+
+---
+
+## 직접 만든 핵심
+
+- **Verification Gate** — primary 스펙이 제조사·공인 소스(tier 1–2)로 뒷받침될 때만 `verified`. AI 추정만으로는 verified를 만들지 않음
+- **스펙 파이프라인** — 수동 검증 데이터셋 + 공식 페이지 추출 + AI 보완을 계층적으로 합성
+- **로케일 락** — UI 언어(ko/en/ja)가 결과 문장·스펙 표기·캐시 키를 결정
+- **맞춤 재분석** — 용도·예산 컨텍스트로 캐시를 우회해 결론 재계산
+- **구매 타이밍** — 가격 이력으로 “지금 / 대기” 판정
+
+---
+
+## 기술 스택
+
+| 영역 | 선택 |
 |------|------|
-| **AI 구매 결정** | 자연어 비교 쿼리 → 공식 스펙 검증 → 단일 결론 + 비교 테이블 + 선택지별 분석 |
-| **맞춤 재분석** | 용도·예산·상황을 입력하면 그 가중치로 결론을 재계산 (캐시 우회) |
-| **검증 배지** | primary 스펙이 공식 소스로 확인될 때만 `verified`, AI 추정은 noindex |
-| **실시간 최저가** | 네이버 쇼핑 Open API 기반 현재가 + 일별 가격 이력 적재 |
-| **구매 타이밍** | 가격 이력 기반 "지금 살까 / 기다릴까" 판정 + 다음 모델 출시 주기 힌트 |
-| **가격 알림** | 관심 상품 등록 → 목표가·역대최저·급락 시 이메일/푸시 알림 (일일 크론) |
-| **다국어** | KR/US/JP 코드 지원 · 운영은 KR 우선 |
-
-## 핵심 차별점
-
-| | 약점 | Axis |
-|---|---|---|
-| ChatGPT / Perplexity | 실시간 가격 없음, 추적·알림 불가 | 라이브 가격 + 알림 |
-| 다나와 / Keepa | 결정·가이드 없음 (표·차트만) | AI 결정 + 검증 스펙 |
+| App | Next.js 16 (App Router), React 19, TypeScript |
+| Hosting | Vercel (Cron 포함) |
+| Data / Auth | Supabase (PostgreSQL, RLS) |
+| AI | Groq (Llama) — OpenAI / Gemini / Anthropic 폴백 추상화 |
+| Price | 네이버 쇼핑 Open API |
+| Notify | Resend, Web Push (VAPID) |
+| Test / CI | Vitest, GitHub Actions |
 
 ---
 
 ## 아키텍처
 
+```text
+Browser
+  VsInput ──► POST /api/compare ──► ResultsView
+                    │
+            decision-engine
+           ┌────────┴────────┐
+           │ Verification Gate│  dataset > scraped > AI
+           │ runAiDecision    │  Groq / fallbacks
+           └────────┬────────┘
+      ┌─────────────┼─────────────┐
+      ▼             ▼             ▼
+  Supabase     Price providers   comparison_cache
+ (auth/hist)   (naver / …)       (locale-aware)
 ```
-┌─────────────────────────────────────────────────────┐
-│                   사용자 (브라우저)                    │
-│  VsInput → /api/compare → ResultsView + ContextCard  │
-└──────────────────────┬──────────────────────────────┘
-                       │
-          ┌────────────▼────────────┐
-          │   decision-engine.ts    │  오케스트레이터
-          │  ┌──────────────────┐   │
-          │  │ Verification Gate│   │  dataset > scraped > AI
-          │  └────────┬─────────┘   │
-          │  ┌────────▼──────────┐  │
-          │  │  runAiDecision    │  │  Groq (기본) / OpenAI / Gemini / Anthropic
-          │  └───────────────────┘  │
-          └────────────┬────────────┘
-                       │
-    ┌──────────────────┼──────────────────┐
-    ▼                  ▼                  ▼
-  Supabase        가격 프로바이더       캐시 레이어
- PostgreSQL       naver / coupang     comparison_cache
-```
-
-## 기술 스택
-
-| 레이어 | 기술 |
-|--------|------|
-| Framework | Next.js (App Router) / React 19 |
-| 호스팅 | Vercel (Cron 포함) |
-| DB / Auth | Supabase (PostgreSQL, RLS) |
-| AI | Groq (Llama 3.1) — 프로바이더 추상화 |
-| 가격 | 네이버 쇼핑 Open API |
-| 이메일 | Resend |
-| 푸시 | Web Push (VAPID, PWA) |
-
-> 모든 레이어 무료 티어 기반. 수익 발생 시 유료 전환.
 
 ---
 
-## 시작하기
+## 빠른 시작
 
 ```bash
 npm install
-cp .env.example .env.local
-npm run dev          # Webpack
-npm run dev:turbo    # Turbopack (더 빠름)
+cp .env.example .env.local   # Supabase + GROQ_API_KEY 최소 설정
+npm run dev
 npm test
 ```
 
-### 필수 환경변수
+| 필수 환경변수 | 용도 |
+|---------------|------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 공개 키 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 서버 DB |
+| `GROQ_API_KEY` | AI 결정 |
 
-| 변수 | 용도 |
-|------|------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase 공개 키 |
-| `SUPABASE_SERVICE_ROLE_KEY` | 서버 측 DB 접근 |
-| `GROQ_API_KEY` | AI 결정 엔진 |
+나머지는 `.env.example` 참고. DB 스키마는 `supabase/migrations/`.
 
-선택 환경변수(OpenAI/Gemini/Anthropic 폴백, 네이버/쿠팡 API, Resend, VAPID 등)는 `.env.example` 참고.
+---
 
-### Supabase 설정
+## 저장소 구조
 
-```bash
-supabase db push
+```text
+app/            App Router (pages + API)
+components/     UI (결과·입력·가격·공유)
+lib/
+  ai/           프롬프트 · 프로바이더
+  specs/        스키마 · 데이터셋 · 추출 · 검증
+  pricing/      가격 프로바이더
+  decision-engine.ts
+supabase/       migrations
+tests/          Vitest
 ```
 
 ---
 
-## 프로젝트 구조
+## 검증 상태
 
-```
-app/
-├── api/compare/       비교 요청 (맞춤 재분석 포함)
-├── api/price/         실시간 가격 조회
-├── api/cron/          가격 점검 · 스냅샷
-├── api/watches/       관심 상품 관리
-├── compare/[slug]/    SEO 정적 비교 페이지
-└── results/           동적 결과 페이지
-
-components/            results-view · context-card · timing-section · vs-input
-lib/                   decision-engine · ai/ · pricing/ · specs/dataset/ · affiliate.ts
-```
-
-## 검증 게이트
-
-```
-verified   = tier 1~2 (제조사·검증 리뷰)로 확인됨  → 색인 허용
-partial    = 일부만 검증됨                          → noindex
-unverified = AI 추정값만                            → noindex
-```
+| 배지 | 의미 | 검색 색인 |
+|------|------|-----------|
+| `verified` | 공식 소스로 primary 스펙 확인 | 허용 |
+| `partial` | 일부만 확인 | noindex |
+| `unverified` | AI 추정 위주 | noindex |
 
 ---
 
-개발 상세는 [DEV_NOTES.md](DEV_NOTES.md), 작업 규칙은 [CLAUDE.md](CLAUDE.md) 참고.
+Built as a solo product experiment — feedback welcome via issues.

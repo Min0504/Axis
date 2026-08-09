@@ -8,11 +8,6 @@ export const en = {
     hero1: "Can't decide what to buy?",
     hero2: "Axis picks one. Right now.",
     sub: "We analyze official manufacturer specs alongside your real-world needs —\nso you can make the best choice with confidence.",
-    proof: [
-      { value: "Official spec verified", label: "" },
-      { value: "Accurate", label: " comparison" },
-      { value: "Rational", label: " basis" }
-    ],
     examplesTitle: "Start with one of these",
     examplesSub: "Click to fill the inputs instantly. Axis goes deep on high-stakes electronics first.",
     tryThis: "Compare →",
@@ -41,29 +36,15 @@ export const en = {
       { title: "Official spec verified", body: "Based on manufacturer data" },
       { title: "AI purchase verdict", body: "Instant recommendation with reasoning" },
       { title: "Up to 5-way comparison", body: "N-way comparison supported" },
-      { title: "Price tracking & alerts", body: "Alert when price drops (coming soon)" },
+      { title: "Price tracking", body: "Check prices on watched products (alerts deferred)" },
       { title: "Share results", body: "Share results with a single link" },
-      { title: "Multilingual", body: "Korean · English · Japanese" },
-    ],
-    method: [
-      {
-        title: "Check official specs",
-        body: "We prioritize fields that can be verified from manufacturer pages."
-      },
-      {
-        title: "Classify by context",
-        body: "Budget, use case, portability, and long-term value are weighed together."
-      },
-      {
-        title: "Show regret cases",
-        body: "We show who should avoid the recommendation, not only who should buy it."
-      }
+      { title: "KR · laptops first", body: "Focused on Korea and laptops until validated" },
     ],
     compareTitle: "Popular comparisons",
     compareSub: "Pre-analyzed comparisons based on official specs.",
     compareRealData: "The most searched comparisons by users.",
     compareViewAll: (n: number) => `View all comparisons (${n}) →`,
-    coverageNote: (year: number) => `Comparisons are available for products released from ${year} onward`,
+    coverageNote: (year: number) => `Only models from ${year} onward can be compared`,
     categoryLabels: {
       laptop: "Laptops",
       smartphone: "Smartphones",
@@ -71,10 +52,10 @@ export const en = {
       tablet: "Tablets",
     },
     compareIndex: {
-      title: "Product comparisons",
-      metaTitle: "Product comparisons — Axis",
+      title: "Laptop comparisons",
+      metaTitle: "Laptop comparisons — Axis",
       metaDescription:
-        "Popular laptop, smartphone, earphone, and tablet comparisons. Official specs and real-world fit help you decide what to buy.",
+        "Popular laptop comparisons. Official specs and real-world fit help you decide what to buy.",
       sub: "Official specs + AI analysis so you can decide what to buy.",
       ctaCopy: "Looking for something not listed? Compare it yourself.",
       cta: "Compare now →",
@@ -82,15 +63,11 @@ export const en = {
   },
 
   input: {
-    ordinals: ["First", "Second", "Third", "Fourth", "Fifth"],
-    placeholders: ["e.g. iPhone 16", "e.g. Galaxy S25", "e.g. Pixel 9", "e.g. Xiaomi 15", "e.g. OnePlus 13"],
+    placeholders: ["e.g. MacBook Air M4", "e.g. Galaxy Book5 Pro", "e.g. LG gram 16", "e.g. MacBook Pro 14", "e.g. ThinkPad X1"],
     addOption: "＋ Add option",
     submit: "Let Axis decide →",
     submitting: "Analyzing...",
     optionSlot: (n: number) => `Option ${n}`,
-    proUpsell: "Compare 3+ at once with",
-    pro: "Pro",
-    upgradePrompt: "Upgrade for more →",
     errorEmpty: "Please enter at least two options.",
     errorLength: (n: number) => `Each option must be under ${n} characters.`,
     errorDuplicate: "Options must be unique.",
@@ -101,18 +78,9 @@ export const en = {
     back: "← Compare again",
     axisChoice: "Axis Recommends",
     defaultConclusion: "Based on verified specs and real-world fit, this is the stronger choice.",
-    basisTitle: "Decision basis",
-    basis: [
-      { title: "Official specs", body: "Verifiable official sources come first." },
-      { title: "Context fit", body: "Budget, use case, portability, and longevity are weighed together." },
-      { title: "Purchase transparency", body: "Buying links are disclosed separately from the recommendation." }
-    ],
-    fitScoreLabel: "Spec advantage ratio",
     fitScoreNote: "Based on numerically comparable official spec fields",
     specGraphs: "Spec graphs",
     specGraphSelect: "Choose a spec",
-    specGraphNumericOnly: "Only numeric comparable specs appear as bar graphs",
-    coverageNote: (year: number) => `Comparisons are available for products released from ${year} onward`,
     whyChosen: "Why this pick?",
     specComparison: "Official spec comparison",
     specComparisonPending: "Spec comparison",
@@ -124,8 +92,6 @@ export const en = {
     sourceManufacturer: "Manufacturer official",
     sourceImporter: "Authorized importer",
     summary: "Summary",
-    purchaseTitle: "Final check before buying",
-    purchaseSub: "After reviewing the reasoning, compare price and availability. Affiliate links may support Axis, but never affect the recommendation.",
     notFound: "Result not found. Please compare again.",
     productNotFoundTitle: "Product not found",
     productNotFoundConclusion: (items: string[]) => `${items.join(", ")} could not be verified on official product pages.`,
@@ -141,6 +107,7 @@ export const en = {
     emptyTitle: "Ready to compare?",
     emptySub: "Enter two products and Axis will analyze official specs to pick the better fit.",
     emptyCta: "Start comparing →",
+    localeRefreshFailed: "Could not reload this result in the selected language.",
   },
 
   timing: {
@@ -302,12 +269,6 @@ export const en = {
     shareTitle: (product: string) => `Axis picks: ${product}`,
     shareMessage: (product: string, url: string) => `Axis picked "${product}" → ${url}`,
     sharedFallback: "Shared pick",
-  },
-
-  limit: {
-    reached: "You've used all your picks for today. Upgrade for more.",
-    upgrade: "Upgrade for more →",
-    rateLimit: "Too many requests. Please wait a moment.",
   },
 
   error: {

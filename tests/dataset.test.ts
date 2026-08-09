@@ -24,6 +24,12 @@ describe("verified spec dataset", () => {
       expect(resolveVerifiedProduct("smartphone", "갤럭시 S25")?.canonicalName).toBe("갤럭시 S25");
     });
 
+    it("disambiguates LG gram 14 vs 16 without generic alias steal", () => {
+      expect(resolveVerifiedProduct("laptop", "LG 그램 14")?.id).toBe("lg-gram-14");
+      expect(resolveVerifiedProduct("laptop", "그램 14")?.id).toBe("lg-gram-14");
+      expect(resolveVerifiedProduct("laptop", "LG 그램 16")?.id).toBe("lg-gram-16");
+    });
+
     it("disambiguates 13 vs 15 inch MacBook Air", () => {
       expect(resolveVerifiedProduct("laptop", "맥북 에어 15 M3")?.canonicalName).toBe("맥북 에어 15 M3");
       // 세대 미지정 시 최신 모델(M4) — query-expansion의 "맥북 에어"→M4 확장과 일치

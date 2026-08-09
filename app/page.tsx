@@ -66,14 +66,6 @@ export default async function Home() {
           <span>{t.home.hero2}</span>
         </h1>
         <p className="sub">{t.home.sub}</p>
-        <div className="hero-proof" aria-label="Axis decision principles">
-          {t.home.proof.map((item) => (
-            <span className="proof-pill" key={`${item.value}${item.label}`}>
-              <strong>{item.value}</strong>
-              {item.label}
-            </span>
-          ))}
-        </div>
       </section>
 
       <VsInput maxOptions={6} locale={locale} />

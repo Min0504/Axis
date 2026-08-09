@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimit, checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 describe("rateLimit", () => {
   it("allows up to the limit then blocks", () => {
@@ -27,6 +27,18 @@ describe("rateLimit", () => {
     const key = `test:${Math.random()}`;
     expect(rateLimit(key, 5, 60_000).remaining).toBe(4);
     expect(rateLimit(key, 5, 60_000).remaining).toBe(3);
+  });
+});
+
+describe("checkRateLimit", () => {
+  it("falls back to in-memory when Upstash is unset", async () => {
+    const key = `async:${Math.random()}`;
+    const first = await checkRateLimit(key, 2, 60_000);
+    const second = await checkRateLimit(key, 2, 60_000);
+    const third = await checkRateLimit(key, 2, 60_000);
+    expect(first.allowed).toBe(true);
+    expect(second.allowed).toBe(true);
+    expect(third.allowed).toBe(false);
   });
 });
 

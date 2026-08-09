@@ -8,11 +8,6 @@ export const ja = {
     hero1: "何を買うか決められないなら、",
     hero2: "Axisが今すぐ選びます。",
     sub: "メーカー公式スペックと実際の用途を組み合わせ、今すぐ買うべき一つを選びます。",
-    proof: [
-      { value: "公式", label: "スペック検証" },
-      { value: "最適", label: "状況分析" },
-      { value: "即決", label: "ひとつの結論" }
-    ],
     examplesTitle: "この比較から始めてみましょう",
     examplesSub: "クリックすると入力欄にそのまま入ります。Axisは高関与の電子機器から深く比較します。",
     tryThis: "比較する →",
@@ -41,29 +36,15 @@ export const ja = {
       { title: "公式スペック検証", body: "メーカー公式データに基づく" },
       { title: "AIによる結論", body: "即時の推薦と理由を提供" },
       { title: "最大5製品の同時比較", body: "N-way比較に対応" },
-      { title: "価格追跡・通知", body: "価格下落時に通知（準備中）" },
+      { title: "価格追跡", body: "気になる商品の価格確認（通知は保留）" },
       { title: "結果をシェア", body: "リンク1つで結果を共有" },
-      { title: "多言語対応", body: "韓国語・英語・日本語" },
-    ],
-    method: [
-      {
-        title: "公式スペック確認",
-        body: "メーカー公式ページで確認できる項目を優先して比較します。"
-      },
-      {
-        title: "状況別に分類",
-        body: "価格、用途、携帯性、長く使えるかを合わせて整理します。"
-      },
-      {
-        title: "後悔条件も表示",
-        body: "おすすめだけでなく、どんな人には合わないかも示します。"
-      }
+      { title: "韓国・ノートPC優先", body: "検証完了までKR・ノートPCに集中" },
     ],
     compareTitle: "人気の比較",
     compareSub: "公式スペックをもとに事前に分析した人気比較です。",
     compareRealData: "ユーザーが最も多く検索した比較です。",
     compareViewAll: (n: number) => `比較をすべて見る (${n}件) →`,
-    coverageNote: (year: number) => `${year}年以降に発売された製品から比較できます`,
+    coverageNote: (year: number) => `${year}年以降のモデルのみ比較できます`,
     categoryLabels: {
       laptop: "ノートPC",
       smartphone: "スマートフォン",
@@ -71,10 +52,10 @@ export const ja = {
       tablet: "タブレット",
     },
     compareIndex: {
-      title: "製品比較まとめ",
-      metaTitle: "製品比較まとめ — Axis",
+      title: "ノートPC比較まとめ",
+      metaTitle: "ノートPC比較まとめ — Axis",
       metaDescription:
-        "ノートPC・スマホ・イヤホン・タブレットの人気比較まとめ。公式スペックと実用基準で買うものをすぐ判断できます。",
+        "ノートPCの人気比較まとめ。公式スペックと実用基準で買うものをすぐ判断できます。",
       sub: "公式スペックとAI分析で、買うものをすぐ結論づけます。",
       ctaCopy: "一覧にない製品？ 自分で比較してみてください。",
       cta: "自分で比較する →",
@@ -82,15 +63,11 @@ export const ja = {
   },
 
   input: {
-    ordinals: ["1番目", "2番目", "3番目", "4番目", "5番目"],
-    placeholders: ["例: iPhone 16", "例: Galaxy S25", "例: Pixel 9", "例: Xiaomi 15", "例: OnePlus 13"],
+    placeholders: ["例: MacBook Air M4", "例: Galaxy Book5 Pro", "例: LG gram 16", "例: MacBook Pro 14", "例: ThinkPad X1"],
     addOption: "＋ 選択肢を追加",
     submit: "Axisに決めてもらう →",
     submitting: "分析中...",
     optionSlot: (n: number) => `選択肢 ${n}`,
-    proUpsell: "3つ以上を一度に比較するには",
-    pro: "Pro",
-    upgradePrompt: "もっと選択するにはアップグレード →",
     errorEmpty: "2つ以上の選択肢を入力してください。",
     errorLength: (n: number) => `各選択肢は${n}文字以内にしてください。`,
     errorDuplicate: "選択肢は重複できません。",
@@ -101,18 +78,9 @@ export const ja = {
     back: "← もう一度選択する",
     axisChoice: "Axisのおすすめ",
     defaultConclusion: "公式スペックと実用基準で、こちらがより適切な選択です。",
-    basisTitle: "判断基準",
-    basis: [
-      { title: "公式スペック", body: "確認できる公式情報を優先して比較します。" },
-      { title: "状況適合度", body: "価格、用途、携帯性、長期利用を合わせて見ます。" },
-      { title: "購入の透明性", body: "購入リンクは推薦理由と分けて表示します。" }
-    ],
-    fitScoreLabel: "スペック優位比率",
     fitScoreNote: "数値比較可能な公式スペック項目を基準",
     specGraphs: "スペックグラフ",
     specGraphSelect: "スペックを選択",
-    specGraphNumericOnly: "数値で比較できるスペックだけを棒グラフで表示します",
-    coverageNote: (year: number) => `${year}年以降に発売された製品から比較できます`,
     whyChosen: "おすすめの理由",
     specComparison: "公式スペック比較",
     specComparisonPending: "スペック比較",
@@ -124,8 +92,6 @@ export const ja = {
     sourceManufacturer: "メーカー公式",
     sourceImporter: "正規輸入代理店",
     summary: "まとめ",
-    purchaseTitle: "購入前の最終確認",
-    purchaseSub: "根拠を確認したあと、価格と在庫を比べてください。アフィリエイトリンクはAxisの運営に役立つ場合がありますが、推薦基準には影響しません。",
     notFound: "結果が見つかりません。もう一度比較してください。",
     productNotFoundTitle: "製品が見つかりません",
     productNotFoundConclusion: (items: string[]) => `${items.join(", ")} は公式製品ページで確認できませんでした。`,
@@ -141,6 +107,7 @@ export const ja = {
     emptyTitle: "比較を始めますか？",
     emptySub: "2つの製品を入力すると、Axisが公式スペックを分析して最適な選択を選びます。",
     emptyCta: "比較を始める →",
+    localeRefreshFailed: "選択した言語で結果を再読み込みできませんでした。",
   },
 
   timing: {
@@ -302,12 +269,6 @@ export const ja = {
     shareTitle: (product: string) => `Axisのおすすめ: ${product}`,
     shareMessage: (product: string, url: string) => `Axisが「${product}」を選びました → ${url}`,
     sharedFallback: "共有した選択",
-  },
-
-  limit: {
-    reached: "今日の選択回数をすべて使いました。上位プランでもっと選択できます。",
-    upgrade: "もっと選択するにはアップグレード →",
-    rateLimit: "リクエストが多すぎます。少し待ってからもう一度お試しください。",
   },
 
   error: {

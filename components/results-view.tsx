@@ -7,8 +7,8 @@ import ContextCard from "@/components/context-card";
 import TimingSection from "@/components/timing-section";
 import PriceComparison from "@/components/price-comparison";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { resolveFieldByLabel } from "@/lib/specs/schema";
-import { coverageNoteYear } from "@/lib/specs/coverage";
+import { fieldLabelForLocale, resolveFieldByLabel } from "@/lib/specs/schema";
+import { localizeSpecValue } from "@/lib/specs/localize-value";
 import SpecGraphs, { type SpecGraph } from "@/components/spec-graphs";
 import type { Category } from "@/lib/types";
 
@@ -45,6 +45,42 @@ function normalize(result: ComparisonResult, query: string) {
   const analyses = Array.isArray(result.analyses) ? result.analyses : [];
 
   return { options, rows, sources, sourceMeta, analyses };
+}
+
+/** Remap row labels + values to the active UI locale (works even on stale session payloads). */
+function localizeRows(
+  rows: NormalizedRow[],
+  category: Category,
+  locale: Locale
+): NormalizedRow[] {
+  return rows.map((row) => {
+    const field = resolveFieldByLabel(category, row.key);
+    if (!field) return row;
+    return {
+      key: fieldLabelForLocale(field, locale),
+      values: row.values.map((v) => {
+        const localized = localizeSpecValue(field.key, v ?? "—", locale);
+        return localizeEmbeddedUnits(localized, locale);
+      }),
+    };
+  });
+}
+
+function localizeEmbeddedUnits(value: string, locale: Locale): string {
+  if (locale === "ko" || !value || value === "—") return value;
+  let next = value;
+  if (locale === "en") {
+    next = next
+      .replace(/(\d+(?:\.\d+)?)\s*인치/g, "$1 in")
+      .replace(/(\d+(?:\.\d+)?)\s*시간/g, "$1 h")
+      .replace(/(\d+(?:\.\d+)?)\s*원/g, "₩$1");
+  } else if (locale === "ja") {
+    next = next
+      .replace(/(\d+(?:\.\d+)?)\s*인치/g, "$1インチ")
+      .replace(/(\d+(?:\.\d+)?)\s*시간/g, "$1時間")
+      .replace(/원/g, "ウォン");
+  }
+  return next.replace(/\s+/g, " ").trim();
 }
 
 function computeFitScores(
@@ -103,6 +139,7 @@ function buildSpecGraphs(
 
     graphs.push({
       key: row.key,
+      better: field.better,
       values: values.map((num, i) => ({
         label: options[i] ?? `Option ${i + 1}`,
         raw: row.values[i] ?? "—",
@@ -129,7 +166,8 @@ export default function ResultsView({
   slug,
   region,
 }: Props) {
-  const { options, rows, sources, sourceMeta, analyses } = normalize(result, query);
+  const { options, rows: rawRows, sources, sourceMeta, analyses } = normalize(result, query);
+  const rows = localizeRows(rawRows, result.category, locale);
   const selectedIndex = options.findIndex((o) => o === result.selectedOption);
   const cols = options.length;
   const t = getDictionary(locale).results;
@@ -139,7 +177,6 @@ export default function ResultsView({
   const specGraphs = isBlockedResult
     ? []
     : buildSpecGraphs(options, rows, result.category);
-  const coverageYear = coverageNoteYear();
 
   const showVerifyBadge =
     result.verification != null &&
@@ -170,7 +207,6 @@ export default function ResultsView({
           <h1 className="vh-title">{result.selectedOption}</h1>
           <p className="vh-conclusion">{result.oneLineConclusion ?? t.defaultConclusion}</p>
 
-          {/* 승부 막대: 각 옵션의 스펙 우위를 % 없이 막대 길이로만 표현 */}
           {options.length > 1 && !isBlockedResult && (
             <div className="vh-matchup" aria-label={query}>
               {options.map((opt, i) => (
@@ -217,7 +253,6 @@ export default function ResultsView({
           <PriceComparison options={options} locale={locale} />
         )}
 
-        
         {specGraphs.length > 0 && (
           <SpecGraphs
             key={specGraphs.map((g) => g.key).join("|")}
@@ -225,12 +260,11 @@ export default function ResultsView({
             labels={{
               title: t.specGraphs,
               select: t.specGraphSelect,
-              numericOnly: t.specGraphNumericOnly,
             }}
           />
         )}
 
-        {/* ── 3. Spec table ── */}
+        {/* ── Spec table ── */}
         <section className="detail-card spec-section">
           <div className="spec-header">
             <h2>{showVerifyBadge ? t.specComparison : t.specComparisonPending}</h2>
@@ -245,7 +279,6 @@ export default function ResultsView({
               </span>
             )}
           </div>
-          <p className="coverage-note coverage-note-inline">{t.coverageNote(coverageYear)}</p>
 
           {rows.length > 0 ? (
             <div className="spec-table-scroll">
@@ -302,11 +335,7 @@ export default function ResultsView({
           )}
         </section>
 
-
-        {/* ── 3b. Spec graphs ── */}
-        
-
-        {/* ── 4. Per-option analysis ── */}
+        {/* ── Per-option analysis ── */}
         {analyses.some(Boolean) && (
           <section className="detail-card">
             <h2>{t.perItemAnalysis}</h2>
@@ -343,7 +372,7 @@ export default function ResultsView({
           </section>
         )}
 
-        {/* ── 5. Why chosen (추천이유 — 아래로 이동) ── */}
+        {/* Why chosen */}
         {!isBlockedResult && (
           <section className="detail-card">
             <h2>{t.whyChosen}</h2>
