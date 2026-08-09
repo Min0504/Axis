@@ -10,11 +10,6 @@ export const ko = {
     hero1: "비교하다 지쳤다면,",
     hero2: "Axis가 지금 바로 골라드립니다.",
     sub: "제조사 공식 스펙과 실제 사용 상황을 함께 분석해,\n최적의 선택을 내릴 수 있도록 도와드립니다.",
-    proof: [
-      { value: "공식 스펙 검증", label: "" },
-      { value: "정확한", label: " 비교" },
-      { value: "합리적", label: " 근거" }
-    ],
     examplesTitle: "이런 비교로 시작해보세요",
     examplesSub: "클릭하면 바로 입력창에 채워집니다. Axis는 고관여 전자기기부터 깊게 비교합니다.",
     tryThis: "비교하기 →",
@@ -43,30 +38,16 @@ export const ko = {
       { title: "공식 스펙 검증", body: "제조사 공식 데이터 기반 비교" },
       { title: "AI 구매 결론", body: "즉각적인 추천 이유 제공" },
       { title: "최대 5개 동시 비교", body: "N-way 비교 지원" },
-      { title: "가격 추적 · 알림", body: "가격 하락 시 알림 (준비 중)" },
+      { title: "가격 추적", body: "관심 상품 가격 확인 (알림은 보류)" },
       { title: "비교 결과 공유", body: "링크 하나로 결과 공유" },
-      { title: "다국어 지원", body: "한국어 · 영어 · 일본어" },
-    ],
-    method: [
-      {
-        title: "공식 스펙 확인",
-        body: "제조사 공식 페이지에서 확인 가능한 항목을 우선 비교합니다."
-      },
-      {
-        title: "상황별 분류",
-        body: "가격, 용도, 휴대성, 오래 쓸 가능성처럼 실제 구매 기준으로 다시 정리합니다."
-      },
-      {
-        title: "후회 조건 표시",
-        body: "추천 제품뿐 아니라 어떤 사람에게는 맞지 않는지도 함께 보여줍니다."
-      }
+      { title: "한국 · 노트북 우선", body: "검증 완료까지 KR·노트북 집중" },
     ],
     // Popular comparisons section
     compareTitle: "많이 찾는 비교",
     compareSub: "공식 스펙 기반으로 미리 분석해둔 인기 비교입니다.",
     compareRealData: "사용자들이 가장 많이 찾은 비교입니다.",
     compareViewAll: (n: number) => `비교 전체 보기 (${n}개) →`,
-    coverageNote: (year: number) => `${year}년 이후 출시 제품부터 비교 가능합니다`,
+    coverageNote: (year: number) => `${year}년 이후 모델만 비교 가능합니다`,
     categoryLabels: {
       laptop: "노트북",
       smartphone: "스마트폰",
@@ -74,10 +55,10 @@ export const ko = {
       tablet: "태블릿",
     },
     compareIndex: {
-      title: "제품 비교 모음",
-      metaTitle: "제품 비교 모음 — Axis",
+      title: "노트북 비교 모음",
+      metaTitle: "노트북 비교 모음 — Axis",
       metaDescription:
-        "노트북·스마트폰·이어폰·태블릿 인기 비교 모음. 공식 스펙과 실사용 기준으로 어떤 걸 살지 바로 알려드립니다.",
+        "노트북 인기 비교 모음. 공식 스펙과 실사용 기준으로 어떤 걸 살지 바로 알려드립니다.",
       sub: "공식 스펙 + AI 분석으로 뭘 살지 바로 결론 내드립니다.",
       ctaCopy: "목록에 없는 제품? 직접 비교해보세요.",
       cta: "직접 비교하기 →",
@@ -86,15 +67,11 @@ export const ko = {
 
   // Input
   input: {
-    ordinals: ["첫 번째", "두 번째", "세 번째", "네 번째", "다섯 번째"],
     placeholders: ["예: 맥북 에어 M4", "예: 갤럭시 북5 프로", "예: LG 그램 16", "예: 맥북 프로 14", "예: 씽크패드 X1"],
     addOption: "＋ 선택지 추가",
     submit: "Axis에게 맡기기 →",
     submitting: "분석 중...",
     optionSlot: (n: number) => `선택지 ${n}`,
-    proUpsell: "3개 이상 한 번에 비교하고 싶다면",
-    pro: "Pro",
-    upgradePrompt: "더 많이 선택하려면 업그레이드 →",
     errorEmpty: "두 개 이상의 선택지를 입력해주세요.",
     errorLength: (n: number) => `선택지는 각각 ${n}자 이하로 입력해주세요.`,
     errorDuplicate: "선택지는 중복될 수 없습니다.",
@@ -106,18 +83,9 @@ export const ko = {
     back: "← 다시 비교하기",
     axisChoice: "Axis 추천",
     defaultConclusion: "공식 스펙과 실사용 기준으로 이 제품이 더 적합합니다.",
-    basisTitle: "판단 기준",
-    basis: [
-      { title: "공식 스펙", body: "확인 가능한 공식 자료를 우선 기준으로 비교합니다." },
-      { title: "상황 적합도", body: "가격, 용도, 휴대성, 장기 사용성을 함께 봅니다." },
-      { title: "구매 투명성", body: "구매 링크는 추천 근거와 분리해 표시합니다." }
-    ],
-    fitScoreLabel: "스펙 우위 비율",
     fitScoreNote: "공식 스펙 중 수치 비교 가능 항목 기준",
     specGraphs: "스펙 그래프",
     specGraphSelect: "스펙 선택",
-    specGraphNumericOnly: "숫자로 비교 가능한 스펙만 막대그래프로 표시합니다",
-    coverageNote: (year: number) => `${year}년 이후 출시 제품부터 비교 가능합니다`,
     whyChosen: "추천 이유",
     specComparison: "공식 스펙 비교",
     specComparisonPending: "스펙 비교",
@@ -129,8 +97,6 @@ export const ko = {
     sourceManufacturer: "제조사 공식",
     sourceImporter: "공식 수입처",
     summary: "종합",
-    purchaseTitle: "구매 전 마지막 확인",
-    purchaseSub: "근거를 확인한 뒤 가격과 재고를 비교해보세요. 제휴 링크는 Axis 운영에 도움이 될 수 있지만 추천 기준에는 영향을 주지 않습니다.",
     notFound: "결과를 찾을 수 없습니다. 다시 비교해 주세요.",
     productNotFoundTitle: "제품을 찾을 수 없습니다",
     productNotFoundConclusion: (items: string[]) => `${items.join(", ")}은(는) 공식 제품 페이지에서 확인되지 않았습니다.`,
@@ -146,6 +112,7 @@ export const ko = {
     emptyTitle: "비교를 시작해볼까요?",
     emptySub: "두 제품을 입력하면 Axis가 공식 스펙을 분석해 최적의 선택을 골라드립니다.",
     emptyCta: "비교 시작하기 →",
+    localeRefreshFailed: "선택한 언어로 결과를 다시 불러오지 못했습니다.",
   },
 
   timing: {
@@ -311,13 +278,6 @@ export const ko = {
     shareTitle: (product: string) => `Axis 추천: ${product}`,
     shareMessage: (product: string, url: string) => `Axis가 "${product}"을(를) 추천했어요 → ${url}`,
     sharedFallback: "공유된 선택",
-  },
-
-  // Limit
-  limit: {
-    reached: "오늘 선택 횟수를 모두 사용했어요. 상위 플랜으로 더 많이 선택할 수 있어요.",
-    upgrade: "더 많이 선택하려면 업그레이드 →",
-    rateLimit: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
   },
 
   // Errors

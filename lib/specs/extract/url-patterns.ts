@@ -149,8 +149,11 @@ function buildSonyCandidates(normalizedName: string, country: Country): string[]
   const model = modelMatch[0].toUpperCase().replace(/\s+/g, "-");
 
   if (country === "KR") {
-    // Sony Korea store tends to have cleaner spec pages
-    return [`https://www.sony.co.kr/ko/products/${model.toLowerCase()}`];
+    // store.sony.co.kr serves product pages; www.sony.co.kr often 403s scrapers.
+    return [
+      `https://store.sony.co.kr/`,
+      `https://www.sony.co.kr/ko/products/${model.toLowerCase()}`
+    ];
   }
   if (country === "JP") {
     return [`https://www.sony.jp/headphone/${model.toLowerCase()}/spec.html`];

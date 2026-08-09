@@ -1,5 +1,6 @@
 import { fieldLabelForLocale, getCategorySchema, type SpecField } from "@/lib/specs/schema";
 import { isMeaningful } from "@/lib/specs/source";
+import { localizeSpecValue } from "@/lib/specs/localize-value";
 import type { ExtractedSpecs } from "@/lib/specs/extract";
 import type { Locale } from "@/lib/i18n";
 import type { Category, ComparisonRow } from "@/lib/types";
@@ -36,7 +37,8 @@ function appendUnit(value: string, field: SpecField, locale: Locale): string {
 
 function tableValue(value: string | null, field: SpecField, locale: Locale): string {
   if (!value) return "—";
-  const withUnit = appendUnit(value, field, locale);
+  const localized = localizeSpecValue(field.key, value, locale);
+  const withUnit = appendUnit(localized, field, locale);
   if (withUnit.length <= MAX_TABLE_VALUE_LENGTH) return withUnit;
   return `${withUnit.slice(0, MAX_TABLE_VALUE_LENGTH - 1).trimEnd()}…`;
 }

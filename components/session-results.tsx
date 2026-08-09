@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ResultsView from "@/components/results-view";
 import type { ComparisonResult } from "@/lib/types";
@@ -30,6 +29,10 @@ function optionsFromPayload(payload: Payload): string[] {
     .filter(Boolean);
 }
 
+function payloadLocale(payload: Payload): Locale {
+  return payload.locale ?? payload.result.locale ?? "ko";
+}
+
 export default function SessionResults({ locale: localeProp }: { locale?: Locale }) {
   const { locale: themeLocale } = useTheme();
   const locale = localeProp ?? themeLocale;
@@ -38,7 +41,8 @@ export default function SessionResults({ locale: localeProp }: { locale?: Locale
   const [payload, setPayload] = useState<Payload | null>(null);
   const [ready, setReady] = useState(false);
   const [isRefreshingLocale, setIsRefreshingLocale] = useState(false);
-  const router = useRouter();
+  const [refreshError, setRefreshError] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,14 +67,27 @@ export default function SessionResults({ locale: localeProp }: { locale?: Locale
   }, []);
 
   useEffect(() => {
-    if (!ready || !payload || payload.locale === locale) return;
+    if (!ready || !payload) return;
+    if (payloadLocale(payload) === locale) {
+      queueMicrotask(() => {
+        setRefreshError(false);
+        setIsRefreshingLocale(false);
+      });
+      return;
+    }
 
     const options = optionsFromPayload(payload);
-    if (options.length < 2) return;
+    if (options.length < 2) {
+      queueMicrotask(() => setRefreshError(true));
+      return;
+    }
 
     let cancelled = false;
     queueMicrotask(() => {
-      if (!cancelled) setIsRefreshingLocale(true);
+      if (!cancelled) {
+        setIsRefreshingLocale(true);
+        setRefreshError(false);
+      }
     });
 
     fetch("/api/compare", {
@@ -83,15 +100,23 @@ export default function SessionResults({ locale: localeProp }: { locale?: Locale
         return (await response.json()) as CompareResponse;
       })
       .then((body) => {
-        if (cancelled || !body?.result) return;
-        const next = {
+        if (cancelled) return;
+        if (!body?.result) {
+          setRefreshError(true);
+          return;
+        }
+        const next: Payload = {
           query: body.result.options.join(" vs "),
           options: body.result.options,
           locale,
           result: body.result
         };
         setPayload(next);
+        setRefreshError(false);
         sessionStorage.setItem(SESSION_RESULT_KEY, JSON.stringify(next));
+      })
+      .catch(() => {
+        if (!cancelled) setRefreshError(true);
       })
       .finally(() => {
         if (!cancelled) setIsRefreshingLocale(false);
@@ -100,14 +125,13 @@ export default function SessionResults({ locale: localeProp }: { locale?: Locale
     return () => {
       cancelled = true;
     };
-  }, [locale, payload, ready]);
+  }, [locale, payload, ready, retryToken]);
 
   if (!ready) {
     return null;
   }
 
   if (!payload) {
-    // 결과 데이터 없이 /results 직접 접근한 경우 → 홈으로 부드럽게 유도
     return (
       <main className="container narrow results-empty-state">
         <div className="results-empty-inner">
@@ -122,7 +146,32 @@ export default function SessionResults({ locale: localeProp }: { locale?: Locale
     );
   }
 
-  if (isRefreshingLocale) {
+  const localeMismatch = payloadLocale(payload) !== locale;
+
+  if (localeMismatch && refreshError) {
+    return (
+      <main className="container narrow results-empty-state">
+        <div className="results-empty-inner">
+          <h2 className="results-empty-title">{dictionary.error.title}</h2>
+          <p className="results-empty-sub">{t.localeRefreshFailed}</p>
+          <div className="results-empty-actions" style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setRetryToken((n) => n + 1)}
+            >
+              {dictionary.error.retry}
+            </button>
+            <Link href="/" className="btn-outline">
+              {dictionary.error.backHome}
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (localeMismatch || isRefreshingLocale) {
     return (
       <main className="container narrow">
         <p className="hint">{dictionary.error.loading}</p>

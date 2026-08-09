@@ -9,6 +9,8 @@ import PageViewTracker from "@/components/page-view-tracker";
 import type { ComparisonResult } from "@/lib/types";
 import { getSiteUrl } from "@/lib/site-url";
 import { isIndexable } from "@/lib/specs/source";
+import { getLocale } from "@/lib/i18n/server";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 // Re-generate at most once per day.
 export const revalidate = 86400;
@@ -31,7 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${def.title} — Axis의 선택은?`;
   const siteUrl = getSiteUrl();
-  const result = await getOrGenerate(slug, def.options);
+  // SEO metadata stays Korean (KR index pages).
+  const result = await getOrGenerate(slug, def.options, "ko");
   const indexable = result ? isIndexable(result.verification ?? "unverified") : false;
 
   return {
@@ -49,10 +52,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-async function getOrGenerate(slug: string, options: string[]): Promise<ComparisonResult | null> {
+async function getOrGenerate(
+  slug: string,
+  options: string[],
+  locale: Locale
+): Promise<ComparisonResult | null> {
   const db = createServiceClient();
+  const query = buildQuery(options);
 
-  // 1. Try cache
+  // 1. Try cache — only reuse when cached result language matches.
   const { data } = await db
     .from("seo_comparisons")
     .select("result")
@@ -60,19 +68,20 @@ async function getOrGenerate(slug: string, options: string[]): Promise<Compariso
     .maybeSingle();
 
   if (data?.result && isSafeCachedResult(data.result as ComparisonResult)) {
-    return data.result as ComparisonResult;
+    const cached = data.result as ComparisonResult;
+    if ((cached.locale ?? "ko") === locale) return cached;
   }
 
-  // 2. Generate with AI
-  const query = buildQuery(options);
+  // 2. Generate with AI for the active UI locale
   let result: ComparisonResult;
   try {
-    result = await buildDecision(query, 6);
+    result = await buildDecision(query, 6, locale);
   } catch {
     return null;
   }
 
-  if (result.verification === "verified") {
+  // Persist only Korean SEO cache so KR index pages stay stable.
+  if (locale === "ko" && result.verification === "verified") {
     db.from("seo_comparisons")
       .upsert({ slug, query, result, generated_at: new Date().toISOString() })
       .then(({ error }) => { if (error) console.error("[seo_comparisons.upsert]", error.message); });
@@ -86,7 +95,9 @@ export default async function ComparePage({ params }: Props) {
   const def = COMPARISONS.find((c) => c.slug === slug);
   if (!def) notFound();
 
-  const result = await getOrGenerate(slug, def.options);
+  const locale = await getLocale();
+  const t = getDictionary(locale);
+  const result = await getOrGenerate(slug, def.options, locale);
   if (!result) notFound();
 
   const query = buildQuery(def.options);
@@ -95,8 +106,11 @@ export default async function ComparePage({ params }: Props) {
   ).slice(0, 4);
 
   const siteUrl = getSiteUrl();
+  const categoryLabel =
+    t.home.categoryLabels[def.category as keyof typeof t.home.categoryLabels] ??
+    CATEGORY_LABELS[def.category];
 
-  // JSON-LD structured data
+  // JSON-LD structured data (KR SEO)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -114,11 +128,10 @@ export default async function ComparePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Breadcrumb */}
       <div className="compare-breadcrumb">
         <Link href="/">axis</Link>
         <span aria-hidden>›</span>
-        <Link href="/compare">{CATEGORY_LABELS[def.category]}</Link>
+        <Link href="/compare">{categoryLabel}</Link>
         <span aria-hidden>›</span>
         <span>{def.title}</span>
       </div>
@@ -127,16 +140,15 @@ export default async function ComparePage({ params }: Props) {
       <ResultsView
         query={query}
         result={result}
-        locale={def.locale}
+        locale={locale}
         hidePrices
         slug={slug}
         region="KR"
       />
 
-      {/* Related comparisons */}
       {relatedComparisons.length > 0 && (
         <section className="compare-related">
-          <h2 className="compare-related-title">비슷한 비교</h2>
+          <h2 className="compare-related-title">{t.home.compareTitle}</h2>
           <ul className="compare-related-list">
             {relatedComparisons.map((c) => (
               <li key={c.slug}>
@@ -151,13 +163,10 @@ export default async function ComparePage({ params }: Props) {
         </section>
       )}
 
-      {/* CTA */}
       <section className="compare-cta">
-        <p className="compare-cta-copy">
-          내 상황(예산·용도·기존 기기)을 더해서 맞춤 분석을 받고 싶다면?
-        </p>
+        <p className="compare-cta-copy">{t.home.compareIndex.ctaCopy}</p>
         <Link href={`/?q=${encodeURIComponent(def.options.join(" vs "))}`} className="btn-primary compare-cta-btn">
-          내 상황 맞춤 비교 받기 →
+          {t.home.compareIndex.cta}
         </Link>
       </section>
     </>

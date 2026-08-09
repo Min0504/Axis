@@ -20,6 +20,7 @@ import type { ProductSourceCandidate } from "@/lib/specs/types";
 import { logSearchMiss } from "@/lib/search-miss-log";
 import { getCachedComparison, setCachedComparison } from "@/lib/comparison-cache";
 import { localizeDisplayName, resolveVerifiedProduct, stripForeignMarketFields } from "@/lib/specs/dataset";
+import { localizeSpecValue, localizeSpecsRecord } from "@/lib/specs/localize-value";
 
 const SPLIT_RE = /\s+vs\s+|\s+VS\s+|\svs\s|\s대\s/i;
 
@@ -323,15 +324,14 @@ function buildDeterministicDecision(
   };
 }
 
-const UNIT_MAP_EN: Record<string, string> = {
-  "인치": "in",
-  "시간": "h",
-  "원": "KRW"
+const UNIT_MAP: Record<Locale, Record<string, string>> = {
+  en: { "인치": "in", "시간": "h", "원": "KRW" },
+  ja: { "인치": "インチ", "시간": "時間", "원": "ウォン" },
+  ko: {}
 };
 
 function localizedUnit(unit: string, locale: Locale): string {
-  if (locale === "en") return UNIT_MAP_EN[unit] ?? unit;
-  return unit;
+  return UNIT_MAP[locale]?.[unit] ?? unit;
 }
 
 function appendUnitIfNeeded(value: string, unit: string | undefined, locale: Locale): string {
@@ -396,11 +396,13 @@ function buildFinalComparison(
     // Per-product override: scraped value wins where available (more authoritative)
     const finalValues = aiValues.map((aiVal, i) => {
       const sv = scrapedValues[i];
-      if (!sv) return aiVal;
-      // Append localized unit to bare numeric values from the scraper
-      return field.type === "numeric" && field.unit
-        ? appendUnitIfNeeded(sv, field.unit, locale)
-        : sv;
+      const raw =
+        !sv
+          ? aiVal
+          : field.type === "numeric" && field.unit
+            ? appendUnitIfNeeded(sv, field.unit, locale)
+            : sv;
+      return localizeSpecValue(field.key, raw, locale);
     });
 
     // Attach official source URLs only for positions where the scraper had the value
@@ -503,7 +505,9 @@ export async function buildDecision(
     locale,
     templateKeys: schemaFieldLabelsForLocale(category, locale),
     officialSpecs: officialSpecs.map((spec) =>
-      spec ? { source: spec.source, specs: spec.specs } : null
+      spec
+        ? { source: spec.source, specs: localizeSpecsRecord(spec.specs, locale) }
+        : null
     ),
     userContext
   });

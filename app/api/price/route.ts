@@ -8,7 +8,7 @@ import {
   type Region
 } from "@/lib/pricing";
 import { isLocale, type Locale } from "@/lib/i18n";
-import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export type PriceApiResult = {
   productId: string;
@@ -34,7 +34,7 @@ export type PriceApiResult = {
  */
 export async function GET(req: Request) {
   const ip = getClientIp(req);
-  const limit = rateLimit(`price:${ip}`, 60, 60_000);
+  const limit = await checkRateLimit(`price:${ip}`, 60, 60_000);
   if (!limit.allowed) {
     const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
     return NextResponse.json(

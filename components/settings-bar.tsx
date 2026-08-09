@@ -19,7 +19,6 @@ export default function SettingsBar() {
 
   return (
     <div className="settings-bar">
-      {/* Language dropdown */}
       <div className="lang-dropdown" ref={ref}>
         <button
           type="button"
