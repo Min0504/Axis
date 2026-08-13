@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createApiHandler } from "@/lib/server/api-handler";
 import { isAiConfigured } from "@/lib/ai/decide";
 import { getProductById, allVerifiedProducts } from "@/lib/specs/dataset";
 import { discoverOfficialUrl } from "@/lib/specs/extract/discover";
@@ -23,11 +24,22 @@ import type { ProductSourceCandidate } from "@/lib/specs/types";
  * Usage: GET /api/admin/extract?id=macbook-air-13-m3
  *        GET /api/admin/extract            → lists available ids
  */
-export async function GET(req: Request) {
-  if (process.env.AXIS_ADMIN !== "1") {
-    return NextResponse.json({ error: "not found" }, { status: 404 });
-  }
+export const GET = createApiHandler({
+  route: "GET /api/admin/extract",
+  // Extraction hits external pages + LLMs — keep the ceiling low even in dev.
+  rateLimit: { limit: 10, windowMs: 60_000, keyPrefix: "admin-extract" },
+  async handler(ctx) {
+    // Hidden unless explicitly enabled: reply 404 (not 401/403) so the
+    // route's existence isn't discoverable by probing.
+    if (process.env.AXIS_ADMIN !== "1") {
+      return NextResponse.json({ error: "not found" }, { status: 404 });
+    }
 
+    return handleExtract(ctx.req);
+  }
+});
+
+async function handleExtract(req: Request) {
   const searchParams = new URL(req.url).searchParams;
   const id = searchParams.get("id")?.trim();
   const productName = searchParams.get("product")?.trim();

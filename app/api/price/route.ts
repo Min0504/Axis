@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createApiHandler } from "@/lib/server/api-handler";
 import { getProductById, resolveVerifiedAny, localizedProductName } from "@/lib/specs/dataset";
 import {
   getPriceProvider,
@@ -8,7 +9,6 @@ import {
   type Region
 } from "@/lib/pricing";
 import { isLocale, type Locale } from "@/lib/i18n";
-import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export type PriceApiResult = {
   productId: string;
@@ -31,61 +31,57 @@ export type PriceApiResult = {
  * Returns a price snapshot for a verified product in the caller's region, or
  * { result: null } when the product isn't in the catalog or no price source is
  * configured. Never invents prices — same honesty rule as the spec gate.
+ * (Invalid locale falls back to "en" instead of erroring; this endpoint is
+ * lookup-style, so soft parameter handling is the contract.)
  */
-export async function GET(req: Request) {
-  const ip = getClientIp(req);
-  const limit = rateLimit(`price:${ip}`, 60, 60_000);
-  if (!limit.allowed) {
-    const retryAfter = Math.ceil((limit.resetAt - Date.now()) / 1000);
-    return NextResponse.json(
-      { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
-      { status: 429, headers: { "Retry-After": String(retryAfter) } }
-    );
+export const GET = createApiHandler({
+  route: "GET /api/price",
+  rateLimit: { limit: 60, windowMs: 60_000, keyPrefix: "price" },
+  async handler(ctx) {
+    const { searchParams } = new URL(ctx.req.url);
+    const id = searchParams.get("id")?.trim();
+    const name = searchParams.get("name")?.trim();
+    const localeParam = searchParams.get("locale");
+
+    const locale: Locale = isLocale(localeParam) ? localeParam : "en";
+    const region = isLocale(localeParam) ? localeToRegion(localeParam) : "US";
+
+    const product = id ? getProductById(id) : name ? resolveVerifiedAny(name) : null;
+    if (!product) {
+      return NextResponse.json({ result: null });
+    }
+
+    const provider = getPriceProvider(region);
+    if (!provider) {
+      return NextResponse.json({ result: null });
+    }
+
+    // Localized display + search name so en/ja users see/search the right term.
+    const displayName = localizedProductName(product, locale);
+    const priceable = { id: product.id, name: displayName, category: product.category };
+    const [quote, history] = await Promise.all([
+      provider.getQuote(priceable, region).catch(() => null),
+      provider.getHistory(priceable, region).catch(() => null)
+    ]);
+
+    if (!quote || !history) {
+      return NextResponse.json({ result: null });
+    }
+
+    const result: PriceApiResult = {
+      productId: product.id,
+      name: displayName,
+      region,
+      currency: history.currency,
+      current: history.current,
+      lowest: history.lowest,
+      average: history.average,
+      dealScore: history.dealScore,
+      url: quote.url,
+      source: history.source,
+      spark: history.points.map((p) => p.price)
+    };
+
+    return NextResponse.json({ result });
   }
-
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id")?.trim();
-  const name = searchParams.get("name")?.trim();
-  const localeParam = searchParams.get("locale");
-
-  const locale: Locale = isLocale(localeParam) ? localeParam : "en";
-  const region = isLocale(localeParam) ? localeToRegion(localeParam) : "US";
-
-  const product = id ? getProductById(id) : name ? resolveVerifiedAny(name) : null;
-  if (!product) {
-    return NextResponse.json({ result: null });
-  }
-
-  const provider = getPriceProvider(region);
-  if (!provider) {
-    return NextResponse.json({ result: null });
-  }
-
-  // Localized display + search name so en/ja users see/search the right term.
-  const displayName = localizedProductName(product, locale);
-  const priceable = { id: product.id, name: displayName, category: product.category };
-  const [quote, history] = await Promise.all([
-    provider.getQuote(priceable, region).catch(() => null),
-    provider.getHistory(priceable, region).catch(() => null)
-  ]);
-
-  if (!quote || !history) {
-    return NextResponse.json({ result: null });
-  }
-
-  const result: PriceApiResult = {
-    productId: product.id,
-    name: displayName,
-    region,
-    currency: history.currency,
-    current: history.current,
-    lowest: history.lowest,
-    average: history.average,
-    dealScore: history.dealScore,
-    url: quote.url,
-    source: history.source,
-    spark: history.points.map((p) => p.price)
-  };
-
-  return NextResponse.json({ result });
-}
+});

@@ -108,14 +108,43 @@ supabase db push
 app/
 ├── api/compare/       비교 요청 (맞춤 재분석 포함)
 ├── api/price/         실시간 가격 조회
-├── api/cron/          가격 점검 · 스냅샷
+├── api/health/        헬스체크 (DB 프로브 + 기능별 readiness)
+├── api/cron/          가격 점검 · 스냅샷 (감사 로그 포함)
 ├── api/watches/       관심 상품 관리
 ├── compare/[slug]/    SEO 정적 비교 페이지
 └── results/           동적 결과 페이지
 
 components/            results-view · context-card · timing-section · vs-input
 lib/                   decision-engine · ai/ · pricing/ · specs/dataset/ · affiliate.ts
+lib/server/            백엔드 공통 인프라 (아래 참고)
+lib/comparisons/       comparisons 테이블 리포지토리
 ```
+
+## 백엔드 아키텍처
+
+모든 API 라우트는 공통 파이프라인 위에서 동작한다. 계층은 다음과 같다.
+
+```
+Route (HTTP 경계)  →  createApiHandler 파이프라인  →  도메인 로직  →  Repository  →  Supabase
+                       레이트리밋 · 인증 · 검증 ·
+                       requestId · 로깅 · 에러 매핑
+```
+
+| 모듈 | 역할 |
+|------|------|
+| `lib/server/api-handler.ts` | 선언적 핸들러 파이프라인 (레이트리밋·인증·검증·에러·로깅) |
+| `lib/server/errors.ts` | `ApiError` 계층 + `{ error, code, requestId }` 매핑 |
+| `lib/server/validate.ts` | 무의존성 스키마 검증 (unknown key strip, 타입 추론) |
+| `lib/server/logger.ts` | 구조화 JSON 로그, 요청 컨텍스트 상속 |
+| `lib/server/http.ts` | 외부 API 호출: 타임아웃 + 지수 백오프 재시도 |
+| `lib/server/secrets.ts` | constant-time 시크릿 비교 (cron 인증) |
+| `lib/server/pagination.ts` | 커서(keyset) 페이지네이션 |
+| `lib/server/cron.ts` | cron 래퍼: 인증 + 감사 로그(`cron_runs`) + 크래시 배리어 |
+| `lib/server/env.ts` | 환경변수 레지스트리 (health 리포트용) |
+
+- **API 명세:** [docs/api/openapi.yaml](docs/api/openapi.yaml) (OpenAPI 3.1)
+- **설계 결정 기록:** [docs/adr/](docs/adr/) — 파이프라인·에러 모델·레이트리밋·관측성·페이지네이션
+- **운영 확인:** `GET /api/health` — DB 왕복 + 설정 상태 (200 정상 / 503 저하)
 
 ## 검증 게이트
 

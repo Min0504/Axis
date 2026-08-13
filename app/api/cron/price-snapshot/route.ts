@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createCronHandler, type CronContext } from "@/lib/server/cron";
 import { createServiceClientSafe } from "@/lib/supabase-server";
 import { getPriceProvider } from "@/lib/pricing";
 import { laptops } from "@/lib/specs/dataset/laptops";
@@ -10,16 +11,11 @@ import { laptops } from "@/lib/specs/dataset/laptops";
  * Uses whatever provider is active via AXIS_PRICE_SOURCE env var.
  * Idempotent — upserts by (product_id, region, recorded_date).
  *
- * Secured with Authorization: Bearer <CRON_SECRET>.
- * Vercel Cron schedule: 0 1 * * * (01:00 UTC = 10:00 KST).
+ * Secured with Authorization: Bearer <CRON_SECRET> — verified constant-time
+ * by createCronHandler, which also logs the run and records a cron_runs
+ * audit row. Vercel Cron schedule: 0 1 * * * (01:00 UTC = 10:00 KST).
  */
-async function runPriceSnapshot(req: Request) {
-  const cronSecret = process.env.CRON_SECRET;
-  const auth = req.headers.get("Authorization");
-  if (!cronSecret || auth !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-
+async function runPriceSnapshot({ log }: CronContext) {
   const provider = getPriceProvider("KR");
   if (!provider) {
     return NextResponse.json(
@@ -66,11 +62,13 @@ async function runPriceSnapshot(req: Request) {
 
       if (error) {
         failed++;
+        log.warn("snapshot upsert failed", { productId: laptop.id, dbError: error.message });
       } else {
         stored++;
       }
-    } catch {
+    } catch (err) {
       failed++;
+      log.warn("snapshot quote failed", { productId: laptop.id, err });
     }
 
     // Throttle to respect API rate limits (Naver: 10 req/s, Coupang: 10 req/s)
@@ -86,10 +84,6 @@ async function runPriceSnapshot(req: Request) {
   });
 }
 
-export async function GET(req: Request) {
-  return runPriceSnapshot(req);
-}
+const handler = createCronHandler({ job: "price-snapshot", run: runPriceSnapshot });
 
-export async function POST(req: Request) {
-  return runPriceSnapshot(req);
-}
+export { handler as GET, handler as POST };

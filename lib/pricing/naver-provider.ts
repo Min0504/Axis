@@ -1,5 +1,6 @@
 import { primaryBuyLink } from "@/lib/affiliate";
 import { createServiceClientSafe } from "@/lib/supabase-server";
+import { fetchWithRetry } from "@/lib/server/http";
 import {
   REGION_CURRENCY,
   REGION_RETAILER,
@@ -61,13 +62,16 @@ async function searchNaver(keyword: string): Promise<NaverShopItem | null> {
 
   const params = new URLSearchParams({ query: keyword, display: "5", sort: "sim" });
   try {
-    const res = await fetch(`${NAVER_SHOP_URL}?${params}`, {
+    // Retries transient failures (network, 429, 5xx) with jittered backoff;
+    // 4xx contract errors are returned as-is and fall through to null below.
+    const res = await fetchWithRetry(`${NAVER_SHOP_URL}?${params}`, {
       method: "GET",
       headers: {
         "X-Naver-Client-Id": clientId,
         "X-Naver-Client-Secret": clientSecret,
       },
-      signal: AbortSignal.timeout(6000),
+      timeoutMs: 6000,
+      retries: 2,
     });
     if (!res.ok) return null;
 

@@ -24,3 +24,8 @@ jobs:
         env:
           # Build must not require real secrets; seed only for compile-time pages.
           AXIS_PRICE_SOURCE: seed
+      # Informational supply-chain check: surfaces known-vulnerable prod deps
+      # in the CI log without blocking merges on upstream advisories.
+      - name: Dependency audit (informational)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true

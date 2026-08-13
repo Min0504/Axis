@@ -1,66 +1,39 @@
 import { NextResponse } from "next/server";
-import { createSupabaseRouteClient } from "@/lib/supabase-route";
-import type { ComparisonResult } from "@/lib/types";
+import { createApiHandler } from "@/lib/server/api-handler";
+import { BadRequestError, NotFoundError } from "@/lib/server/errors";
+import { getComparisonForUser, deleteComparisonForUser } from "@/lib/comparisons/repository";
 
-export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const supabase = await createSupabaseRouteClient(req);
+const RATE = { limit: 60, windowMs: 60_000, keyPrefix: "history-item" };
+const AUTH = {
+  mode: "required",
+  unauthorizedMessage: "로그인이 필요합니다.",
+  unavailableMessage: "Supabase not configured"
+} as const;
 
-  if (!supabase) {
-    return NextResponse.json({ error: "Supabase not configured" }, { status: 503 });
+/** GET /api/history/[id] — load one saved comparison (owner only). */
+export const GET = createApiHandler({
+  route: "GET /api/history/[id]",
+  rateLimit: RATE,
+  auth: AUTH,
+  async handler(ctx) {
+    const record = await getComparisonForUser(ctx.supabase!, ctx.params.id, ctx.user!.id);
+    if (!record) {
+      throw new NotFoundError("기록을 찾을 수 없습니다.");
+    }
+    return NextResponse.json({ query: record.query, result: record.result });
   }
+});
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+/** DELETE /api/history/[id] — delete one saved comparison (owner only). */
+export const DELETE = createApiHandler({
+  route: "DELETE /api/history/[id]",
+  rateLimit: RATE,
+  auth: AUTH,
+  async handler(ctx) {
+    const deleted = await deleteComparisonForUser(ctx.supabase!, ctx.params.id, ctx.user!.id);
+    if (!deleted) {
+      throw new BadRequestError("삭제하지 못했습니다.");
+    }
+    return NextResponse.json({ ok: true });
   }
-
-  const { data, error } = await supabase
-    .from("comparisons")
-    .select("id, query, analysis_result")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (error || !data) {
-    return NextResponse.json({ error: "기록을 찾을 수 없습니다." }, { status: 404 });
-  }
-
-  return NextResponse.json({
-    query: data.query,
-    result: data.analysis_result as ComparisonResult
-  });
-}
-
-export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const supabase = await createSupabaseRouteClient(req);
-
-  if (!supabase) {
-    return NextResponse.json({ error: "Supabase not configured" }, { status: 503 });
-  }
-
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
-  }
-
-  // RLS also enforces ownership; the user_id filter is defense-in-depth.
-  const { error } = await supabase
-    .from("comparisons")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
-
-  if (error) {
-    return NextResponse.json({ error: "삭제하지 못했습니다." }, { status: 400 });
-  }
-
-  return NextResponse.json({ ok: true });
-}
+});

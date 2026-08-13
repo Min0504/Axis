@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { createServiceClientSafe } from "@/lib/supabase-server";
+import { fetchWithRetry } from "@/lib/server/http";
 import {
   REGION_CURRENCY,
   REGION_RETAILER,
@@ -90,13 +91,17 @@ async function searchCoupang(keyword: string): Promise<CoupangProduct | null> {
   const auth = buildAuthHeader(accessKey, secretKey, urlWithQuery);
 
   try {
-    const res = await fetch(`${BASE_URL}${urlWithQuery}`, {
+    // Retries transient failures with jittered backoff. The HMAC signature
+    // stays valid across retries (Coupang allows a multi-minute clock skew,
+    // far beyond our worst-case backoff of a few seconds).
+    const res = await fetchWithRetry(`${BASE_URL}${urlWithQuery}`, {
       method: "GET",
       headers: {
         Authorization: auth,
         "Content-Type": "application/json;charset=UTF-8",
       },
-      signal: AbortSignal.timeout(6000),
+      timeoutMs: 6000,
+      retries: 2,
     });
     if (!res.ok) return null;
 

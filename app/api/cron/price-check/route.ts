@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createCronHandler, type CronContext } from "@/lib/server/cron";
 import { listAllWatches, updateLastNotified } from "@/lib/watch/db";
 import { listAllPushWatches, updatePushLastNotified, deletePushWatchById } from "@/lib/push/db";
 import { evaluateAlert } from "@/lib/watch/alerts";
@@ -11,16 +12,11 @@ import { getSiteUrl } from "@/lib/site-url";
 
 /**
  * GET /api/cron/price-check
- * Secured with Authorization: Bearer <CRON_SECRET>.
- * Vercel Cron calls this with GET (see vercel.json).
+ * Secured with Authorization: Bearer <CRON_SECRET> — verified constant-time
+ * by createCronHandler, which also logs the run and records a cron_runs
+ * audit row. Vercel Cron calls this with GET (see vercel.json).
  */
-async function runPriceCheck(req: Request) {
-  const cronSecret = process.env.CRON_SECRET;
-  const auth = req.headers.get("Authorization");
-  if (!cronSecret || auth !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-
+async function runPriceCheck({ log }: CronContext) {
   const [emailRows, pushRows] = await Promise.all([listAllWatches(), listAllPushWatches()]);
   let fired = 0;
 
@@ -58,7 +54,15 @@ async function runPriceCheck(req: Request) {
       history.currency,
       decision.reason
     );
-    if (ok) fired++;
+    if (ok) {
+      fired++;
+      log.info("alert fired", {
+        productId: row.product_id,
+        region: row.region,
+        reason: decision.reason,
+        price: decision.price
+      });
+    }
   }
 
   // ── Email watches ──────────────────────────────────────────────────────────
@@ -115,10 +119,6 @@ async function runPriceCheck(req: Request) {
   });
 }
 
-export async function GET(req: Request) {
-  return runPriceCheck(req);
-}
+const handler = createCronHandler({ job: "price-check", run: runPriceCheck });
 
-export async function POST(req: Request) {
-  return runPriceCheck(req);
-}
+export { handler as GET, handler as POST };
